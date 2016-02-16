@@ -5,8 +5,7 @@ import os
 
 from exception import AuthenticationException
 
-from color import colors
-from color import out
+from color import *
 
 session = Session()
 
@@ -31,15 +30,11 @@ def login(username, password):
     return session.post(path + "/users/login", auth).json()
 
 
-def color(toPrint, color):
-    print(color + toPrint + colors.NORMAL)
-
-
 def init():
     if not os.path.exists('data/bot.json'):
         out.err("The config file doesn't exist! Please run \'setup.py\' first")
     else:
-        color("Config file found.", colors.OTHER)
+        log("Config file found.", colors.OTHER)
 
         with open('data/bot.json') as data:
             data = json.load(data)
@@ -48,5 +43,5 @@ def init():
             botName = data.get('botName')
             botPassword = data.get('botPassword')
 
-        color("Logged in as: {user}!".format(user=botName), colors.OTHER)
+        log("Logged in as: {user}!".format(user=botName), colors.OTHER)
 init()
