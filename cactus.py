@@ -13,10 +13,11 @@ class Cactus(User):
 
     def load_config(self, filename="config.json"):
         with open(filename) as config:
-            self.channel_data = self.login(**load(config))
+            self.config = load(config)
+            self.channel_data = self.login(**self.config)
             self.username = self.channel_data['username']
 
-            User.login(self.username, self.password, User.getChannelID(''))
+            self.login(self.username, self.config['password'])
 
     def run(self):
         self.load_config()
