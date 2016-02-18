@@ -2,6 +2,8 @@
 
 from user import User
 from json import load
+from traceback import format_exc
+from time import sleep
 
 
 class Cactus(User):
@@ -27,9 +29,15 @@ class Cactus(User):
             self.logger.info("CactusBot deactivated.")
         except Exception:
             self.logger.critical("Oh no, I crashed!")
+            self.logger.debug(format_exc())
             if self.autorestart:
-                self.logger.info("Restarting...")
+                self.logger.info("Restarting in 10 seconds...")
+                try:
+                    sleep(10)
+                except KeyboardInterrupt:
+                    self.logger.info("CactusBot deactivated.")
+                    exit()
                 self.run(config_file=config_file)
 
-cactus = Cactus(debug=True, autorestart=False)
+cactus = Cactus(debug=True, autorestart=True)
 cactus.run()
