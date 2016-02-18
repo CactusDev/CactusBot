@@ -47,7 +47,20 @@ class User:
         """Authenticate and login with Beam."""
         return self.request("POST", "/users/login", locals())
 
+<<<<<<< HEAD
     def get_channel(self, id):
         """Get channel data by username."""
         channel = self.request("GET", "/channels/{id}".format(id=id))
         return channel
+=======
+        channel_data = self.request("POST", "/users/login", auth)
+
+        return channel_data
+
+    def get_channel(self, username):
+        """Get channel data by username."""
+        user_json = self.request('get', "/channels/{user}".format(
+            user=username)
+        ).json()
+        return user_json.get('id')
+>>>>>>> a41569a9c621662290f87322215478f6e959258f
