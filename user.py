@@ -51,3 +51,15 @@ class User:
         """Get channel data by username."""
         channel = self.request("GET", "/channels/{id}".format(id=id))
         return channel
+
+
+class Chatter:
+
+    def ban(username):
+        pass
+
+    def purge(username):
+        pass
+
+    def timeout(username, time):
+        pass
