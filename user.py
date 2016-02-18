@@ -55,12 +55,9 @@ class User:
 
         return channel_data
 
-    def connect_to_channel(self, username):
-        return self.request('get', '/chats/join', self.get_channel(username))
-
     def get_channel(self, username):
         """Get channel data by username."""
-        user_json = self.get("/channels/{user}".format(
+        user_json = self.request('get', "/channels/{user}".format(
             user=username)
         ).json()
         return user_json.get('id')
