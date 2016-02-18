@@ -17,6 +17,8 @@ class Cactus(User):
             self.channel_data = self.login(**self.config)
             self.username = self.channel_data['username']
 
+            self.connect_to_channel(self.username)
+
     def run(self, config_file="config.json"):
         """Run bot."""
         try:
