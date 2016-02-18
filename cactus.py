@@ -5,18 +5,20 @@ from json import load
 
 
 class Cactus(User):
-    def __init__(self, **kwargs):
+    def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
-        self.debug = kwargs.get("debug", False)
-        self.autorestart = kwargs.get("autorestart", True)
+        self.debug = kwargs.get('debug', False)
+        self.autorestart = autorestart
 
     def load_config(self, filename):
+        """Load configuration."""
         with open(filename) as config:
             self.config = load(config)
             self.channel_data = self.login(**self.config)
             self.username = self.channel_data['username']
 
     def run(self, config_file="config.json"):
+        """Run bot."""
         try:
             self.load_config(filename=config_file)
             self.logger.info("Authenticated as: {}.".format(self.username))
@@ -29,5 +31,5 @@ class Cactus(User):
                 self.logger.info("Restarting...")
                 self.run(config_file=config_file)
 
-cactus = Cactus(debug=True)
+cactus = Cactus(debug=True, autorestart=False)
 cactus.run()
