@@ -16,20 +16,18 @@ class Cactus(User):
     def load_config(self, filename):
         """Load configuration."""
 
-        if os.path.exists('config.json'):
+        if os.path.exists('data/config.json'):
             self.logger.info("Config file was found. Loading...")
             with open(filename) as config:
                 self.config = load(config)
                 self.channel_data = self.login(**self.config)
                 self.username = self.channel_data['username']
+                self.where_to = self.config['where_to']
         else:
-            self.logger.error("Config file was not found. Creating...")
-            os.system('cp config-template.json config.json')
-            self.logger.info(
-                "Config created. Please enter information, and restart.")
+            self.logger.error('Couldn\'t find the config file. Please run \'setup.py\' first.')
             exit(0)
 
-    def run(self, config_file="config.json"):
+    def run(self, config_file="data/config.json"):
         """Run bot."""
         try:
             self.load_config(filename=config_file)
