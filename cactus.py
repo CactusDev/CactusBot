@@ -4,7 +4,8 @@ from user import User
 from json import load
 from traceback import format_exc
 from time import sleep
-import os
+from os.path import exists
+from shutil import copyfile
 
 
 class Cactus(User):
@@ -16,19 +17,22 @@ class Cactus(User):
     def load_config(self, filename):
         """Load configuration."""
 
-        if os.path.exists('data/config.json'):
+        if exists(filename):
             self.logger.info("Config file was found. Loading...")
             with open(filename) as config:
                 self.config = load(config)
                 self.channel_data = self.login(**self.config)
                 self.username = self.channel_data['username']
-                self.where_to = self.config['where_to']
         else:
-            self.logger.error('Couldn\'t find the config file. Please run \'setup.py\' first.')
-            exit(0)
+            self.logger.error("Config file was not found. Creating...")
+            copyfile("data/config-template.json", filename)
+            self.logger.info(
+                "Config created. Please enter information, and restart.")
+            raise FileNotFoundError("Config not found.")
 
     def run(self, config_file="data/config.json"):
         """Run bot."""
+        
         try:
             self.load_config(filename=config_file)
             self.logger.info("Authenticated as: {}.".format(self.username))
@@ -47,5 +51,5 @@ class Cactus(User):
                     exit()
                 self.run(config_file=config_file)
 
-cactus = Cactus(debug=True, autorestart=False)
+cactus = Cactus(debug=True, autorestart=True)
 cactus.run()

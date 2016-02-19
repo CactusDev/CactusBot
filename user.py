@@ -43,10 +43,9 @@ class User:
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
-    def login(self, username, where_to, password, code=''):
+    def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
         return self.request("POST", "/users/login", locals())
-        # TODO: Connect to the channel described in "where_to"
 
     def get_channel(self, id):
         """Get channel data by username."""
