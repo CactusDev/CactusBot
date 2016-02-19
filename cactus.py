@@ -46,6 +46,7 @@ class Cactus(User):
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
                 self.logger.error('\n\n' + format_exc())
+
                 if self.autorestart:
                     self.logger.info("Restarting in 10 seconds...")
                     try:
@@ -55,9 +56,12 @@ class Cactus(User):
                         self.autorestart = False
 
     def _run(self, config_file="data/config.json"):
+        """Bot execution code."""
         self.starts += 1
+
         self.load_config(filename=config_file)
         self.logger.info("Authenticated as: {}.".format(self.username))
+
         channel = self.get_channel(self.config['channel'])
         status = {True: "online", False: "offline"}[channel.get('online')]
         self.logger.info("Channel {ch} (id {id}) is {status}.".format(

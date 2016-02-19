@@ -1,5 +1,5 @@
 from requests import Session
-from logging import getLogger
+from logging import getLogger as get_logger
 
 
 class User:
@@ -11,16 +11,20 @@ class User:
 
     def _init_logger(self, level):
         """Initialize logger."""
-        self.logger = getLogger('CactusBot')
+
+        self.logger = get_logger('CactusBot')
+
         if level is True:
             level = "DEBUG"
         elif level is False:
             level = "WARNING"
+
         levels = ("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET")
         if level in levels:
             level_num = __import__("logging").__getattribute__(level)
             self.logger.setLevel(level_num)
             self.logger.info("Logger level set to: {}".format(level))
+
             try:
                 from coloredlogs import install
                 install(level=level)
@@ -29,16 +33,20 @@ class User:
                     "Module 'coloredlogs' unavailable; using ugly logging.")
         else:
             self.logger.warn("Invalid logger level: {}".format(level))
+
         self.logger.info("Logger initialized!")
 
     def request(self, req, url, *args, **kwargs):
         """Send HTTP request to Beam."""
+
         if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
             response = self.session.__getattribute__(req.lower())(
                 self.path + url, *args, **kwargs
             )
+
             if 'error' in response.json().keys():
                 self.logger.warn("Error: {}".format(response.json()['error']))
+
             return response.json()
         else:
             self.logger.debug("Invalid request: {}".format(req))
@@ -49,5 +57,4 @@ class User:
 
     def get_channel(self, id):
         """Get channel data by username."""
-        channel = self.request("GET", "/channels/{id}".format(id=id))
-        return channel
+        return self.request("GET", "/channels/{id}".format(id=id))
