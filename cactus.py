@@ -32,7 +32,7 @@ class Cactus(User):
 
     def run(self, config_file="data/config.json"):
         """Run bot."""
-        
+
         try:
             self.load_config(filename=config_file)
             self.logger.info("Authenticated as: {}.".format(self.username))

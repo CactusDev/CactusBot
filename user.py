@@ -43,7 +43,7 @@ class User:
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
-    def login(self, username, password, code=''):
+    def login(self, username, password, channel, code=''):
         """Authenticate and login with Beam."""
         return self.request("POST", "/users/login", locals())
 
@@ -51,3 +51,6 @@ class User:
         """Get channel data by username."""
         channel = self.request("GET", "/channels/{id}".format(id=id))
         return channel
+
+    def join_channel(self, name):
+        channel = self.get_channel(name)
