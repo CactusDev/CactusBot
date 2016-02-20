@@ -9,10 +9,10 @@ c = conn.cursor()
 class Command():
 
     def get_response(self, cmd):
-        return c.execute('SELECT response WHERE command={command};', command=cmd)
+        return c.execute('SELECT response FROM commands WHERE command={command};', command=cmd)
 
     def set_response(self, cmd, resp):
-        access = self.get_response(cmd)
+        access = self.get_access(cmd)
 
         self.remove_command(cmd)
         self.add_command(cmd, resp, access)
@@ -35,3 +35,6 @@ class Command():
 
         conn.commit()
         conn.close()
+
+    def get_access(self, cmd):
+        c.execute("SELECT access FROM commands WHERE command={cmd}".format(cmd=cmd))
