@@ -6,11 +6,12 @@ from traceback import format_exc
 from time import sleep
 from os.path import exists
 from shutil import copyfile
+import sqlite3 as sql
 
 
 def print_cactus():
     print("""
-    
+
       ,`""',
       ;' ` ;
       ;`,',;
@@ -40,6 +41,24 @@ class Cactus(User):
         self.debug = kwargs.get('debug', False)
         self.autorestart = autorestart
 
+    def check_db(self):
+        if exists('/data/commands.db'):
+            self.logger.info("Found database.")
+        else:
+            self.logger.info("Database wasn't found.")
+            self.logger.info("Creating and setting defaults...")
+
+            conn = sql.connect('data/bot.db')
+            c = conn.cursor()
+
+            c.execute('''CREATE TABLE commands
+                (command text, response text,  access text)''')
+
+            conn.commit()
+            conn.close()
+
+            self.logger.info("Done!")
+
     def load_config(self, filename):
         """Load configuration."""
 
@@ -61,6 +80,7 @@ class Cactus(User):
         """Run bot."""
 
         print_cactus()
+        self.check_db()
 
         while self.autorestart or not self.starts:
             try:
