@@ -37,4 +37,4 @@ class Command():
         conn.close()
 
     def get_access(self, cmd):
-        c.execute("SELECT access FROM commands WHERE command={cmd}".format(cmd=cmd))
+        c.execute("SELECT access FROM commands WHERE command={cmd};".format(cmd=cmd))
