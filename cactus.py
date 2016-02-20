@@ -8,6 +8,30 @@ from os.path import exists
 from shutil import copyfile
 
 
+def print_cactus():
+    print("""
+    
+      ,`""',
+      ;' ` ;
+      ;`,',;
+      ;' ` ;
+ ,,,  ;`,',;
+;,` ; ;' ` ;   ,',
+;`,'; ;`,',;  ;,' ;        ------ /------\  ------ --------  |       |    -----
+;',`; ;` ' ; ;`'`';        |      |      |  |         |      |       |   \
+;` '',''` `,',`',;         |      |      |  |         |      |       |    ----\
+ `''`'; ', ;`'`'           |      |------|  |         |      |       |        |
+      ;' `';               ------ |      |  ------    |      ---------   -----/
+      ;` ' ;
+      ;' `';
+      ;` ' ;
+      ; ',';
+      ;,' ';
+
+Made by: Innectic, 2Cubed(2CubedTech), and ParadigmShift3d
+""")
+
+
 class Cactus(User):
     starts = 0
 
@@ -35,6 +59,8 @@ class Cactus(User):
 
     def run(self, *args, **kwargs):
         """Run bot."""
+
+        print_cactus()
 
         while self.autorestart or not self.starts:
             try:
