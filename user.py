@@ -1,4 +1,4 @@
-from requests import Session
+from utils import request
 from logging import getLogger as get_logger
 
 
@@ -6,7 +6,6 @@ class User:
     path = path = "https://beam.pro/api/v1"
 
     def __init__(self, debug="WARNING", **kwargs):
-        self.session = Session()
         self._init_logger(debug)
 
     def _init_logger(self, level):
@@ -36,25 +35,10 @@ class User:
 
         self.logger.info("Logger initialized!")
 
-    def request(self, req, url, *args, **kwargs):
-        """Send HTTP request to Beam."""
-
-        if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
-            response = self.session.__getattribute__(req.lower())(
-                self.path + url, *args, **kwargs
-            )
-
-            if 'error' in response.json().keys():
-                self.logger.warn("Error: {}".format(response.json()['error']))
-
-            return response.json()
-        else:
-            self.logger.debug("Invalid request: {}".format(req))
-
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        return self.request("POST", "/users/login", locals())
+        return request("POST", "/users/login", locals())
 
     def get_channel(self, id):
         """Get channel data by username."""
-        return self.request("GET", "/channels/{id}".format(id=id))
+        return request("GET", "/channels/{id}".format(id=id))
