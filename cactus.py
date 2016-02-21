@@ -54,6 +54,11 @@ class Cactus(User):
             c.execute('''CREATE TABLE commands
                 (command text, response text,  access text)''')
 
+            c.execute('''CREATE TABLE bot
+                (join text, different text, total text)''')
+
+            c.execute('''INSERT INTO bot VALUES('{time}, '0', '0')''')
+
             conn.commit()
             conn.close()
 
