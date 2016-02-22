@@ -7,6 +7,7 @@ from time import sleep
 from os.path import exists
 from shutil import copyfile
 import sqlite3 as sql
+from time import strftime
 
 
 def print_cactus():
@@ -42,7 +43,7 @@ class Cactus(User):
         self.autorestart = autorestart
 
     def check_db(self):
-        if exists('/data/commands.db'):
+        if exists('data/bot.db'):
             self.logger.info("Found database.")
         else:
             self.logger.info("Database wasn't found.")
@@ -55,9 +56,9 @@ class Cactus(User):
                 (command text, response text,  access text)''')
 
             c.execute('''CREATE TABLE bot
-                (join text, different text, total text)''')
+                (joinTime text, joinDate text, different text, total text)''')
 
-            c.execute('''INSERT INTO bot VALUES('{time}, '0', '0')''')
+            c.execute('''INSERT INTO bot VALUES('{time}, {date}, '0', '0')'''.format(time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
 
             conn.commit()
             conn.close()
