@@ -8,6 +8,7 @@ class User:
     def __init__(self, debug="WARNING", **kwargs):
         self.session = Session()
         self._init_logger(debug)
+        print(self.authKey())
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -43,14 +44,28 @@ class User:
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
+    def authKey(self):
+        """Get the required authKey from Beam"""
+        return self.request("GET", "/chats/join")
+
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        return self.request("POST", "/users/login", locals())
+        return self.request("GET", "/users/login", locals())
 
     def get_channel(self, id):
         """Get channel data by username."""
         channel = self.request("GET", "/channels/{id}".format(id=id))
         return channel
+
+    def send_chat(self, id, message):
+        """
+        Send a message for a certain chat
+        Arguments:
+        - id: Channel ID to send message to
+        - message: Chat message to send
+        """
+        # Packet to send to Beam
+        # packet = {t pu}
 
 
 class Chatter:
