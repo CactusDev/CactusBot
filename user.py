@@ -1,5 +1,6 @@
 from utils import request
 from logging import getLogger as get_logger
+from requests import Session
 
 
 class User:
@@ -7,6 +8,7 @@ class User:
 
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
+        self.session = Session()
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -37,8 +39,18 @@ class User:
 
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        return request("POST", "/users/login", locals())
+        try:
+            res = request("POST", "/users/login", locals())
+            return res
+        except Exception as e:
+            print (e)
+            return False
 
     def get_channel(self, id):
         """Get channel data by username."""
-        return request("GET", "/channels/{id}".format(id=id))
+        try:
+            res = return request("GET", "/channels/{id}".format(id=id))
+            return res
+        except Exception as e:
+            print (e)
+            return False
