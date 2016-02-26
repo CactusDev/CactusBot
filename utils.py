@@ -1,9 +1,9 @@
-def request(parent, req, url, **kwargs):
+def request(parent, req, url, packet, **kwargs):
     """Send HTTP request to Beam."""
 
     if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
         response = parent.session.__getattribute__(req.lower())(
-            path + url, data=**kwargs
+            parent.path + url, data=packet
         )
 
         if 'error' in response.json().keys():

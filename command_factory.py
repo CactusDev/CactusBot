@@ -24,7 +24,7 @@ class Command():
         conn.close()
 
     def remove_command(self, cmd):
-        c.execute("DELETE FROM commands WHERE command={cmd};'".format(cmd=cmd))
+        c.execute("DELETE FROM commands WHERE command={cmd};".format(cmd=cmd))
 
         conn.commit()
         conn.close()

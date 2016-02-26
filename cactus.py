@@ -116,6 +116,7 @@ class Cactus(User):
 
         channel = self.get_channel(self.config["channel"])
         status = {True: "online", False: "offline"}[channel.get("online")]
+        print (status)
         self.logger.info("Channel {ch} (id {id}) is {status}.".format(
             ch=channel["token"], id=channel["id"], status=status
         ))

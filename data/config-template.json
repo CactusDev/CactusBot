@@ -1,5 +1,5 @@
 {
-  "username": "Username",
-  "password": "passw0rd",
-  "channel": "ChannelName"
+  "username": "USERNAME",
+  "password": "PASSWORD",
+  "channel": "CHANNELNAME"
 }
