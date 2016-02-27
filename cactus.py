@@ -37,48 +37,69 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 
 class Cactus(User):
     starts = 0
+    msg_id = 0
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
         self.debug = kwargs.get("debug", False)
         self.autorestart = autorestart
+        self.config_file = kwargs.get("config_file", "data/config.json")
+
+    @asyncio.coroutine
+    def send_message(self, packet):
+        yield from self.websocket.send(packet)
+        ret = yield from self.websocket.recv()
+        return ret
 
     @asyncio.coroutine
     def read_chat(self, user, bot):
-        buid = self.get_channel(bot, fields="id")["id"]
-        uid = self.get_channel(user, fields="id")["id"]
-        chat = self.get_chat(uid)
-        server = chat["endpoints"][0]
-        auth = chat["authkey"]
+        self.buid = self.get_channel(bot, fields="id")["id"]
+        self.uid = self.get_channel(user, fields="id")["id"]
+        self.chat = self.get_chat(self.uid)
+        self.server = self.chat["endpoints"][0]
+        self.auth = self.chat["authkey"]
 
-        self.logger.debug("Connecting to: {server}".format(server=server))
+        self.logger.debug("Connecting to: {server}".format(server=self.server))
+
+        # Packet Templates
+        # Message packet
+        self.msg_packet = {
+            "type": "method",
+            "method": "msg",
+            "arguments": [],
+            "id": self.msg_id
+        }
 
         while True:
-            websocket = yield from websockets.connect(server)
+            # Need to get the server to connect to
+            self.websocket = yield from websockets.connect(self.server)
 
             auth_packet = {
                 "type": "method",
                 "method": "auth",
                 "arguments": [
-                    uid, buid, auth
+                    self.uid,
+                    self.buid,
+                    self.auth
                 ],
                 "id": 1
             }
-            websocket.send(dumps(auth_packet))
-            print(websocket.recv())
 
-            msg_packet = {
-                "type": "method",
-                "method": "msg",
-                "arguments": [
-                    "Hello World!"
-                ],
-                "id": 2
-            }
+            yield from self.send_message(dumps(auth_packet))
+            print(websocket.recv())
             websocket.send(dumps(msg_packet))
             print(websocket.recv())
 
             result = yield from websocket.recv()
+
+            # Increment msg ID
+            self.msg_id += 1
+
+            yield from self.send_message(auth_packet)
+            ret = yield from self.websocket.recv()
+            yield from self.send_message(msg_packet)
+
+            result = yield from self.websocket.recv()
 
             if result is None:
                 continue
@@ -122,6 +143,8 @@ class Cactus(User):
                 self.channel_data = self.login(**auth)
                 self.username = self.channel_data["username"]
                 self.channel = self.config["channel"]
+
+                return True
         else:
             self.logger.warn("Config file was not found. Creating...")
             copyfile("data/config-template.json", filename)
@@ -137,7 +160,7 @@ class Cactus(User):
 
         while self.autorestart or not self.starts:
             try:
-                self._run(*args, **kwargs)
+                self._run(args, kwargs)
             except KeyboardInterrupt:
                 self.logger.info("Removing thorns... done.")
                 self.logger.info("CactusBot deactivated.")
@@ -153,12 +176,32 @@ class Cactus(User):
                     except KeyboardInterrupt:
                         self.logger.info("CactusBot deactivated.")
                         self.autorestart = False
+                else:
+                    self.logger.info("CactusBot deactivated.")
+                    exit()
+
+    def _run(self, *args, **kwargs):
+        if self.load_config(filename=self.config_file):
+            auth = {n: self.config[n] for n in ("username", "password")}
+            self.channel_data = self.login(**auth)
+            self.username = self.channel_data["username"]
+            self.logger.info("Authenticated as: {}.".format(self.username))
 
         loop = asyncio.get_event_loop()
 
         tasks = [
             asyncio.async(self.read_chat(self.channel, self.username))
         ]
+
+        """Bot execution code."""
+        self.starts = True
+
+
+        channel = self.get_channel(self.config["channel"])
+        status = {True: "online", False: "offline"}[channel.get("online")]
+        self.logger.info("Channel {ch} (id {id}) is {status}.".format(
+            ch=channel["token"], id=channel["id"], status=status
+        ))
 
         try:
             loop.run_until_complete(asyncio.wait(tasks))
@@ -167,19 +210,6 @@ class Cactus(User):
             print(e)
             loop.close()
 
-    def _run(self, config_file="data/config.json"):
-        """Bot execution code."""
-        self.starts += 1
-
-        self.load_config(filename=config_file)
-        self.logger.info("Authenticated as: {}.".format(self.username))
-
-        channel = self.get_channel(self.config["channel"])
-        status = {True: "online", False: "offline"}[channel.get("online")]
-        self.logger.info("Channel {ch} (id {id}) is {status}.".format(
-            ch=channel["token"], id=channel["id"], status=status
-        ))
-
 if __name__ == "__main__":
-    cactus = Cactus(debug="info", autorestart=False)
+    cactus = Cactus(debug=True, autorestart=False)
     cactus.run()
