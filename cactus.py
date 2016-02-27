@@ -1,20 +1,15 @@
 # CactusBot!
 
 from user import User
-from json import load
+from json import load, loads, dumps
 from traceback import format_exc
-from time import sleep
+from time import strftime, sleep
 from os.path import exists
 from shutil import copyfile
-from time import strftime
-from utils import get_server
-from utils import get_id
-from utils import get_authkey
 
 import sqlite3 as sql
 import asyncio
 import websockets
-import json
 
 
 cactus_art = """CactusBot initialized!
@@ -50,19 +45,37 @@ class Cactus(User):
 
     @asyncio.coroutine
     def read_chat(self, user, bot):
-        buid = get_id(self, bot)
-        uid = get_id(self, user)
-        server = get_server(self, uid)
-        auth = get_authkey(self, uid)
+        buid = self.get_channel(bot, fields="id")["id"]
+        uid = self.get_channel(user, fields="id")["id"]
+        chat = self.get_chat(uid)
+        server = chat["endpoints"][0]
+        auth = chat["authkey"]
 
-        print("Connecting to: {server}".format(server=server))
-        print("Connecting with authkey: {auth}".format(auth=auth))
+        self.logger.debug("Connecting to: {server}".format(server=server))
 
         while True:
-            websocket = yield from websockets.connect(server)  # Need to get the server to connect to
-            websocket.send('''{"type":"method","method":"auth","arguments":[{chanId},{botid},"{auth}"],"id":1}'''.format(chanId=uid, botid=buid, auth=auth))
+            websocket = yield from websockets.connect(server)
+            
+            auth_packet = {
+                "type": "method",
+                "method": "auth",
+                "arguments": [
+                    uid, buid, auth
+                ],
+                "id": 1
+            }
+            websocket.send(dumps(auth_packet))
             print(websocket.recv())
-            websocket.send('''{"type":"method","method":"msg","arguments":["Hello World!"],"id":2}''')
+            
+            msg_packet = {
+                "type": "method",
+                "method": "msg",
+                "arguments": [
+                    "Hello World!"
+                ],
+                "id": 2
+            }
+            websocket.send(dumps(msg_packet))
             print(websocket.recv())
 
             result = yield from websocket.recv()
@@ -70,27 +83,9 @@ class Cactus(User):
             if result is None:
                 continue
             try:
-                result = json.loads(result)
-            except TypeError as e:
-                print(e)
-
+                result = loads(result)
+            except TypeError:
                 continue
-
-            if 'event' in result:
-                event = result['event']
-
-                if 'username' in result['data']:
-                    user = result['data']['username']
-                elif 'user_name' in result['data']:
-                    user = result['data']['user_name']
-
-                if event == "UserJoin":
-                    print(event)
-                elif event == "UserLeave":
-                    # Apply to statistics
-                    pass
-                elif event == "ChatMessage":
-                    print(event)
 
     def check_db(self):
         if exists("data/bot.db"):
@@ -108,7 +103,8 @@ class Cactus(User):
             c.execute("""CREATE TABLE bot
                 (joinTime text, joinDate text, different text, total text)""")
 
-            c.execute("""INSERT INTO bot VALUES("{time}, {date}, "\0", "\0"")""".format(time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
+            c.execute("""INSERT INTO bot VALUES("{time}, {date}, "\0", "\0"")""".format(
+                time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
 
             conn.commit()
             conn.close()
@@ -125,6 +121,7 @@ class Cactus(User):
                 auth = {n: self.config[n] for n in ("username", "password")}
                 self.channel_data = self.login(**auth)
                 self.username = self.channel_data["username"]
+                self.channel = self.config["channel"]
         else:
             self.logger.warn("Config file was not found. Creating...")
             copyfile("data/config-template.json", filename)
@@ -160,7 +157,7 @@ class Cactus(User):
         loop = asyncio.get_event_loop()
 
         tasks = [
-            asyncio.async(self.read_chat("innectic", "innectbot"))
+            asyncio.async(self.read_chat(self.channel, self.username))
         ]
 
         try:

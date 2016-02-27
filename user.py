@@ -59,7 +59,7 @@ class User:
     def get_channel(self, id, **p):
         """Get channel data by username."""
         return self.request("GET", "/channels/{id}".format(id=id), params=p)
-        
-    def get_chat(self, id, **p):
+
+    def get_chat(self, id):
         """Get chat server data."""
-        return self.request("GET", "/chats/{id}".format(id=id), params=p)
+        return self.request("GET", "/chats/{id}".format(id=id))
