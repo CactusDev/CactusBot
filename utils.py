@@ -1,3 +1,7 @@
+from exceptions import BadSessionException
+import json
+
+
 def request(parent, req, url, packet, **kwargs):
     """Send HTTP request to Beam."""
 
@@ -12,4 +16,25 @@ def request(parent, req, url, packet, **kwargs):
         return response.json()
     else:
         parent.logger.debug("Invalid request: {}".format(req))
-        raise BadSessionTypeException(req.lower)
+        raise BadSessionException(req.lower)
+
+
+def get_server(self, id):
+    req = request(self, "GET", "/chats/{id}".format(id=id), packet={})
+    req = json.load(req)
+
+    return req['endpoints'][0]
+
+
+def get_authkey(self, id):
+    req = request(self, "GET", "/chats/{id}".format(id=id), packet={})
+    req = json.load(req)
+
+    return req['authkey']
+
+
+def get_id(self, username):
+    req = request(self, "GET", "/channels/{user}".format(user=username), packet={})
+    req = json.loads(req)
+
+    return req['id']
