@@ -10,8 +10,7 @@ import sqlite3 as sql
 from time import strftime
 
 
-def print_cactus():
-    print("""
+cactus_art = """CactusBot initialized!
 
       ,`""',
       ;' ` ;
@@ -19,19 +18,19 @@ def print_cactus():
       ;' ` ;
  ,,,  ;`,',;
 ;,` ; ;' ` ;   ,',
-;`,'; ;`,',;  ;,' ;        ------ /------\  ------ --------  |       |    -----
-;',`; ;` ' ; ;`'`';        |      |      |  |         |      |       |   \\
-;` '',''` `,',`',;         |      |      |  |         |      |       |    ----\\
- `''`'; ', ;`'`'           |      |------|  |         |      |       |        |
-      ;' `';               ------ |      |  ------    |      ---------   -----/
+;`,'; ;`,',;  ;,' ;       ------ /------\  ------ --------  |       |    -----
+;',`; ;` ' ; ;`'`';       |      |      |  |         |      |       |   \\
+;` '',''` `,',`',;        |      |      |  |         |      |       |    ----\\
+ `''`'; ', ;`'`'          |      |------|  |         |      |       |        |
+      ;' `';              ------ |      |  ------    |      ---------   -----/
       ;` ' ;
       ;' `';
       ;` ' ;
       ; ',';
       ;,' ';
 
-Made by: Innectic, 2Cubed(2CubedTech), and ParadigmShift3d
-""")
+Made by: 2Cubed, Innectic, and ParadigmShift3d
+"""
 
 
 class Cactus(User):
@@ -58,7 +57,8 @@ class Cactus(User):
             c.execute("""CREATE TABLE bot
                 (joinTime text, joinDate text, different text, total text)""")
 
-            c.execute("""INSERT INTO bot VALUES("{time}, {date}, "0", "0"")""".format(time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
+            c.execute("""INSERT INTO bot VALUES("{time}, {date}, "0", "0"")""".format(
+                time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
 
             conn.commit()
             conn.close()
@@ -85,7 +85,7 @@ class Cactus(User):
     def run(self, *args, **kwargs):
         """Run bot."""
 
-        print_cactus()
+        self.logger.info(cactus_art)
         self.check_db()
 
         while self.autorestart or not self.starts:
@@ -116,10 +116,10 @@ class Cactus(User):
 
         channel = self.get_channel(self.config["channel"])
         status = {True: "online", False: "offline"}[channel.get("online")]
-        print (status)
+        print(self.get_chat("1903", fields="endpoints"))
         self.logger.info("Channel {ch} (id {id}) is {status}.".format(
             ch=channel["token"], id=channel["id"], status=status
         ))
 
-cactus = Cactus(debug=True, autorestart=False)
+cactus = Cactus(debug="info", autorestart=False)
 cactus.run()

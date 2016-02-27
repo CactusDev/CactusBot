@@ -1,10 +1,9 @@
-from utils import request
 from logging import getLogger as get_logger
 from requests import Session
 
 
 class User:
-    path = path = "https://beam.pro/api/v1"
+    path = "https://beam.pro/api/v1"
 
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
@@ -22,37 +21,45 @@ class User:
             level = "WARNING"
 
         levels = ("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET")
-        if level in levels:
-            level_num = __import__("logging").__getattribute__(level)
+        if level.upper() in levels:
+            level_num = __import__("logging").__getattribute__(level.upper())
             self.logger.setLevel(level_num)
-            self.logger.info("Logger level set to: {}".format(level))
+            self.logger.info("Logger level set to: {}".format(level.upper()))
 
             try:
                 from coloredlogs import install
-                install(level=level)
+                install(level=level.upper())
             except ImportError:
                 self.logger.warning(
                     "Module 'coloredlogs' unavailable; using ugly logging.")
         else:
-            self.logger.warn("Invalid logger level: {}".format(level))
+            self.logger.warn("Invalid logger level: {}".format(level.upper()))
 
         self.logger.info("Logger initialized!")
 
+    def request(self, req, url, *args, **kwargs):
+        """Send HTTP request to Beam."""
+        if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
+            response = self.session.__getattribute__(req.lower())(
+                self.path + url, *args, **kwargs
+            )
+            if 'error' in response.json().keys():
+                self.logger.warn("Error: {}".format(response.json()['error']))
+
+            return response.json()
+        else:
+            self.logger.debug("Invalid request: {}".format(req))
+
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        try:
-            packet = {k: v for (k, v) in locals().items() if "code" not in k and "self" not in k}
-            res = request(self, "POST", "/users/login", packet)
-            return res
-        except Exception as e:
-            print(e)
-            return False
+        l = locals()
+        packet = {n: l[n] for n in ("username", "password", "code")}
+        return self.request("POST", "/users/login", packet)
 
-    def get_channel(self, id):
+    def get_channel(self, id, **p):
         """Get channel data by username."""
-        try:
-            res = request(self, "GET", "/channels/{id}".format(id=id), packet={})
-            return res
-        except Exception as e:
-            print(e)
-            return False
+        return self.request("GET", "/channels/{id}".format(id=id), params=p)
+        
+    def get_chat(self, id, **p):
+        """Get chat server data."""
+        return self.request("GET", "/chats/{id}".format(id=id), params=p)
