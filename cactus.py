@@ -36,14 +36,14 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 
 
 class Cactus(User):
+    starts = False
+    msg_id = 0
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
         self.debug = kwargs.get("debug", False)
         self.autorestart = autorestart
-        self.starts = False
-        self.config_file = "data/config.json"
-        self.msg_id = 0
+        self.config_file = kwargs.get("config_file", "data/config.json")
 
     @asyncio.coroutine
     def send_message(self, packet):
@@ -62,11 +62,11 @@ class Cactus(User):
 
         # Packet Templates
         # Message packet
-        self.message_packet = {
+        self.msg_packet = {
             "type": "method",
             "method": "msg",
             "arguments": [],
-            "id": self.msg_id
+            "id": msg_id
         }
 
         while True:
@@ -81,7 +81,7 @@ class Cactus(User):
                     self.bot_id,
                     self.auth
                 ],
-                "id": self.msg_id
+                "id": msg_id
             }
 
             yield from self.send_message(dumps(auth_packet))
@@ -90,10 +90,10 @@ class Cactus(User):
             self.logger.info(result)
 
             # Increment msg ID
-            self.msg_id += 1
+            msg_id += 1
 
             packet = self.message_packet
-            packet["id"] = self.msg_id
+            packet["id"] = msg_id
             packet["arguments"] = ["MUAHAHA! I AM ALIVE! :mappa <3 :cactus"]
 
             yield from self.send_message(dumps(packet))
@@ -139,7 +139,6 @@ class Cactus(User):
             with open(filename) as config:
                 self.config = load(config)
 
-                # Successful
                 return True
         else:
             self.logger.warn("Config file was not found. Creating...")
@@ -154,7 +153,7 @@ class Cactus(User):
         self.logger.info(cactus_art)
         self.check_db()
 
-        while self.autorestart or not self.starts:
+        while self.autorestart or not starts:
             try:
                 self._run(args, kwargs)
             except KeyboardInterrupt:
@@ -177,9 +176,14 @@ class Cactus(User):
                     exit()
 
     def _run(self, *args, **kwargs):
+        if self.load_config(filename=self.config_file):
+            auth = {n: self.config[n] for n in ("username", "password")}
+            self.channel_data = self.login(**auth)
+            self.username = self.channel_data["username"]
+            self.logger.info("Authenticated as: {}.".format(self.username))
 
         """Bot execution code."""
-        self.starts = True
+        starts = True
 
         success = self.load_config(filename=self.config_file)
         if success:
@@ -210,5 +214,6 @@ class Cactus(User):
             self.logger.error(e)
             loop.close()
 
-cactus = Cactus(debug=True, autorestart=False)
-cactus.run()
+if __name__ == "__main__":
+    cactus = Cactus(debug=True, autorestart=False)
+    cactus.run()
