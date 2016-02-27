@@ -43,6 +43,7 @@ class Cactus(User):
         self.autorestart = autorestart
         self.starts = False
         self.config_file = "data/config.json"
+        self.msg_id = 0
 
     @asyncio.coroutine
     def send_message(self, packet):
@@ -51,10 +52,9 @@ class Cactus(User):
         return ret
 
     @asyncio.coroutine
-    def read_chat(self, user, bot):
-        self.buid = self.get_channel(bot, fields="id")["id"]
-        self.uid = self.get_channel(user, fields="id")["id"]
-        self.chat = self.get_chat(uid)
+    def read_chat(self, chan):
+        self.chan_id = self.get_channel(chan, fields="id")["id"]
+        self.chat = self.get_chat(self.chan_id)
         self.server = self.chat["endpoints"][0]
         self.auth = self.chat["authkey"]
 
@@ -77,28 +77,28 @@ class Cactus(User):
                 "type": "method",
                 "method": "auth",
                 "arguments": [
-                    self.uid,
-                    self.buid,
+                    self.chan_id,
+                    self.bot_id,
                     self.auth
                 ],
-                "id": 1
+                "id": self.msg_id
             }
 
             yield from self.send_message(dumps(auth_packet))
-            print(websocket.recv())
-            websocket.send(dumps(msg_packet))
-            print(websocket.recv())
 
-            result = yield from websocket.recv()
+            result = yield from self.websocket.recv()
+            self.logger.info(result)
 
             # Increment msg ID
             self.msg_id += 1
 
-            yield from self.send_message(auth_packet)
-            ret = yield from self.websocket.recv()
-            yield from self.send_message(message_packet)
+            packet = self.message_packet
+            packet["id"] = self.msg_id
+            packet["arguments"] = ["MUAHAHA! I AM ALIVE! :mappa <3 :cactus"]
 
-            result = yield from self.websocket.recv()
+            yield from self.send_message(dumps(packet))
+            ret = yield from self.websocket.recv()
+            self.logger.info(result)
 
             if result is None:
                 continue
@@ -138,10 +138,6 @@ class Cactus(User):
             self.logger.info("Config file was found. Loading...")
             with open(filename) as config:
                 self.config = load(config)
-                auth = {n: self.config[n] for n in ("username", "password")}
-                self.channel_data = self.login(**auth)
-                self.username = self.channel_data["username"]
-                self.channel = self.config["channel"]
 
                 # Successful
                 return True
@@ -182,12 +178,6 @@ class Cactus(User):
 
     def _run(self, *args, **kwargs):
 
-        loop = asyncio.get_event_loop()
-
-        tasks = [
-            asyncio.async(self.read_chat(self.channel, self.username))
-        ]
-
         """Bot execution code."""
         self.starts = True
 
@@ -196,22 +186,29 @@ class Cactus(User):
             auth = {n: self.config[n] for n in ("username", "password")}
             self.channel_data = self.login(**auth)
             self.username = self.channel_data["username"]
+            self.bot_id = self.channel_data["id"]
             self.logger.info("Authenticated as: {}.".format(self.username))
 
-        channel = self.get_channel(self.config["channel"])
-        status = {True: "online", False: "offline"}[channel.get("online")]
+        self.channel = self.get_channel(self.config["channel"])
+        self.chan_id = self.channel["id"]
+        status = {True: "online", False: "offline"}[self.channel.get("online")]
+
         self.logger.info("Channel {ch} (id {id}) is {status}.".format(
-            ch=channel["token"], id=channel["id"], status=status
+            ch=self.channel["token"], id=self.channel["id"], status=status
         ))
+
+        loop = asyncio.get_event_loop()
+
+        tasks = [
+            asyncio.async(self.read_chat(self.chan_id))
+        ]
 
         try:
             loop.run_until_complete(asyncio.wait(tasks))
         except Exception as e:
-            print("An error has occurred.")
-            print(e)
+            self.logger.error("An error has occurred.")
+            self.logger.error(e)
             loop.close()
-
-cactus = Cactus(debug="info", autorestart=False)
 
 cactus = Cactus(debug=True, autorestart=False)
 cactus.run()

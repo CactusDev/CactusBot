@@ -37,12 +37,20 @@ class User:
 
         self.logger.info("Logger initialized!")
 
-    def request(self, req, url, *args, **kwargs):
+    def request(self, req, url, **kwargs):
         """Send HTTP request to Beam."""
         if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
-            response = self.session.__getattribute__(req.lower())(
-                self.path + url, *args, **kwargs
-            )
+            if req.lower() == "get":
+                response = self.session.get(
+                    self.path + url,
+                    params=kwargs["params"]
+                )
+            else:
+                response = self.session.__getattribute__(req.lower())(
+                    self.path + url,
+                    data=kwargs["data"]
+                )
+
             if 'error' in response.json().keys():
                 self.logger.warn("Error: {}".format(response.json()['error']))
 
@@ -54,7 +62,7 @@ class User:
         """Authenticate and login with Beam."""
         l = locals()
         packet = {n: l[n] for n in ("username", "password", "code")}
-        return self.request("POST", "/users/login", packet)
+        return self.request("POST", "/users/login", data=packet)
 
     def get_channel(self, id, **p):
         """Get channel data by username."""
@@ -62,4 +70,4 @@ class User:
 
     def get_chat(self, id):
         """Get chat server data."""
-        return self.request("GET", "/chats/{id}".format(id=id))
+        return self.request("GET", "/chats/{id}".format(id=id), params="")
