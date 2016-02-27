@@ -36,11 +36,11 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 
 
 class Cactus(User):
-    starts = False
-    msg_id = 0
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
+        self.starts = False
+        self.msg_id = 0
         self.debug = kwargs.get("debug", False)
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
@@ -66,7 +66,7 @@ class Cactus(User):
             "type": "method",
             "method": "msg",
             "arguments": [],
-            "id": msg_id
+            "id": self.msg_id
         }
 
         while True:
@@ -81,7 +81,7 @@ class Cactus(User):
                     self.bot_id,
                     self.auth
                 ],
-                "id": msg_id
+                "id": self.msg_id
             }
 
             yield from self.send_message(dumps(auth_packet))
@@ -90,10 +90,10 @@ class Cactus(User):
             self.logger.info(result)
 
             # Increment msg ID
-            msg_id += 1
+            self.msg_id += 1
 
-            packet = self.message_packet
-            packet["id"] = msg_id
+            packet = self.msg_packet
+            packet["id"] = self.msg_id
             packet["arguments"] = ["MUAHAHA! I AM ALIVE! :mappa <3 :cactus"]
 
             yield from self.send_message(dumps(packet))
@@ -153,7 +153,7 @@ class Cactus(User):
         self.logger.info(cactus_art)
         self.check_db()
 
-        while self.autorestart or not starts:
+        while self.autorestart or not self.starts:
             try:
                 self._run(args, kwargs)
             except KeyboardInterrupt:
@@ -183,7 +183,7 @@ class Cactus(User):
             self.logger.info("Authenticated as: {}.".format(self.username))
 
         """Bot execution code."""
-        starts = True
+        self.starts = True
 
         success = self.load_config(filename=self.config_file)
         if success:
