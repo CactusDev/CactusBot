@@ -55,7 +55,7 @@ class Cactus(User):
 
         while True:
             websocket = yield from websockets.connect(server)
-            
+
             auth_packet = {
                 "type": "method",
                 "method": "auth",
@@ -66,7 +66,7 @@ class Cactus(User):
             }
             websocket.send(dumps(auth_packet))
             print(websocket.recv())
-            
+
             msg_packet = {
                 "type": "method",
                 "method": "msg",
@@ -180,5 +180,6 @@ class Cactus(User):
             ch=channel["token"], id=channel["id"], status=status
         ))
 
-cactus = Cactus(debug="info", autorestart=False)
-cactus.run()
+if __name__ == "__main__":
+    cactus = Cactus(debug="info", autorestart=False)
+    cactus.run()
