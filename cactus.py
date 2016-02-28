@@ -1,7 +1,7 @@
 # CactusBot!
 
 from user import User
-from json import load
+from json import load, loads, dumps
 from traceback import format_exc
 from time import strftime, sleep
 from os.path import exists
@@ -44,73 +44,6 @@ class Cactus(User):
         self.debug = kwargs.get("debug", False)
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
-
-    @asyncio.coroutine
-    def send_message(self, packet):
-        yield from self.websocket.send(packet)
-        ret = yield from self.websocket.recv()
-        return ret
-
-    @asyncio.coroutine
-    def read_chat(self, chan):
-        self.chan_id = self.get_channel(chan, fields="id")["id"]
-        self.chat = self.get_chat(self.chan_id)
-        self.server = self.chat["endpoints"][0]
-        self.auth = self.chat["authkey"]
-
-        self.logger.debug("Connecting to: {server}".format(server=self.server))
-
-        # Packet Templates
-        # Message packet
-        self.msg_packet = {
-            "type": "method",
-            "method": "msg",
-            "arguments": [],
-            "id": self.msg_id
-        }
-
-        # Need to get the server to connect to
-        self.websocket = yield from websockets.connect(self.server)
-
-        auth_packet = {
-            "type": "method",
-            "method": "auth",
-            "arguments": [
-                self.chan_id,
-                self.bot_id,
-                self.auth
-            ],
-            "id": self.msg_id
-        }
-
-        yield from self.send_message(dumps(auth_packet))
-
-        result = yield from self.websocket.recv()
-        self.logger.info(result)
-
-        # Increment msg ID
-        self.msg_id += 1
-
-        while True:
-            packet = self.msg_packet
-            packet["id"] = self.msg_id
-            packet["arguments"] = ":mappa <3 :cactus"
-
-
-            yield from self.send_message(dumps(packet))
-            ret = yield from self.websocket.recv()
-            self.logger.info(result)
-
-            self.msg_id += 1
-
-            if result is None:
-                continue
-            try:
-                result = loads(result)
-            except TypeError as e:
-                self.logger.warning("Something borked in regards to JSON from Beam")
-                self.logger.warning(e)
-                continue
 
     def check_db(self):
         if exists("data/bot.db"):
@@ -204,10 +137,9 @@ class Cactus(User):
     def _run(self, *args, **kwargs):
         if self.load_config(filename=self.config_file):
             auth = {n: self.config[n] for n in ("username", "password")}
-            self.channel_data = self.login(**auth)
-            print (self.channel_data)
-            self.username = self.channel_data["username"]
-            self.bot_id = self.channel_data["id"]
+            self.bot_data = self.login(**auth)
+            self.username = self.bot_data["username"]
+            self.bot_id = self.bot_data["id"]
             self.logger.info("Authenticated as: {}.".format(self.username))
 
         """Bot execution code."""
@@ -216,11 +148,6 @@ class Cactus(User):
         self.channel = self.get_channel(self.config["channel"])
         self.chan_id = self.channel["id"]
         status = {True: "online", False: "offline"}[self.channel.get("online")]
-
-        auth = {n: self.config[n] for n in ("username", "password")}
-        self.bot_data = self.login(**auth)
-        self.username = self.bot_data["username"]
-        self.logger.info("Authenticated as: {}.".format(self.username))
 
         self.channel = self.config["channel"]
         self.channel_data = self.get_channel(self.channel)

@@ -1,7 +1,8 @@
 from logging import getLogger as get_logger
 from requests import Session
-from websockets import connect
 from json import dumps, loads
+import websockets
+import asyncio
 
 
 class User:
@@ -74,19 +75,7 @@ class User:
         """Get chat server data."""
         return self.request("GET", "/chats/{id}".format(id=id), params="")
 
-    def connect(self, channel_id, bot_id):
-        chat = self.get_chat(channel_id)
-        server = chat["endpoints"][0]
-        auth = chat["authkey"]
-
-        self.logger.debug("Connecting to: {server}".format(server=server))
-
-        self.websocket = yield from connect(server)
-
-        yield from self.send_message([channel_id, bot_id, auth], method="auth")
-
-        return self.websocket
-
+    @asyncio.coroutine
     def send_message(self, arguments, method="msg"):
         if isinstance(arguments, str):
             arguments = [arguments]
@@ -101,13 +90,52 @@ class User:
         yield from self.websocket.send(dumps(msg_packet))
         self.msg_id += 1
 
-        return (yield from self.websocket.recv())
+        ret = yield from self.websocket.recv()
+
+        return ret
+
+    @asyncio.coroutine
+    def connect(self, channel_id, bot_id):
+        # Get the channel ID from the channel name
+        self.chan_id = self.get_channel(channel_id, fields="id")["id"]
+        # Get the chat information from the channel ID
+        self.chat = self.get_chat(self.chan_id)
+        # Get the server address from the chat info
+        self.server = self.chat["endpoints"][0]
+        # Get the authkey we need to authenticate to the server
+        self.authkey = self.chat["authkey"]
+
+        self.logger.debug("Connecting to: {server}".format(server=self.server))
+
+        # Need to get the server to connect to
+        self.websocket = yield from websockets.connect(self.server)
+
+        ret = yield from self.send_message([self.chan_id, bot_id, self.authkey], method="auth")
+
+        try:
+            ret = loads(ret)
+        except ValueError as e:
+            self.logger.error("JSON failure during login")
+            self.logger.error(e)
+            quit()
+
+        # Did we authenticate correctly?
+        if ret["data"]["authenticated"]:
+            self.logger.info(ret)
+            # We'll get a Message sent packet back in the websocket,
+            # make sure to clear that from WS before moving on
+            yield from self.websocket.recv()
+            return self.websocket
+
+        else:
+            return False
 
     def read_chat(self):
         while True:
             try:
                 response = yield from self.websocket.recv()
                 response = loads(response)
+                print(response)
                 user = response["data"]["user_name"]
                 message = response["data"]["message"]["message"][0]["data"]
                 self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
