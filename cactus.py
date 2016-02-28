@@ -85,7 +85,7 @@ class Cactus(User):
         else:
             self.logger.warn("Config file was not found. Creating...")
             copyfile("data/config-template.json", filename)
-            self.logger.info(
+            self.logger.error(
                 "Config created. Please enter information, and restart.")
             raise FileNotFoundError("Config not found.")
 

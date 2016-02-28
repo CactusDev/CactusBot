@@ -3,6 +3,7 @@ from requests import Session
 from json import dumps, loads
 import websockets
 import asyncio
+from messages import *
 
 
 class User:
@@ -75,7 +76,6 @@ class User:
         """Get chat server data."""
         return self.request("GET", "/chats/{id}".format(id=id), params="")
 
-    @asyncio.coroutine
     def send_message(self, arguments, method="msg"):
         if isinstance(arguments, str):
             arguments = [arguments]
@@ -94,7 +94,6 @@ class User:
 
         return ret
 
-    @asyncio.coroutine
     def connect(self, channel_id, bot_id):
         # Get the channel ID from the channel name
         self.chan_id = self.get_channel(channel_id, fields="id")["id"]
@@ -124,20 +123,33 @@ class User:
             self.logger.info(ret)
             # We'll get a Message sent packet back in the websocket,
             # make sure to clear that from WS before moving on
-            yield from self.websocket.recv()
+            ret = yield from self.websocket.recv()
             return self.websocket
 
         else:
             return False
 
     def read_chat(self):
+
         while True:
-            try:
-                response = yield from self.websocket.recv()
-                response = loads(response)
-                print(response)
-                user = response["data"]["user_name"]
-                message = response["data"]["message"]["message"][0]["data"]
-                self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
-            except KeyError:
-                pass
+            # try:
+            msg = yield from self.websocket.recv()
+            msg = loads(msg)
+
+            if "event" not in msg:
+                self.logger.warning("No event key in message")
+                self.logger.warning(msg)
+            else:
+                switch = {
+                    "ChatMessage": message_handler,
+                    "PollStart": None,
+                    "PollEnd": None,
+                    "UserJoin": join_handler,
+                    "UserLeave": leave_handler
+                }
+
+                switch[msg["event"]](self, msg["data"])
+
+            # except KeyError as e:
+            #     self.logger.error(e)
+            #     pass
