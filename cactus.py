@@ -1,15 +1,16 @@
 # CactusBot!
 
 from user import User
-from json import load, loads, dumps
-from traceback import format_exc
-from time import strftime, sleep
+
 from os.path import exists
+from sqlite3 import connect as sql_connect
+from time import strftime, sleep
+from json import load
 from shutil import copyfile
 
-import sqlite3 as sql
+from asyncio import get_event_loop, gather, async
 
-import asyncio
+from traceback import format_exc
 
 
 cactus_art = """CactusBot initialized!
@@ -52,7 +53,7 @@ class Cactus(User):
             self.logger.info("Database wasn't found.")
             self.logger.info("Creating and setting defaults...")
 
-            conn = sql.connect("data/bot.db")
+            conn = sql_connect("data/bot.db")
             c = conn.cursor()
 
             c.execute("""CREATE TABLE commands
@@ -99,17 +100,17 @@ class Cactus(User):
             try:
                 self._run(args, kwargs)
 
-                loop = asyncio.get_event_loop()
+                loop = get_event_loop()
 
                 loop.run_until_complete(
                     self.connect(self.channel_data['id'], self.bot_data['id'])
                 )
 
-                tasks = asyncio.gather(
-                    asyncio.async(self.send_message(
+                tasks = gather(
+                    async(self.send_message(
                         "CactusBot activated. Enjoy! :cactus")
                     ),
-                    asyncio.async(self.read_chat())
+                    async(self.read_chat())
                 )
 
                 loop.run_until_complete(tasks)
@@ -146,15 +147,13 @@ class Cactus(User):
         self.started = True
 
         self.channel = self.get_channel(self.config["channel"])
-        self.chan_id = self.channel["id"]
-        status = {True: "online", False: "offline"}[self.channel.get("online")]
 
         self.channel = self.config["channel"]
         self.channel_data = self.get_channel(self.channel)
 
         self.logger.info("Channel {ch} (id {id}) is {status}.".format(
             ch=self.channel_data["token"], id=self.channel_data["id"],
-            status=["offline", "online"][self.channel_data.get("online")]
+            status=["offline", "online"][self.channel_data["online"]]
         ))
 
 
