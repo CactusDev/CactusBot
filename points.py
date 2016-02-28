@@ -1,14 +1,62 @@
 
+import asyncio
+import requests
+from time import sleep
+from user import User
+from json import load
+import sqlite3 as sql
+
+
 class Points():
 
-    def auto_points(self):
-        pass
+    @asyncio.coroutine
+    def auto_points(self, channel):
+        global active
 
-    def remove_points(self, user, amt):
-        pass
+        while True:
+            with requests.Session() as session:
+                users = session.get(self.path + '/chats/{id}/users'.format(
+                    id=channel))
+
+            users = users.json()
+
+            config = load(open('data/config.json'))
+            interval = config['interval']
+            per_interval = config['ppi']
+
+            for user in users:
+                username = user['userName']
+                self.add_points(username, per_interval)
+
+            sleep(float(interval))
 
     def add_points(self, user, amt):
-        pass
+        conn = sql.connect("data/bot.db")
+        c = conn.cursor()
+
+        old = int(c.execute('''SELECT points FROM points WHERE username={user}'''.format(user=user)))
+
+        c.execute('''UPDATE points SET points={new} WHERE username={user}'''.format(
+            new=old + amt))
+
+        conn.execute()
+        conn.close()
 
     def set_points(self, user, amt):
-        pass
+        conn = sql.connect('data/bot.db')
+        c = conn.cursor()
+
+        c.execute('''UPDATE points SET points={new} WHERE username={user}'''.format(
+            new=amt, user=user))
+
+        conn.commit()
+        conn.close()
+
+    def get_points(self, user):
+        conn = sql.connect('data/bot.db')
+        c = conn.cursor()
+
+        points = c.execute('''SELECT points FROM points WHERE username={user}'''.format(
+            user=user))
+
+        return int(points)
