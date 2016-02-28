@@ -2,7 +2,6 @@
 import asyncio
 import requests
 from time import sleep
-from user import User
 from json import load
 import sqlite3 as sql
 
