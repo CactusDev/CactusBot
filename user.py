@@ -1,6 +1,5 @@
 from logging import getLogger as get_logger
 from requests import Session
-import asyncio
 from websockets import connect
 from json import dumps, loads
 
@@ -75,60 +74,42 @@ class User:
         """Get chat server data."""
         return self.request("GET", "/chats/{id}".format(id=id), params="")
 
-    @asyncio.coroutine
-    def send_message(self, packet):
-        yield from self.websocket.send(packet)
-        response = yield from self.websocket.recv()
-        return response
-
-    @asyncio.coroutine
-    def read_chat(self, channel_id, bot_id):
+    def connect(self, channel_id, bot_id):
         chat = self.get_chat(channel_id)
         server = chat["endpoints"][0]
         auth = chat["authkey"]
 
         self.logger.debug("Connecting to: {server}".format(server=server))
 
-        self.msg_packet = {
+        self.websocket = yield from connect(server)
+
+        yield from self.send_message([channel_id, bot_id, auth], method="auth")
+
+        return self.websocket
+
+    def send_message(self, arguments, method="msg"):
+        if isinstance(arguments, str):
+            arguments = [arguments]
+
+        msg_packet = {
             "type": "method",
-            "method": "msg",
-            "arguments": [],
+            "method": method,
+            "arguments": arguments,
             "id": self.msg_id
         }
 
+        yield from self.websocket.send(dumps(msg_packet))
+        self.msg_id += 1
+
+        return (yield from self.websocket.recv())
+
+    def read_chat(self):
         while True:
-            self.websocket = yield from connect(server)
-
-            auth_packet = {
-                "type": "method",
-                "method": "auth",
-                "arguments": [
-                    channel_id,
-                    bot_id,
-                    auth
-                ],
-                "id": self.msg_id
-            }
-
-            yield from self.send_message(dumps(auth_packet))
-
-            result = yield from self.websocket.recv()
-            print(auth_packet)
-            self.logger.info(result)
-
-            self.msg_id += 1
-
-            packet = self.msg_packet.copy()
-            packet["id"] = self.msg_id
-            packet["arguments"] = ["Hello World! :cactus"]
-
-            yield from self.send_message(dumps(packet))
-            response = yield from self.websocket.recv()
-            self.logger.info(response)
-
-            if result is None:
-                continue
             try:
-                result = loads(result)
-            except TypeError:
-                continue
+                response = yield from self.websocket.recv()
+                response = loads(response)
+                user = response["data"]["user_name"]
+                message = response["data"]["message"]["message"][0]["data"]
+                self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
+            except KeyError:
+                pass

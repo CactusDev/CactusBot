@@ -101,11 +101,15 @@ class Cactus(User):
 
                 loop = asyncio.get_event_loop()
 
+                loop.run_until_complete(
+                    self.connect(self.channel_data['id'], self.bot_data['id'])
+                )
+
                 tasks = asyncio.gather(
-                    asyncio.async(self.read_chat(
-                        self.channel_data['id'],
-                        self.bot_data['id']
-                    ))
+                    asyncio.async(self.send_message(
+                        "CactusBot activated. Enjoy! :cactus")
+                    ),
+                    asyncio.async(self.read_chat())
                 )
 
                 loop.run_until_complete(tasks)
@@ -127,8 +131,6 @@ class Cactus(User):
                 else:
                     self.logger.info("CactusBot deactivated.")
                     exit()
-            finally:
-                loop.close()
 
     def _run(self, *args, **kwargs):
         """Bot execution code."""
@@ -152,5 +154,5 @@ class Cactus(User):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug=True, autorestart=False)
+    cactus = Cactus(debug="info", autorestart=False)
     cactus.run()
