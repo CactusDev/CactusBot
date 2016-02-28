@@ -6,6 +6,7 @@ from traceback import format_exc
 from time import strftime, sleep
 from os.path import exists
 from shutil import copyfile
+from chat import Chat
 
 import sqlite3 as sql
 import asyncio
@@ -14,20 +15,20 @@ import websockets
 
 cactus_art = """CactusBot initialized!
 
-      ,`""',
-      ;' ` ;
-      ;`,',;
-      ;' ` ;
- ,,,  ;`,',;
-;,` ; ;' ` ;   ,',
-;`,'; ;`,',;  ;,' ;       ------ /------\  ------ --------  |       |    -----
-;',`; ;` ' ; ;`'`';       |      |      |  |         |      |       |   \\
-;` '',''` `,',`',;        |      |      |  |         |      |       |    ----\\
- `''`'; ', ;`'`'          |      |------|  |         |      |       |        |
-      ;' `';              ------ |      |  ------    |      ---------   -----/
-      ;` ' ;
-      ;' `';
-      ;` ' ;
+      ,""',
+      ;'  ;
+      ;,',;
+      ;'  ;
+ ,,,  ;,',;
+;, ; ;'  ;   ,',
+;,'; ;,',;  ;,' ;       ------ /------\  ------ --------  |       |    -----
+;',; ; ' ; ;'';       |      |      |  |         |      |       |   \\
+; '','' ,',',;        |      |      |  |         |      |       |    ----\\
+ '''; ', ;''          |      |------|  |         |      |       |        |
+      ;' ';              ------ |      |  ------    |      ---------   -----/
+      ; ' ;
+      ;' ';
+      ; ' ;
       ; ',';
       ;,' ';
 
@@ -69,10 +70,10 @@ class Cactus(User):
             "id": self.msg_id
         }
 
-        while True:
-            # Need to get the server to connect to
-            self.websocket = yield from websockets.connect(self.server)
+        # Need to get the server to connect to
+        self.websocket = yield from websockets.connect(self.server)
 
+        while True:
             auth_packet = {
                 "type": "method",
                 "method": "auth",
@@ -93,18 +94,40 @@ class Cactus(User):
             self.msg_id += 1
 
             packet = self.msg_packet
+
             packet["id"] = self.msg_id
             packet["arguments"] = ["MUAHAHA! I AM ALIVE! :mappa <3 :cactus"]
 
-            yield from self.send_message(dumps(packet))
+            # yield from self.send_message(dumps(packet))
             ret = yield from self.websocket.recv()
             self.logger.info(result)
 
             if result is None:
                 continue
+            else:
+                result = loads(result)
+                if 'event' in result:
+                    print(result['event'])
+                    user = None
+
+                    event = result['event']
+
+                    if 'username' in result['data']:
+                        user = result['data']['username']
+                    elif 'user_name' in result['data']:
+                        user = result['data']['user_name']
+
+                    if event is "UserJoin":
+                        print("userJoined")
+                    elif event is "UserLeave":
+                        print("UserLeft")
+                    elif event is "ChatMessage":
+                        print("Message")
+
             try:
                 result = loads(result)
-            except TypeError:
+            except TypeError as e:
+                print(e)
                 continue
 
     def check_db(self):
@@ -123,7 +146,10 @@ class Cactus(User):
             c.execute("""CREATE TABLE bot
                 (joinTime text, joinDate text, different text, total text)""")
 
-            c.execute("""INSERT INTO bot VALUES("{time}, {date}, "\0", "\0"")""".format(
+            c.execute('''CREATE TABLE bannedWords
+                (word text)''')
+
+            c.execute("""INSERT INTO bot VALUES("{time}, {date}, "0", "0"")""".format(
                 time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
 
             conn.commit()
