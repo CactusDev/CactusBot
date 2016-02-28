@@ -6,7 +6,6 @@ from traceback import format_exc
 from time import strftime, sleep
 from os.path import exists
 from shutil import copyfile
-from chat import Chat
 
 import sqlite3 as sql
 
@@ -19,13 +18,13 @@ cactus_art = """CactusBot initialized!
       ;' ` ;
       ;`,',;
       ;' ` ;
- ,,,  ;`,',;
-;,` ; ;' ` ;   ,',
-;`,'; ;`,',;  ;,' ;       ------ /------\  ------ --------  |       |    -----
-;',`; ;` ' ; ;`'`';       |      |      |  |         |      |       |   \\
-;` '',''` `,',`',;        |      |      |  |         |      |       |    ----\\
- `''`'; ', ;`'`'          |      |------|  |         |      |       |        |
-      ;' `';              ------ |      |  ------    |      ---------   -----/
+ ,,,  ;`,',;               _____           _
+;,` ; ;' ` ;   ,',        / ____|         | |
+;`,'; ;`,',;  ;,' ;      | |     __ _  ___| |_ _   _ ___
+;',`; ;` ' ; ;`'`';      | |    / _` |/ __| __| | | / __|
+;` '',''` `,',`',;       | |___| (_| | (__| |_| |_| \__ \\
+ `''`'; ', ;`'`'          \_____\__,_|\___|\__|\__,_|___/
+      ;' `';
       ;` ' ;
       ;' `';
       ;` ' ;
@@ -65,8 +64,10 @@ class Cactus(User):
             c.execute('''CREATE TABLE bannedWords
                 (word text)''')
 
-            c.execute("""INSERT INTO bot VALUES("{time}", "{date}", "0", "0")""".format(
-                time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
+            c.execute("""INSERT INTO bot VALUES
+                ("{time}", "{date}", "0", "0")""".format(
+                time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")
+            ))
 
             conn.commit()
             conn.close()
