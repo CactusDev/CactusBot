@@ -3,29 +3,32 @@
 from user import User
 from json import load
 from traceback import format_exc
-from time import sleep
+from time import strftime, sleep
 from os.path import exists
 from shutil import copyfile
+from chat import Chat
+
+import sqlite3 as sql
 
 import asyncio
 
 
 cactus_art = """CactusBot initialized!
 
-      ,`""',
-      ;' ` ;
-      ;`,',;
-      ;' ` ;
- ,,,  ;`,',;
-;,` ; ;' ` ;   ,',
-;`,'; ;`,',;  ;,' ;       ------ /------\  ------ --------  |       |    -----
-;',`; ;` ' ; ;`'`';       |      |      |  |         |      |       |   \\
-;` '',''` `,',`',;        |      |      |  |         |      |       |    ----\\
- `''`'; ', ;`'`'          |      |------|  |         |      |       |        |
-      ;' `';              ------ |      |  ------    |      ---------   -----/
-      ;` ' ;
-      ;' `';
-      ;` ' ;
+      ,""',
+      ;'  ;
+      ;,',;
+      ;'  ;
+ ,,,  ;,',;
+;, ; ;'  ;   ,',
+;,'; ;,',;  ;,' ;       ------ /------\  ------ --------  |       |    -----
+;',; ; ' ; ;'';       |      |      |  |         |      |       |   \\
+; '','' ,',',;        |      |      |  |         |      |       |    ----\\
+ '''; ', ;''          |      |------|  |         |      |       |        |
+      ;' ';              ------ |      |  ------    |      ---------   -----/
+      ; ' ;
+      ;' ';
+      ; ' ;
       ; ',';
       ;,' ';
 
@@ -44,8 +47,31 @@ class Cactus(User):
         self.config_file = kwargs.get("config_file", "data/config.json")
 
     def check_db(self):
-        self.logger.info("SQLAlchemy upgrade coming soon. "
-                         "Databases are not yet implemented.")
+        if exists("data/bot.db"):
+            self.logger.info("Found database.")
+        else:
+            self.logger.info("Database wasn't found.")
+            self.logger.info("Creating and setting defaults...")
+
+            conn = sql.connect("data/bot.db")
+            c = conn.cursor()
+
+            c.execute("""CREATE TABLE commands
+                (command text, response text,  access text)""")
+
+            c.execute("""CREATE TABLE bot
+                (joinTime text, joinDate text, different text, total text)""")
+
+            c.execute('''CREATE TABLE bannedWords
+                (word text)''')
+
+            c.execute("""INSERT INTO bot VALUES("{time}", "{date}", "0", "0")""".format(
+                time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")))
+
+            conn.commit()
+            conn.close()
+
+            self.logger.info("Done!")
 
     def load_config(self, filename):
         """Load configuration."""
@@ -106,6 +132,8 @@ class Cactus(User):
     def _run(self, *args, **kwargs):
         """Bot execution code."""
 
+        self.started = True
+
         self.load_config(filename=self.config_file)
 
         auth = {n: self.config[n] for n in ("username", "password")}
@@ -120,8 +148,6 @@ class Cactus(User):
             ch=self.channel_data["token"], id=self.channel_data["id"],
             status=["offline", "online"][self.channel_data.get("online")]
         ))
-
-        self.started = True
 
 
 if __name__ == "__main__":
