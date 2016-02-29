@@ -42,3 +42,14 @@ class CommandFactory:
             )
             session.add(c)
         session.commit()
+
+    def remove_command(self, command):
+        query = session.query(Command).filter_by(command=command).first()
+
+        if query:
+            c = Command(
+                command=command
+            )
+            # This doesn't work!
+            # session.remove(c)
+        session.commit()

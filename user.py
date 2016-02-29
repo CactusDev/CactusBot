@@ -137,6 +137,12 @@ class User:
                         yield from self.send_message("Added command !{}.".format(split[2]))
                     else:
                         yield from self.send_message("Mod-only! GRAWR")
+                elif split[0][1:] == "command" and split[1] == "rm" and len(split) > 2:
+                    if any((role in response["data"]["user_roles"] for role in ("Owner", "Mod"))):
+                        CommandFactory.remove_command(self, split[2])
+                        yield from self.send_message("Removed command !{}.".format(split[2]))
+                    else:
+                        yield from self.send_message("Mod-only! GRAWR")
                 else:
                     q = CommandFactory.session.query(
                         Command).filter_by(command=split[0][1:]).first()
