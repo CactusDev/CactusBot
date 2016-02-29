@@ -2,6 +2,7 @@ from logging import getLogger as get_logger
 from requests import Session
 from json import dumps, loads
 from websockets import connect
+from models import Command, CommandFactory
 
 
 class User:
@@ -10,7 +11,6 @@ class User:
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
         self.session = Session()
-        self.path = "https://beam.pro/api/v1"
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -74,24 +74,6 @@ class User:
         """Get chat server data."""
         return self.request("GET", "/chats/{id}".format(id=id), params="")
 
-    def send_message(self, arguments, method="msg"):
-        if isinstance(arguments, str):
-            arguments = [arguments]
-
-        msg_packet = {
-            "type": "method",
-            "method": method,
-            "arguments": arguments,
-            "id": self.msg_id
-        }
-
-        yield from self.websocket.send(dumps(msg_packet))
-        self.msg_id += 1
-
-        ret = yield from self.websocket.recv()
-
-        return ret
-
     def connect(self, channel_id, bot_id):
         chat = self.get_chat(channel_id)
         server = chat["endpoints"][0]
@@ -108,21 +90,57 @@ class User:
         response = loads(response)
 
         if response["data"]["authenticated"]:
-            self.logger.info(response)
-            yield from self.websocket.recv()
+            self.logger.debug(response)
             return self.websocket
         else:
             return False
 
+    def send_message(self, arguments, method="msg"):
+        if isinstance(arguments, str):
+            arguments = [arguments]
+
+        msg_packet = {
+            "type": "method",
+            "method": method,
+            "arguments": arguments,
+            "id": self.msg_id
+        }
+
+        yield from self.websocket.send(dumps(msg_packet))
+        self.msg_id += 1
+
+        return (yield from self.websocket.recv())
+
     def read_chat(self):
         while True:
-            try:
-                response = yield from self.websocket.recv()
-                response = loads(response)
-                self.logger.debug(response)
+            response = yield from self.websocket.recv()
+            response = loads(response)
+            self.logger.debug(response)
 
+            try:
                 user = response["data"]["user_name"]
                 message = response["data"]["message"]["message"][0]["data"]
-                self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
-            except KeyError:
-                pass
+                assert isinstance(user, str) and isinstance(message, str)
+            except Exception:
+                user = "[Beam]"
+                message = str(response)
+
+            self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
+
+            # This is very bad and will change soon! Entirely temporary.
+            if message.startswith('!'):
+                split = message.split()
+                if split[0][1:] == "command" and split[1] == "add" and len(split) > 3:
+                    if any((role in response["data"]["user_roles"] for role in ("Owner", "Mod"))):
+                        CommandFactory.add_command(self, split[2], ' '.join(
+                            split[3:]), response["data"]["user_id"])
+                        yield from self.send_message("Added command !{}.".format(split[2]))
+                    else:
+                        yield from self.send_message("Mod-only! GRAWR")
+                else:
+                    q = CommandFactory.session.query(
+                        Command).filter_by(command=split[0][1:]).first()
+                    if q:
+                        yield from self.send_message(q.response)
+                    else:
+                        yield from self.send_message("Command not found.")

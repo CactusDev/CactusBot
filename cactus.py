@@ -3,14 +3,15 @@
 from user import User
 
 from os.path import exists
-from sqlite3 import connect as sql_connect
-from time import strftime, sleep
+from time import sleep
 from json import load
 from shutil import copyfile
 
 from asyncio import get_event_loop, gather, async
 
 from traceback import format_exc
+
+from models import Base, engine
 
 
 cactus_art = """CactusBot initialized!
@@ -38,6 +39,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 
 class Cactus(User):
     started = False
+    connected = False
     msg_id = 0
 
     def __init__(self, autorestart=True, **kwargs):
@@ -45,33 +47,18 @@ class Cactus(User):
         self.debug = kwargs.get("debug", False)
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
+        self.database = kwargs.get("database", "data/data.db")
 
     def check_db(self):
-        if exists("data/bot.db"):
+        """Ensure the database exists."""
+
+        if exists(self.database):
             self.logger.info("Found database.")
         else:
             self.logger.info("Database wasn't found.")
             self.logger.info("Creating and setting defaults...")
 
-            conn = sql_connect("data/bot.db")
-            c = conn.cursor()
-
-            c.execute("""CREATE TABLE commands
-                (command text, response text,  access text)""")
-
-            c.execute("""CREATE TABLE bot
-                (joinTime text, joinDate text, different text, total text)""")
-
-            c.execute('''CREATE TABLE bannedWords
-                (word text)''')
-
-            c.execute("""INSERT INTO bot VALUES
-                ("{time}", "{date}", "0", "0")""".format(
-                time=strftime("%I-%M-%S-%Z"), date=strftime("%a-%B-%Y")
-            ))
-
-            conn.commit()
-            conn.close()
+            Base.metadata.create_all(engine)
 
             self.logger.info("Done!")
 
@@ -102,22 +89,32 @@ class Cactus(User):
 
                 loop = get_event_loop()
 
-                loop.run_until_complete(
+                self.connected = bool(loop.run_until_complete(
                     self.connect(self.channel_data['id'], self.bot_data['id'])
-                )
+                ))
 
-                tasks = gather(
-                    async(self.send_message(
-                        "CactusBot activated. Enjoy! :cactus")
-                    ),
-                    async(self.read_chat())
-                )
+                self.logger.info("{}uccessfully connected to chat {}.".format(
+                    ['Uns', 'S'][self.connected], self.channel_data["token"]
+                ))
 
-                loop.run_until_complete(tasks)
+                if self.connected:
+                    tasks = gather(
+                        async(self.send_message(
+                            "CactusBot activated. Enjoy! :cactus")
+                        ),
+                        async(self.read_chat())
+                    )
+
+                    loop.run_until_complete(tasks)
+                else:
+                    raise ConnectionError
             except KeyboardInterrupt:
                 self.logger.info("Removing thorns... done.")
+                if self.connected:
+                    loop.run_until_complete(
+                        self.send_message("CactusBot deactivated! :cactus")
+                    )
                 self.logger.info("CactusBot deactivated.")
-                self.autorestart = False
                 exit()
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
@@ -129,13 +126,14 @@ class Cactus(User):
                         sleep(10)
                     except KeyboardInterrupt:
                         self.logger.info("CactusBot deactivated.")
-                        self.autorestart = False
                         exit()
                 else:
                     self.logger.info("CactusBot deactivated.")
                     exit()
 
     def _run(self, *args, **kwargs):
+        """Bot execution code."""
+
         if self.load_config(filename=self.config_file):
             auth = {n: self.config[n] for n in ("username", "password")}
             self.bot_data = self.login(**auth)
@@ -143,7 +141,6 @@ class Cactus(User):
             self.bot_id = self.bot_data["id"]
             self.logger.info("Authenticated as: {}.".format(self.username))
 
-        """Bot execution code."""
         self.started = True
 
         self.channel = self.get_channel(self.config["channel"])
@@ -158,5 +155,5 @@ class Cactus(User):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="info", autorestart=False)
+    cactus = Cactus(debug="debug", autorestart=False)
     cactus.run()

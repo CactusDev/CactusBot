@@ -68,6 +68,6 @@ target/
 # pyenv
 .python-version
 
-# CactusBot config files
+# CactusBot private data
 config.json
-bot.db
+data.db
