@@ -1,16 +1,15 @@
 # CactusBot!
 
 from user import User
-
-from os.path import exists
-from sqlite3 import connect as sql_connect
+from json import load, loads, dumps
+from traceback import format_exc
 from time import strftime, sleep
-from json import load
+from os.path import exists
 from shutil import copyfile
 
-from asyncio import get_event_loop, gather, async
+import sqlite3 as sql
 
-from traceback import format_exc
+import asyncio
 
 
 cactus_art = """CactusBot initialized!
@@ -53,7 +52,7 @@ class Cactus(User):
             self.logger.info("Database wasn't found.")
             self.logger.info("Creating and setting defaults...")
 
-            conn = sql_connect("data/bot.db")
+            conn = sql.connect("data/bot.db")
             c = conn.cursor()
 
             c.execute("""CREATE TABLE commands
@@ -89,7 +88,7 @@ class Cactus(User):
         else:
             self.logger.warn("Config file was not found. Creating...")
             copyfile("data/config-template.json", filename)
-            self.logger.info(
+            self.logger.error(
                 "Config created. Please enter information, and restart.")
             raise FileNotFoundError("Config not found.")
 
@@ -103,17 +102,17 @@ class Cactus(User):
             try:
                 self._run(args, kwargs)
 
-                loop = get_event_loop()
+                loop = asyncio.get_event_loop()
 
                 loop.run_until_complete(
                     self.connect(self.channel_data['id'], self.bot_data['id'])
                 )
 
-                tasks = gather(
-                    async(self.send_message(
+                tasks = asyncio.gather(
+                    asyncio.async(self.send_message(
                         "CactusBot activated. Enjoy! :cactus")
                     ),
-                    async(self.read_chat())
+                    asyncio.async(self.read_chat())
                 )
 
                 loop.run_until_complete(tasks)
@@ -150,13 +149,15 @@ class Cactus(User):
         self.started = True
 
         self.channel = self.get_channel(self.config["channel"])
+        self.chan_id = self.channel["id"]
+        status = {True: "online", False: "offline"}[self.channel.get("online")]
 
         self.channel = self.config["channel"]
         self.channel_data = self.get_channel(self.channel)
 
         self.logger.info("Channel {ch} (id {id}) is {status}.".format(
             ch=self.channel_data["token"], id=self.channel_data["id"],
-            status=["offline", "online"][self.channel_data["online"]]
+            status=["offline", "online"][self.channel_data.get("online")]
         ))
 
 

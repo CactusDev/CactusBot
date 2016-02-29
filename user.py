@@ -1,7 +1,9 @@
 from logging import getLogger as get_logger
 from requests import Session
 from json import dumps, loads
-from websockets import connect
+import websockets
+import asyncio
+from messages import *
 
 
 class User:
@@ -93,13 +95,43 @@ class User:
         return ret
 
     def connect(self, channel_id, bot_id):
+        # Get the channel ID from the channel name
+        self.chan_id = self.get_channel(channel_id, fields="id")["id"]
+        # Get the chat information from the channel ID
+        self.chat = self.get_chat(self.chan_id)
+        # Get the server address from the chat info
+        self.server = self.chat["endpoints"][0]
+        # Get the authkey we need to authenticate to the server
+        self.authkey = self.chat["authkey"]
+
+        self.logger.debug("Connecting to: {server}".format(server=self.server))
+
+        # Need to get the server to connect to
+        self.websocket = yield from websockets.connect(self.server)
+
+        ret = yield from self.send_message([self.chan_id, bot_id, self.authkey], method="auth")
+
+        try:
+            ret = loads(ret)
+        except ValueError as e:
+            self.logger.error("JSON failure during login")
+            self.logger.error(e)
+            quit()
+
+        # Did we authenticate correctly?
+        if ret["data"]["authenticated"]:
+            self.logger.info(ret)
+            # We'll get a Message sent packet back in the websocket,
+            # make sure to clear that from WS before moving on
+            ret = yield from self.websocket.recv()
+
         chat = self.get_chat(channel_id)
         server = chat["endpoints"][0]
         authkey = chat["authkey"]
 
         self.logger.debug("Connecting to: {server}".format(server=server))
 
-        self.websocket = yield from connect(server)
+        self.websocket = yield from websockets.connect(server)
 
         response = yield from self.send_message(
             [channel_id, bot_id, authkey], method="auth"
@@ -115,7 +147,29 @@ class User:
             return False
 
     def read_chat(self):
+
         while True:
+            # try:
+            msg = yield from self.websocket.recv()
+            msg = loads(msg)
+
+            if "event" not in msg:
+                self.logger.warning("No event key in message")
+                self.logger.warning(msg)
+            else:
+                switch = {
+                    "ChatMessage": message_handler,
+                    "PollStart": None,
+                    "PollEnd": None,
+                    "UserJoin": join_handler,
+                    "UserLeave": leave_handler
+                }
+
+                switch[msg["event"]](self, msg["data"])
+
+            # except KeyError as e:
+            #     self.logger.error(e)
+            #     pass
             try:
                 response = yield from self.websocket.recv()
                 response = loads(response)

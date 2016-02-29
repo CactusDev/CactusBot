@@ -22,18 +22,3 @@ class Chat():
                     return True
             else:
                 return False
-
-    def parse_event(self, result):
-        if 'event' in result:
-            event = result['event']
-
-            if 'username' in result['data']['username']:
-                pass
-            elif 'user_name' in result['data']['username']:
-                pass
-            elif event == "UserJoin":
-                print("SOMEONE IS HERE LOLHI")
-            elif event == "UserLeave":
-                print("Someone went bye-bye")
-            elif event == "ChatMessage":
-                print("message!")
