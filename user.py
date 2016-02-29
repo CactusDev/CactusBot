@@ -120,30 +120,17 @@ class User:
 
         # Did we authenticate correctly?
         if ret["data"]["authenticated"]:
-            self.logger.info(ret)
+            self.logger.info("Authenticated successfully!")
             # We'll get a Message sent packet back in the websocket,
             # make sure to clear that from WS before moving on
             ret = yield from self.websocket.recv()
-
-        chat = self.get_chat(channel_id)
-        server = chat["endpoints"][0]
-        authkey = chat["authkey"]
-
-        self.logger.debug("Connecting to: {server}".format(server=server))
-
-        self.websocket = yield from websockets.connect(server)
-
-        response = yield from self.send_message(
-            [channel_id, bot_id, authkey], method="auth"
-        )
-
-        response = loads(response)
-
-        if response["data"]["authenticated"]:
-            self.logger.info(response)
-            yield from self.websocket.recv()
+            self.logger.info(ret)
+            
             return self.websocket
         else:
+            self.logger.warn("Failed to authenticate")
+            self.logger.info(response)
+            yield from self.websocket.recv()
             return False
 
     def read_chat(self):
@@ -162,7 +149,8 @@ class User:
                     "PollStart": None,
                     "PollEnd": None,
                     "UserJoin": join_handler,
-                    "UserLeave": leave_handler
+                    "UserLeave": leave_handler,
+                    "DeleteMessage": None
                 }
 
                 switch[msg["event"]](self, msg["data"])
