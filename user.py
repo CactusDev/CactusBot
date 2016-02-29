@@ -124,8 +124,25 @@ class User:
             # We'll get a Message sent packet back in the websocket,
             # make sure to clear that from WS before moving on
             ret = yield from self.websocket.recv()
-            return self.websocket
 
+        chat = self.get_chat(channel_id)
+        server = chat["endpoints"][0]
+        authkey = chat["authkey"]
+
+        self.logger.debug("Connecting to: {server}".format(server=server))
+
+        self.websocket = yield from websockets.connect(server)
+
+        response = yield from self.send_message(
+            [channel_id, bot_id, authkey], method="auth"
+        )
+
+        response = loads(response)
+
+        if response["data"]["authenticated"]:
+            self.logger.info(response)
+            yield from self.websocket.recv()
+            return self.websocket
         else:
             return False
 
@@ -153,3 +170,13 @@ class User:
             # except KeyError as e:
             #     self.logger.error(e)
             #     pass
+            try:
+                response = yield from self.websocket.recv()
+                response = loads(response)
+                self.logger.debug(response)
+
+                user = response["data"]["user_name"]
+                message = response["data"]["message"]["message"][0]["data"]
+                self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
+            except KeyError:
+                pass
