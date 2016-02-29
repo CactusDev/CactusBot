@@ -62,6 +62,9 @@ class Cactus(User):
             c.execute("""CREATE TABLE bot
                 (joinTime text, joinDate text, different text, total text)""")
 
+            c.execute('''CREATE TABLE points
+                (username text, points integer)''')
+
             c.execute('''CREATE TABLE bannedWords
                 (word text)''')
 
