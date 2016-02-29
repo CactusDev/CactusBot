@@ -29,7 +29,6 @@ def join_handler(parent, data):
                                                               room=parent.channel_data["token"],
                                                               rid=parent.channel_data["id"]))
 
-
     if parent.config["announce_enter"]:
         parent.logger.warn("THIS ISN'T SENDING A MESSAGE")
         print(type(parent.send_message("")), repr(parent.send_message("")))
