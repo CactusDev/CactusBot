@@ -3,6 +3,7 @@ from requests import Session
 from json import dumps, loads
 from websockets import connect
 from models import Command, CommandFactory
+from messages import message_handler, join_handler, leave_handler
 
 
 class User:
@@ -75,6 +76,8 @@ class User:
         return self.request("GET", "/chats/{id}".format(id=id), params="")
 
     def connect(self, channel_id, bot_id):
+        """Connect to a Beam chat through a websocket."""
+
         chat = self.get_chat(channel_id)
         server = chat["endpoints"][0]
         authkey = chat["authkey"]
@@ -96,6 +99,8 @@ class User:
             return False
 
     def send_message(self, arguments, method="msg"):
+        """Send a message to a Beam chat through a websocket."""
+
         if isinstance(arguments, str):
             arguments = [arguments]
 
@@ -103,19 +108,37 @@ class User:
             "type": "method",
             "method": method,
             "arguments": arguments,
-            "id": self.msg_id
+            "id": self.message_id
         }
 
         yield from self.websocket.send(dumps(msg_packet))
-        self.msg_id += 1
+        self.message_id += 1
 
         return (yield from self.websocket.recv())
 
-    def read_chat(self):
+    def remove_message(self, channel_id, message_id):
+        """Remove a message from chat."""
+        return self.request("DELETE", "/chats/{id}/message/{message}".format(
+            id=channel_id, message=message_id))
+
+    def read_chat(self, handler=None):
         while True:
-            response = yield from self.websocket.recv()
-            response = loads(response)
+            response = loads((yield from self.websocket.recv()))
             self.logger.debug(response)
+
+            if "event" in response:
+                events = {
+                    "ChatMessage": message_handler,
+                    "UserJoin": join_handler,
+                    "UserLeave": leave_handler
+                }
+
+                if response["event"] in events:
+                    events[response["event"]](self, response["data"])
+                else:
+                    self.logger.debug("No function found for event {}.".format(
+                        response["event"]
+                    ))
 
             try:
                 user = response["data"]["user_name"]
@@ -124,8 +147,6 @@ class User:
             except Exception:
                 user = "[Beam]"
                 message = str(response)
-
-            self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
 
             # This is very bad and will change soon! Entirely temporary.
             if message.startswith('!'):

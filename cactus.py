@@ -40,7 +40,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 class Cactus(User):
     started = False
     connected = False
-    msg_id = 0
+    message_id = 0
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
@@ -73,7 +73,7 @@ class Cactus(User):
         else:
             self.logger.warn("Config file was not found. Creating...")
             copyfile("data/config-template.json", filename)
-            self.logger.info(
+            self.logger.error(
                 "Config created. Please enter information, and restart.")
             raise FileNotFoundError("Config not found.")
 
