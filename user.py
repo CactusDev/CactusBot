@@ -94,6 +94,11 @@ class User:
 
         return ret
 
+    def remove_message(self, muid):
+        """Deletes a specific message from chat
+            Requires message UUID"""
+        return self.request("DELETE", "/chats/{cid}/message/{mid}".format(cid=self.chan_id, mid=muid))
+
     def connect(self, channel_id, bot_id):
         # Get the channel ID from the channel name
         self.chan_id = self.get_channel(channel_id, fields="id")["id"]

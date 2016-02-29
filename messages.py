@@ -38,8 +38,8 @@ def join_handler(parent, data):
 
 def leave_handler(parent, data):
     parent.logger.info("[{room}][{rid}] {user} left".format(user=data["username"],
-                                                              room=parent.channel_data["token"],
-                                                              rid=parent.channel_data["id"]))
+                                                            room=parent.channel_data["token"],
+                                                            rid=parent.channel_data["id"]))
 
     if parent.config["announce_leave"]:
         parent.logger.warn("THIS ISN'T SENDING A MESSAGE")
