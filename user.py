@@ -125,7 +125,7 @@ class User:
             # make sure to clear that from WS before moving on
             ret = yield from self.websocket.recv()
             self.logger.info(ret)
-            
+
             return self.websocket
         else:
             self.logger.warn("Failed to authenticate")
@@ -136,35 +136,25 @@ class User:
     def read_chat(self):
 
         while True:
-            # try:
-            msg = yield from self.websocket.recv()
-            msg = loads(msg)
-
-            if "event" not in msg:
-                self.logger.warning("No event key in message")
-                self.logger.warning(msg)
-            else:
-                switch = {
-                    "ChatMessage": message_handler,
-                    "PollStart": None,
-                    "PollEnd": None,
-                    "UserJoin": join_handler,
-                    "UserLeave": leave_handler,
-                    "DeleteMessage": None
-                }
-
-                switch[msg["event"]](self, msg["data"])
-
-            # except KeyError as e:
-            #     self.logger.error(e)
-            #     pass
             try:
-                response = yield from self.websocket.recv()
-                response = loads(response)
-                self.logger.debug(response)
+                msg = yield from self.websocket.recv()
+                msg = loads(msg)
 
-                user = response["data"]["user_name"]
-                message = response["data"]["message"]["message"][0]["data"]
-                self.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
-            except KeyError:
+                if "event" not in msg:
+                    self.logger.warning("No event key in message")
+                    self.logger.warning(msg)
+                else:
+                    switch = {
+                        "ChatMessage": message_handler,
+                        "PollStart": None,
+                        "PollEnd": None,
+                        "UserJoin": join_handler,
+                        "UserLeave": leave_handler,
+                        "DeleteMessage": None
+                    }
+
+                    switch[msg["event"]](self, msg["data"])
+
+            except KeyError as e:
+                self.logger.error(e)
                 pass

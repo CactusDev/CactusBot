@@ -12,14 +12,16 @@ def message_handler(parent, data):
     # Iterate through the message,
     # so we can get text from emoticons & links
     for i in range(0, len(msg)):
-        for item in msg:
-            if item["type"] in ("emoticon", "link"):
-                message += item["text"]
-            else:
-                message += item["data"]
+        print(msg[i])
+        if msg[i]["type"] in ("emoticon", "link"):
+            message += msg[i]["text"]
+        else:
+            message += msg[i]["data"]
 
     user = data["user_name"]
     parent.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
+
+    return None
 
 
 def join_handler(parent, data):
