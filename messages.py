@@ -30,8 +30,6 @@ def join_handler(parent, data):
                                                               rid=parent.channel_data["id"]))
 
     if parent.config["announce_enter"]:
-        parent.logger.warn("THIS ISN'T SENDING A MESSAGE")
-        print(type(parent.send_message("")), repr(parent.send_message("")))
         parent.send_message("Welcome {username}".format(username=data["username"]))
 
 
@@ -41,5 +39,4 @@ def leave_handler(parent, data):
                                                             rid=parent.channel_data["id"]))
 
     if parent.config["announce_leave"]:
-        parent.logger.warn("THIS ISN'T SENDING A MESSAGE")
         parent.send_message("See you {username}".format(username=data["username"]))

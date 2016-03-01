@@ -115,6 +115,7 @@ class User:
         self.websocket = yield from websockets.connect(self.server)
 
         ret = yield from self.send_message([self.chan_id, bot_id, self.authkey], method="auth")
+        yield from self.websocket.recv()
 
         try:
             ret = loads(ret)
@@ -126,11 +127,6 @@ class User:
         # Did we authenticate correctly?
         if ret["data"]["authenticated"]:
             self.logger.info("Authenticated successfully!")
-            # We'll get a Message sent packet back in the websocket,
-            # make sure to clear that from WS before moving on
-            ret = yield from self.websocket.recv()
-            self.logger.info(ret)
-
             return self.websocket
         else:
             self.logger.warn("Failed to authenticate")
