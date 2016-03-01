@@ -6,13 +6,11 @@ import websockets
 
 
 def message_handler(parent, data):
-    # print(data)
     msg = data["message"]["message"]
     message = ""
     # Iterate through the message,
     # so we can get text from emoticons & links
     for i in range(0, len(msg)):
-        print(msg[i])
         if msg[i]["type"] in ("emoticon", "link"):
             message += msg[i]["text"]
         else:
