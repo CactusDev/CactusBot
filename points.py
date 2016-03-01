@@ -21,13 +21,13 @@ class Points():
 
             config = load(open('data/config.json'))
             interval = config['interval']
-            per_interval = config['ppi']
+            per_interval = config['points_per_interval']
 
             for user in users:
                 username = user['userName']
                 self.add_points(username, per_interval)
 
-            sleep(float(interval))
+            sleep(float(interval)*60)
 
     def add_points(self, user, amt):
         conn = sql.connect("data/bot.db")

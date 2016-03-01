@@ -2,10 +2,10 @@
   "username": "USERNAME",
   "password": "PASSWORD",
   "channel": "CHANNELNAME",
-  "points-name": "Thorns",
-  "ppi": "5",
-  "pe": "y",
-  "interval": "1",
-  "announceEnter": "no",
-  "announceLeave": "no"
+  "points_name": "Thorns",
+  "points_per_interval": 5,
+  "points_enabled": true,
+  "interval": 1,
+  "announce_enter": false,
+  "announce_leave": false
 }
