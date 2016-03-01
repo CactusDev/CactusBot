@@ -1,9 +1,9 @@
 from logging import getLogger as get_logger
+from logging import WARNING
 from requests import Session
 from json import dumps, loads
 from websockets import connect
 from models import Command, CommandFactory
-from messages import message_handler, join_handler, leave_handler
 
 
 class User:
@@ -27,6 +27,8 @@ class User:
         if level.upper() in levels:
             level_num = __import__("logging").__getattribute__(level.upper())
             self.logger.setLevel(level_num)
+            get_logger("urllib3").setLevel(WARNING)
+            get_logger("websockets").setLevel(WARNING)
             self.logger.info("Logger level set to: {}".format(level.upper()))
 
             try:
@@ -87,7 +89,7 @@ class User:
         self.websocket = yield from connect(server)
 
         response = yield from self.send_message(
-            [channel_id, bot_id, authkey], method="auth"
+            (channel_id, bot_id, authkey), method="auth"
         )
 
         response = loads(response)
@@ -102,7 +104,7 @@ class User:
         """Send a message to a Beam chat through a websocket."""
 
         if isinstance(arguments, str):
-            arguments = [arguments]
+            arguments = (arguments,)
 
         msg_packet = {
             "type": "method",
@@ -121,24 +123,13 @@ class User:
         return self.request("DELETE", "/chats/{id}/message/{message}".format(
             id=channel_id, message=message_id))
 
-    def read_chat(self, handler=None):
+    def read_chat(self, handle=None):
         while True:
             response = loads((yield from self.websocket.recv()))
             self.logger.debug(response)
 
-            if "event" in response:
-                events = {
-                    "ChatMessage": message_handler,
-                    "UserJoin": join_handler,
-                    "UserLeave": leave_handler
-                }
-
-                if response["event"] in events:
-                    events[response["event"]](self, response["data"])
-                else:
-                    self.logger.debug("No function found for event {}.".format(
-                        response["event"]
-                    ))
+            if handle:
+                handle(response)
 
             try:
                 user = response["data"]["user_name"]
@@ -164,6 +155,8 @@ class User:
                         yield from self.send_message("Removed command !{}.".format(split[2]))
                     else:
                         yield from self.send_message("Mod-only! GRAWR")
+                elif split[0][1:] == 'murdilate':
+                    raise KeyboardInterrupt
                 else:
                     q = CommandFactory.session.query(
                         Command).filter_by(command=split[0][1:]).first()

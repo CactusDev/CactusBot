@@ -1,34 +1,52 @@
-def message_handler(parent, data):
-    msg = data["message"]["message"]
-    message = ""
-    for i in range(0, len(msg)):
-        if msg[i]["type"] in ("emoticon", "link"):
-            message += msg[i]["text"]
-        else:
-            message += msg[i]["data"]
-
-    user = data["user_name"]
-    parent.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
-
-    return None
+from user import User
 
 
-def join_handler(parent, data):
-    parent.logger.info("[{room}][{rid}] {user} joined".format(
-        user=data["username"], room=parent.channel_data["token"], rid=parent.channel_data["id"]))
+class MessageHandler(User):
+    def __init__(self, *args, **kwargs):
+        super(MessageHandler, self).__init__(*args, **kwargs)
+        self.config = {}
 
-    if parent.config["announce_enter"]:
-        parent.logger.warn("THIS ISN'T SENDING A MESSAGE")
-        print(type(parent.send_message("")), repr(parent.send_message("")))
-        parent.send_message("Welcome {username}".format(
-            username=data["username"]))
+    def handle(self, response):
+        if "event" in response:
+            events = {
+                "ChatMessage": self.message_handler,
+                "UserJoin": self.join_handler,
+                "UserLeave": self.leave_handler
+            }
 
+            if response["event"] in events:
+                events[response["event"]](response["data"])
+            else:
+                pass
+                self.logger.debug("No function found for event {}.".format(
+                    response["event"]
+                ))
 
-def leave_handler(parent, data):
-    parent.logger.info("[{room}][{rid}] {user} left".format(
-        user=data["username"], room=parent.channel_data["token"], rid=parent.channel_data["id"]))
+    def message_handler(self, data):
+        message = data["message"]["message"]
+        parsed = str()
+        for chunk in message:
+            if chunk["type"] == "text":
+                parsed += chunk["data"]
+            else:
+                parsed += chunk["text"]
 
-    if parent.config["announce_leave"]:
-        parent.logger.warn("THIS ISN'T SENDING A MESSAGE")
-        parent.send_message("See you {username}".format(
-            username=data["username"]))
+        user = data["user_name"]
+        self.logger.info("[{user}] {message}".format(
+            user=user, message=parsed))
+
+    def join_handler(self, data):
+        self.logger.info("[[{channel}]] {user} joined".format(
+            channel=self.channel_data["token"], user=data["username"]))
+
+        if self.config.get("announce_enter", False):
+            yield from self.send_message("Welcome, {username}!".format(
+                username=data["username"]))
+
+    def leave_handler(self, data):
+        self.logger.info("[[{channel}]] {user} left".format(
+            channel=self.channel_data["token"], user=data["username"]))
+
+        if self.config.get("announce_leave", False):
+            yield from self.send_message("See you, {username}!".format(
+                username=data["username"]))
