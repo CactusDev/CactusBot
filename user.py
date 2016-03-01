@@ -24,21 +24,21 @@ class User:
             level = "WARNING"
 
         levels = ("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET")
-        if level.upper() in levels:
-            level_num = __import__("logging").__getattribute__(level.upper())
+        if level in levels:
+            level_num = __import__("logging").__getattribute__(level)
             self.logger.setLevel(level_num)
             get_logger("urllib3").setLevel(WARNING)
             get_logger("websockets").setLevel(WARNING)
-            self.logger.info("Logger level set to: {}".format(level.upper()))
+            self.logger.info("Logger level set to: {}".format(level))
 
             try:
                 from coloredlogs import install
-                install(level=level.upper())
+                install(level=level)
             except ImportError:
                 self.logger.warning(
                     "Module 'coloredlogs' unavailable; using ugly logging.")
         else:
-            self.logger.warn("Invalid logger level: {}".format(level.upper()))
+            self.logger.warn("Invalid logger level: {}".format(level))
 
         self.logger.info("Logger initialized!")
 
@@ -147,7 +147,7 @@ class User:
                         CommandFactory.add_command(self, split[2], ' '.join(
                             split[3:]), response["data"]["user_id"])
                         yield from self.send_message("Added command !{}.".format(split[2]))
-                    else:
+                    else:z
                         yield from self.send_message("Mod-only! GRAWR")
                 elif split[0][1:] == "command" and split[1] == "rm" and len(split) > 2:
                     if any((role in response["data"]["user_roles"] for role in ("Owner", "Mod"))):

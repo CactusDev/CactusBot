@@ -44,12 +44,12 @@ class Cactus(MessageHandler):
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
-        self.debug = kwargs.get("debug", False)
+        self.debug = kwargs.get("DEBUG", False)
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
         self.database = kwargs.get("database", "data/data.db")
-        # self.handler = MessageHandler(
-        #     lambda m: (yield from self.send_message(m)))
+        self.handler = MessageHandler(
+            lambda m: (yield from self.send_message(m)))
 
     def check_db(self):
         """Ensure the database exists."""
@@ -157,5 +157,5 @@ class Cactus(MessageHandler):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="debug", autorestart=False)
+    cactus = Cactus(debug="DEBUG", autorestart=False)
     cactus.run()
