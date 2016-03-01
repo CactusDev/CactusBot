@@ -1,5 +1,11 @@
 {
   "username": "USERNAME",
   "password": "PASSWORD",
-  "channel": "CHANNELNAME"
+  "channel": "CHANNELNAME",
+  "points-name": "Thorns",
+  "ppi": "5",
+  "pe": "y",
+  "interval": "1",
+  "announceEnter": "no",
+  "announceLeave": "no"
 }
