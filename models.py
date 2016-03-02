@@ -53,3 +53,25 @@ class CommandFactory:
             # This doesn't work!
             # session.remove(c)
         session.commit()
+
+
+class Friend(Base):
+        __tablename__ = "friends"
+
+        id = Column(Integer, unique=True, primary_key=True)
+
+        username = Column(String, unique=True)
+
+
+class ChatFriends:
+    session = session
+
+    def add_friend(self, username):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            c = Friend(
+                username=username
+            )
+            session.add(c)
+        session.commit()
