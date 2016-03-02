@@ -1,75 +1,72 @@
 
 from os.path import exists
 from shutil import copy
-from json import loads
+from json import load, dump
 
 
-class Statistics:
+def __init__(self):
+    self.logger.info("Starting statistics engine.")
+    if exists('data/stats.json'):
+        self.logger.info("Found statistics file.")
+    else:
+        self.logger.info("Statistics file not found. Creating.")
+        copy('data/stats-template.json')
+        self.logger.info("Created!")
 
-    def __init__(self):
-        self.logger.info("Starting statistics engine.")
+    self.logger.info("Started statistics engine.")
 
-        if exists('data/stats.json'):
-            self.logger.info("Found statistics file.")
-        else:
-            self.logger.info("Statistics file not found. Creating.")
-            copy('data/stats-template.json')
-            self.logger.info("Created!")
 
-        self.logger.info("Started statistics engine.")
+def add_resub(username):
+    with open('data/stats.json') as f:
+        stats = load(f)
+        stats['total-resubs'] += 1
+        dump(stats, f)
 
-    def add_resub(self, username):
-        with open('data/stats.json') as stats:
-            stats = loads(stats)
-            cur_resubs = int(stats['total-resubs'])
-            stats['total-resubs'] = cur_resubs + 1
-            stats.close()
 
-    def add_sub(self, username):
-            with open('data/stats.json') as stats:
-                stats = loads(stats)
-                cur_subs = int(stats['total-subs'])
-                stats['total-subs'] = cur_subs + 1
-                stats.close()
+def add_sub(username):
+        with open('data/stats.json') as f:
+            stats = load(f)
+            stats['total-subs'] += 1
+            dump(stats, f)
 
-    def add_follower(self, username):
-            with open('data/stats.json') as stats:
-                stats = loads(stats)
-                cur_followers = int(stats['total-followers'])
-                stats['total-followers'] = cur_followers + 1
-                stats.close()
 
-    def add_total_message(self, username):
-            with open('data/stats.json') as stats:
-                stats = loads(stats)
-                cur_messages = int(stats['total-messages'])
-                stats['total-messages'] = cur_messages + 1
-                stats.close()
+def add_follower(username):
+        with open('data/stats.json') as f:
+            stats = load(f)
+            stats['total-followers'] += 1
+            dump(stats, f)
 
-    def add_total_view(self, username):
-            with open('data/stats.json') as stats:
-                stats = loads(stats)
-                cur_views = int(stats['total-views'])
-                stats['total-views'] = cur_views + 1
-                stats.close()
 
-    def add_unique_viewer(self, username):
-        with open('data/stats.json') as stats:
-            stats = loads(stats)
-            curr_unique = int(stats['unique-views'])
-            stats['unique-views'] = curr_unique + 1
-            stats.close()
+def add_total_message(username):
+        with open('data/stats.json') as f:
+            stats = load(f)
+            stats['total-followers'] += 1
+            dump(stats, f)
 
-    def add_deleted_message(self, username):
-        with open('data/stats.json') as stats:
-            stats = loads(stats)
-            curr_deleted = int(stats['total-deleted-messages'])
-            stats['total-deleted-messages'] = curr_deleted + 1
-            stats.close()
 
-    def add_banned_user(self, username):
-        with open('data/stats.json') as stats:
-            stats = loads(stats)
-            curr_banned = int(stats['total-banned-users'])
-            stats['total-banned-users'] = curr_banned + 1
-            stats.close()
+def add_total_view(username):
+        with open('data/stats.json') as f:
+            stats = load(f)
+            stats['total-views'] += 1
+            dump(stats, f)
+
+
+def add_unique_viewer(username):
+    with open('data/stats.json') as f:
+        stats = load(f)
+        stats['unique-views'] += 1
+        dump(stats, f)
+
+
+def add_deleted_message(username):
+    with open('data/stats.json') as f:
+        stats = load(f)
+        stats['total-deleted-messages'] += 1
+        dump(stats, f)
+
+
+def add_banned_user(username):
+    with open('data/stats.json') as f:
+        stats = load(f)
+        stats['total-banned-users'] += 1
+        dump(stats, f)

@@ -6,6 +6,7 @@ from traceback import format_exc
 from time import strftime, sleep
 from os.path import exists
 from shutil import copyfile
+from realtime import Realtime
 
 import sqlite3 as sql
 
@@ -35,7 +36,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(User):
+class Cactus(User, Realtime):
     started = False
     msg_id = 0
 
