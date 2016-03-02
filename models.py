@@ -75,3 +75,7 @@ class ChatFriends:
             )
             session.add(c)
         session.commit()
+
+    def remove_friend(self, username):
+        # No clue how to do this part >.>
+        pass
