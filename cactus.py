@@ -1,7 +1,7 @@
 # CactusBot!
 
 from user import User
-from json import load, loads, dumps
+from json import load, dumps
 from traceback import format_exc
 from time import strftime, sleep
 from os.path import exists

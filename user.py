@@ -2,7 +2,6 @@ from logging import getLogger as get_logger
 from requests import Session
 from json import dumps, loads
 import websockets
-import asyncio
 from messages import *
 
 

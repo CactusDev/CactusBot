@@ -47,3 +47,27 @@ def leave_handler(parent, data):
 
     if parent.config["announce_leave"]:
         parent.send_message("See you {username}".format(username=data["username"]))
+
+
+def check_spam(self, message, is_mod):
+    with open('data/config.json') as f:
+        config = load(f)
+        max_cap = config['max_caps']
+        cap = 0
+        msg = message.replace(' ', '')
+        pos = 0
+
+        for char in message:
+            if not is_mod:
+                for char in msg:
+                    if any(char.isupper()):
+
+                        if cap >= max_cap:
+                            break
+                            return True
+                        elif cap < max_cap and pos is len(msg):
+                            break
+                            return False
+
+                        cap += 1
+                        pos += 1

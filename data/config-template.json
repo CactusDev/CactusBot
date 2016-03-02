@@ -7,5 +7,7 @@
   "pe": "y",
   "interval": "1",
   "announceEnter": "no",
-  "announceLeave": "no"
+  "announceLeave": "no",
+  "max-caps": 10,
+  "max-emotes": 2
 }

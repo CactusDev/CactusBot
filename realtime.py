@@ -1,8 +1,4 @@
 
-from requests import Request
-import websockets
-
-
 class Realtime:
 
     url = 'wss://realtime.beam.pro'
