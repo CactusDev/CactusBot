@@ -71,3 +71,4 @@ target/
 # CactusBot config files
 config.json
 bot.db
+stats.json
