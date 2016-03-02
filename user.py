@@ -147,7 +147,7 @@ class User:
                         CommandFactory.add_command(self, split[2], ' '.join(
                             split[3:]), response["data"]["user_id"])
                         yield from self.send_message("Added command !{}.".format(split[2]))
-                    else:z
+                    else:
                         yield from self.send_message("Mod-only! GRAWR")
                 elif split[0][1:] == "command" and split[1] == "rm" and len(split) > 2:
                     if any((role in response["data"]["user_roles"] for role in ("Owner", "Mod"))):
