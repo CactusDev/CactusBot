@@ -79,3 +79,61 @@ class ChatFriends:
     def remove_friend(self, username):
         # No clue how to do this part >.>
         pass
+
+
+class Points(Base):
+    __tablename__ = "points"
+
+    user = Column(String, unique=True)
+    amount = Column(Integer)
+
+
+class UserPoints:
+    session = Session
+
+    def add_points(self, username, amount):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            c = Points(
+                username=username,
+                amount=amount
+            )
+            session.add(c)
+        else:
+            # Todo add the user.
+            pass
+        session.commit()
+
+    def remove_points(self, username, amount):
+        query = session.query(Base).filter_by(username=username).first()
+
+        # Not sure how to do this one either.
+
+    def set_points(self, username, amount):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            c = Points(
+                username=username,
+                amount=amount
+            )
+            session.add(c)
+        else:
+            # Todo add the user.
+            pass
+        session.commit()
+
+    def reset_points(self, username):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            c = Points(
+                username=username,
+                amount=0
+            )
+            session.add(c)
+        else:
+            # TODO: Throw an error and tell the user that sent this bad things
+            pass
+        session.commit()
