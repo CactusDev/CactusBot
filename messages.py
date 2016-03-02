@@ -1,11 +1,15 @@
 from json import load, loads, dumps
 from time import strftime, sleep
+import statistics
 
 import asyncio
 import websockets
 
 
 def message_handler(parent, data):
+    user = data['user_name']
+    statistics.add_total_message(user)
+
     # print(data)
     msg = data["message"]["message"]
     message = ""
@@ -18,14 +22,17 @@ def message_handler(parent, data):
         else:
             message += msg[i]["data"]
 
-    user = data["user_name"]
     parent.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
 
     return None
 
 
 def join_handler(parent, data):
-    parent.logger.info("[{room}][{rid}] {user} joined".format(user=data["username"],
+    username = data['username']
+
+    statistics.add_total_view(username)
+
+    parent.logger.info("[{room}][{rid}] {user} joined".format(user=username,
                                                               room=parent.channel_data["token"],
                                                               rid=parent.channel_data["id"]))
 
@@ -36,6 +43,7 @@ def join_handler(parent, data):
 
 
 def leave_handler(parent, data):
+
     parent.logger.info("[{room}][{rid}] {user} left".format(user=data["username"],
                                                             room=parent.channel_data["token"],
                                                             rid=parent.channel_data["id"]))

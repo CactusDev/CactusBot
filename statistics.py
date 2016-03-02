@@ -3,6 +3,7 @@ from os.path import exists
 from shutil import copy
 from json import loads
 
+
 class Statistics:
 
     def __init__(self):
@@ -16,7 +17,6 @@ class Statistics:
             self.logger.info("Created!")
 
         self.logger.info("Started statistics engine.")
-
 
     def add_resub(self, username):
         with open('data/stats.json') as stats:
@@ -58,4 +58,18 @@ class Statistics:
             stats = loads(stats)
             curr_unique = int(stats['unique-views'])
             stats['unique-views'] = curr_unique + 1
+            stats.close()
+
+    def add_deleted_message(self, username):
+        with open('data/stats.json') as stats:
+            stats = loads(stats)
+            curr_deleted = int(stats['total-deleted-messages'])
+            stats['total-deleted-messages'] = curr_deleted + 1
+            stats.close()
+
+    def add_banned_user(self, username):
+        with open('data/stats.json') as stats:
+            stats = loads(stats)
+            curr_banned = int(stats['total-banned-users'])
+            stats['total-banned-users'] = curr_banned + 1
             stats.close()
