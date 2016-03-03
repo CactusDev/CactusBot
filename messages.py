@@ -1,21 +1,26 @@
 from user import User
 from models import Command, CommandFactory
+from asyncio import async, coroutine
 
 
 class MessageHandler(User):
+
     def __init__(self, *args, **kwargs):
         super(MessageHandler, self).__init__(*args, **kwargs)
 
+    @coroutine
     def handle(self, response):
         if "event" in response:
             events = {
                 "ChatMessage": self.message_handler,
-                "UserJoin": self.join_handler,
-                "UserLeave": self.leave_handler
+                # "UserJoin": self.join_handler,
+                # "UserLeave": self.leave_handler
             }
+            async(coroutine(self.message_handler))
 
             if response["event"] in events:
-                yield from events[response["event"]](response["data"])
+                print(":3")
+                async(coroutine(events[response["event"]](response["data"])))
             else:
                 self.logger.debug("No function found for event {}.".format(
                     response["event"]
@@ -30,23 +35,23 @@ class MessageHandler(User):
             else:
                 parsed += chunk["text"]
 
-        user = data["user_name"]
+        user = data.get("user_name", "[Beam]")
         self.logger.info("[{user}] {message}".format(
             user=user, message=parsed))
 
-        # Check if it's a command (starts with !)
         if parsed.startswith("!"):
-            # Send the parsed message to the command parser
-            self.command_parser(data)
+            async(coroutine(self.command_parser(data, parsed)))
 
+    # @coroutine
     def join_handler(self, data):
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
 
-        if self.config.get("announce_enter", False):
+        if self.config.get("announce_enter", True):
             yield from self.send_message("Welcome, {username}!".format(
                 username=data["username"]))
 
+    # @coroutine
     def leave_handler(self, data):
         self.logger.info("[[{channel}]] {user} left".format(
             channel=self.channel_data["token"], user=data["username"]))
@@ -55,32 +60,16 @@ class MessageHandler(User):
             yield from self.send_message("See you, {username}!".format(
                 username=data["username"]))
 
-    def command_parser(self, data):
+    def command_parser(self, data, message):
         response = data
-        # Dictionary of built-in commands, mapped to handling functions
-        # builtins = {
-        #     "uptime": bot_uptime,
-        #     "whoami": whoami,
-        #     "update": update_stream
-        # }
-        # builtins[data[]]
-        try:
-            user = response["user_name"]
-            message = response["message"]["message"][0]["data"]
-            assert isinstance(user, str) and isinstance(message, str)
-        except Exception:
-            user = "[Beam]"
-            message = str(response)
 
         # This is very bad and will change soon! Entirely temporary.
         if message.startswith('!'):
             split = message.split()
-            print("SPLIT", split)
             if split[0][1:] == "command" and split[1] == "add" and len(split) > 3:
                 if any((role in response["user_roles"] for role in ("Owner", "Mod"))):
                     CommandFactory.add_command(self, split[2], ' '.join(
                         split[3:]), response["user_id"])
-                    print("OMG A NEW COMMAND <3")
                     yield from self.send_message("Added command !{}.".format(split[2]))
                 else:
                     yield from self.send_message("Mod-only! GRAWR")
