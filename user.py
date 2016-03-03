@@ -164,3 +164,12 @@ class User:
                         yield from self.send_message(q.response)
                     else:
                         yield from self.send_message("Command not found.")
+
+    def poll_start(self, handle=None):
+        pass
+
+    def poll_end(self, handle=None):
+        pass
+
+    def deleted_message(self, handle=None):
+        pass

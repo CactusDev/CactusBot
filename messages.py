@@ -12,9 +12,9 @@ class MessageHandler(User):
                 "ChatMessage":      self.message_handler,
                 "UserJoin":         self.join_handler,
                 "UserLeave":        self.leave_handler,
-                "PollStart":        None,
-                "PollEnd":          None,
-                "DeleteMessage":    None
+                "PollStart":        self.poll_start,
+                "PollEnd":          self.poll_end,
+                "DeleteMessage":    self.deleted_message
             }
 
             if response["event"] in events:
