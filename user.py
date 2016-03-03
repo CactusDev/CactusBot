@@ -3,7 +3,6 @@ from logging import WARNING
 from requests import Session
 from json import dumps, loads
 from websockets import connect
-from models import Command, CommandFactory
 
 
 class User:
@@ -97,8 +96,7 @@ class User:
         if response["data"]["authenticated"]:
             self.logger.debug(response)
             return self.websocket
-        else:
-            return False
+        return False
 
     def send_message(self, arguments, method="msg"):
         """Send a message to a Beam chat through a websocket."""
@@ -130,46 +128,3 @@ class User:
 
             if handle:
                 handle(response)
-
-            try:
-                user = response["data"]["user_name"]
-                message = response["data"]["message"]["message"][0]["data"]
-                assert isinstance(user, str) and isinstance(message, str)
-            except Exception:
-                user = "[Beam]"
-                message = str(response)
-
-            # This is very bad and will change soon! Entirely temporary.
-            if message.startswith('!'):
-                split = message.split()
-                if split[0][1:] == "command" and split[1] == "add" and len(split) > 3:
-                    if any((role in response["data"]["user_roles"] for role in ("Owner", "Mod"))):
-                        CommandFactory.add_command(self, split[2], ' '.join(
-                            split[3:]), response["data"]["user_id"])
-                        yield from self.send_message("Added command !{}.".format(split[2]))
-                    else:
-                        yield from self.send_message("Mod-only! GRAWR")
-                elif split[0][1:] == "command" and split[1] == "rm" and len(split) > 2:
-                    if any((role in response["data"]["user_roles"] for role in ("Owner", "Mod"))):
-                        CommandFactory.remove_command(self, split[2])
-                        yield from self.send_message("Removed command !{}.".format(split[2]))
-                    else:
-                        yield from self.send_message("Mod-only! GRAWR")
-                elif split[0][1:] == 'murdilate':
-                    raise KeyboardInterrupt
-                else:
-                    q = CommandFactory.session.query(
-                        Command).filter_by(command=split[0][1:]).first()
-                    if q:
-                        yield from self.send_message(q.response)
-                    else:
-                        yield from self.send_message("Command not found.")
-
-    def poll_start(self, handle=None):
-        pass
-
-    def poll_end(self, handle=None):
-        pass
-
-    def deleted_message(self, handle=None):
-        pass

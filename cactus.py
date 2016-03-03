@@ -1,6 +1,7 @@
 # CactusBot!
 
 from messages import MessageHandler
+from user import User
 
 from os.path import exists
 from time import sleep
@@ -37,7 +38,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler):
+class Cactus(MessageHandler, User):
     started = False
     connected = False
     message_id = 0
@@ -48,8 +49,6 @@ class Cactus(MessageHandler):
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
         self.database = kwargs.get("database", "data/data.db")
-        self.handler = MessageHandler(
-            lambda m: (yield from self.send_message(m)))
 
     def check_db(self):
         """Ensure the database exists."""
