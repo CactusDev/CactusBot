@@ -81,11 +81,12 @@ class ChatFriends:
         pass
 
 
-# class Points(Base):
-#     __tablename__ = "points"
-#
-#     user = Column(String, unique=True)
-#     amount = Column(Integer)
+class Points(Base):
+    __tablename__ = "points"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    user = Column(String, unique=True)
+    amount = Column(Integer)
 
 
 class UserPoints:
