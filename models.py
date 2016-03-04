@@ -44,15 +44,12 @@ class CommandFactory:
         session.commit()
 
     def remove_command(self, command):
-        query = session.query(Command).filter_by(command=command).first()
+        query = session.query(Base).filter_by(command=command).first()
 
         if query:
-            c = Command(
-                command=command
-            )
-            # This doesn't work!
-            # session.remove(c)
-        session.commit()
+            query.delete()
+            return True
+        return False
 
 
 class Friend(Base):
@@ -77,15 +74,20 @@ class ChatFriends:
         session.commit()
 
     def remove_friend(self, username):
-        # No clue how to do this part >.>
-        pass
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            query.delete()
+            return True
+        return False
 
 
-# class Points(Base):
-#     __tablename__ = "points"
-#
-#     user = Column(String, unique=True)
-#     amount = Column(Integer)
+class Points(Base):
+    __tablename__ = "points"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    user = Column(String, unique=True)
+    amount = Column(Integer)
 
 
 class UserPoints:
@@ -108,7 +110,10 @@ class UserPoints:
     def remove_points(self, username, amount):
         query = session.query(Base).filter_by(username=username).first()
 
-        # Not sure how to do this one either.
+        if query:
+            query.delete()
+            return True
+        return False
 
     def set_points(self, username, amount):
         query = session.query(Base).filter_by(username=username).first()
@@ -137,3 +142,31 @@ class UserPoints:
             # TODO: Throw an error and tell the user that sent this bad things
             pass
         session.commit()
+
+
+class Quote(Base):
+    __tablename__ = "quotes"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    author = Column(String, unique=True)
+    quote = Column(String, unique=True)
+
+
+class Quotes:
+
+    def add_quote(self, quote, author):
+        q = Quote(
+            author=author,
+            quote=quote
+        )
+
+        session.add(q)
+        session.commit()
+
+    def remove_quote(self, quote, author):
+        query = session.query(Base).filter_by(id=id).first()
+
+        if query:
+            query.delete()
+            return True
+        return False
