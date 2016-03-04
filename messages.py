@@ -102,6 +102,19 @@ class MessageHandler(User):
 
                 if '[[name]]' in resp:
                     yield from self.send_message(resp.replace('[[name]]', user))
+                elif '[[count]]' in resp:
+                    pass
+                elif 'arg[1]' in resp and 'arg[2]' not in resp:
+                    arg1 = split[1]
+
+                    yield from self.send_message(resp.replace('arg[1]', arg1))
+                elif 'arg[2]' in resp and 'arg[1]' in resp:
+                    arg1 = split[1]
+                    arg2 = split[2]
+
+                    yield from self.send_message(resp.replace('arg[1]', arg1).replace('arg[2]', arg2))
+                elif 'arg[2]' in resp and 'arg[1]' not in resp:
+                    yield from self.send_message("Error in command arguments: Missing arg[1].")
                 else:
                     yield from self.send_message(q.response)
 
