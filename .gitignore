@@ -71,4 +71,3 @@ target/
 # CactusBot private data
 config.json
 data/*.db
-*.txt
