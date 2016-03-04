@@ -77,7 +77,7 @@ class MessageHandler(User):
         split = message[1:].split()
         if split[0] == "command":
             if role in self.roles["moderator"]:
-                if len(split) > 3:
+                if len(split) > 2:
                     if split[1] in ("add", "remove"):
                         if split[1] == "add":
                             self.factory.add_command(split[2], ' '.join(
@@ -115,6 +115,9 @@ class MessageHandler(User):
                     yield from self.send_message(resp.replace('arg[1]', arg1).replace('arg[2]', arg2))
                 elif 'arg[2]' in resp and 'arg[1]' not in resp:
                     yield from self.send_message("Error in command arguments: Missing arg[1].")
+                elif '[[count]]' in resp:
+                    # TODO: Add to the count
+                    pass
                 else:
                     yield from self.send_message(q.response)
 
