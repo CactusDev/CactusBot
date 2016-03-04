@@ -2,6 +2,7 @@ from user import User
 from models import Command, CommandFactory
 from asyncio import async, coroutine
 from functools import partial
+from json import loads
 
 
 class MessageHandler(User):
@@ -67,7 +68,10 @@ class MessageHandler(User):
     def command_parser(self, data, message):
         response = data
 
+        print(response)
+
         role = data["user_roles"][0]
+        user = data['user_name']
 
         # This is very bad and will change soon! Entirely temporary.
         split = message[1:].split()
@@ -94,6 +98,13 @@ class MessageHandler(User):
             q = self.factory.session.query(
                 Command).filter_by(command=split[0]).first()
             if q:
-                yield from self.send_message(q.response)
+                resp = q.response
+
+                if '[[name]]' in resp:
+                    yield from self.send_message(resp.replace('[[name]]', user))
+                else:
+                    yield from self.send_message(q.response)
+
             else:
-                yield from self.send_message("Command not found.")
+                # yield from self.send_message("Command not found.")
+                pass

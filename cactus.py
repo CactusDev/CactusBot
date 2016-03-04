@@ -101,7 +101,7 @@ class Cactus(MessageHandler, User):
                 if self.connected:
                     tasks = gather(
                         async(self.send_message(
-                            "CactusBot activated. Enjoy! :cactus")
+                             "Ohai. I'm CactusBot. :cactus")
                         ),
                         async(self.read_chat(self.handle))
                     )
@@ -113,8 +113,9 @@ class Cactus(MessageHandler, User):
                 self.logger.info("Removing thorns... done.")
                 if self.connected:
                     loop.run_until_complete(
-                        self.send_message("CactusBot deactivated! :cactus")
+                        self.send_message("Bye-Bye")
                     )
+                    pass
                 self.logger.info("CactusBot deactivated.")
                 exit()
             except Exception:

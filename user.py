@@ -128,3 +128,8 @@ class User:
 
             if handle:
                 handle(response)
+
+    def get_channel_name(self, id):
+        req = self.request("GET", "/channels/{id}".format(id=id))
+        j = loads(req)
+        return j['token']
