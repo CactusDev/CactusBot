@@ -145,8 +145,6 @@ class Cactus(MessageHandler, User):
 
         self.started = True
 
-        self.channel = self.get_channel(self.config["channel"])
-
         self.channel = self.config["channel"]
         self.channel_data = self.get_channel(self.channel)
 
