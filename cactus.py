@@ -7,7 +7,6 @@ from os.path import exists
 from time import sleep
 from json import load
 from shutil import copyfile
-from realtime import Realtime
 
 from asyncio import get_event_loop, gather, async
 

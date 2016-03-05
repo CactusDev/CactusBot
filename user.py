@@ -7,6 +7,7 @@ from websockets import connect
 
 class User:
     path = "https://beam.pro/api/v1"
+    channel = ""
 
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)

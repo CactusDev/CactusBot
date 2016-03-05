@@ -6,6 +6,8 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange
+from json import loads
+from requests import get
 
 from user import User
 
@@ -165,7 +167,21 @@ class CubeCommand(Command):
         return nums
 
 
+class SocialCommand(Command):
+    user = User()
+
+    def __call__(self, args, data=None):
+        try:
+            user_data = self.user.request("GET", "/channels/{channel}".format(channel=data['channel']), fields='user')['user']
+        except Exception:
+            raise Exception("Bad things went boom! (Invalid channel: {chan})".format(chan=data['channel']))
+            return "Things when boom! Invalid channel {chan}".format(chan=data['channel'])
+        print(user_data)
+
+        return ' '.join(user_data['social'].values())
+
 # #### TO BE REDONE IN USERS MODEL #### #
+
 
 class Points(Base):
     __tablename__ = "points"
