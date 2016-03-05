@@ -49,12 +49,12 @@ class User:
             if req.lower() == "get":
                 response = self.session.get(
                     self.path + url,
-                    params=kwargs["params"]
+                    params=kwargs.get("params")
                 )
             else:
                 response = self.session.__getattribute__(req.lower())(
                     self.path + url,
-                    data=kwargs["data"]
+                    data=kwargs.get("data")
                 )
 
             if 'error' in response.json().keys():
