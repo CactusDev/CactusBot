@@ -6,8 +6,6 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange
-from json import loads
-from requests import get
 
 from user import User
 
@@ -171,14 +169,12 @@ class SocialCommand(Command):
     user = User()
 
     def __call__(self, args, data=None):
-        try:
-            user_data = self.user.request("GET", "/channels/{channel}".format(channel=data['channel']), fields='user')['user']
-        except Exception:
-            raise Exception("Bad things went boom! (Invalid channel: {chan})".format(chan=data['channel']))
-            return "Things when boom! Invalid channel {chan}".format(chan=data['channel'])
-        print(user_data)
+        social = self.user.request("GET", "/channels/{id}".format(
+            id=data['channel']), fields='user')["user"]["social"]
+        if social:
+            return ', '.join(': '.join((k.title(), social[k])) for k in social)
+        return "No social services were found on the streamer's profile."
 
-        return ' '.join(user_data['social'].values())
 
 # #### TO BE REDONE IN USERS MODEL #### #
 
