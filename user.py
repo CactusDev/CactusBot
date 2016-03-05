@@ -17,6 +17,8 @@ class User:
 
         self.logger = get_logger('CactusBot')
 
+        level = level.upper()
+
         if level is True:
             level = "DEBUG"
         elif level is False:

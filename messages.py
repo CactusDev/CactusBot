@@ -1,8 +1,8 @@
 from user import User
-from models import Command, CommandFactory
+from models import Command, CommandFactory, session
 from asyncio import async, coroutine
 from functools import partial
-from json import loads
+from re import sub
 
 
 class MessageHandler(User):
@@ -68,8 +68,6 @@ class MessageHandler(User):
     def command_parser(self, data, message):
         response = data
 
-        print(response)
-
         role = data["user_roles"][0]
         user = data['user_name']
 
@@ -93,31 +91,25 @@ class MessageHandler(User):
             else:
                 yield from self.send_message("!command is moderator-only.")
         elif split[0] == "murdilate" and role in self.roles["moderator"]:
-            raise KeyboardInterrupt("Murdilated.")
+            raise exit("Murdilated.")
         else:
-            q = self.factory.session.query(
+            command = self.factory.session.query(
                 Command).filter_by(command=split[0]).first()
-            if q:
-                resp = q.response
-                message_builder = resp
+            if command:
+                command.calls += 1
+                session.commit()
 
-                if "%name%" in resp:
-                    message_builder = message_builder.replace('%name%', user)
-                if "%arg1%" in resp:
-                    message_builder = message_builder.replace('%arg1%', split[1])
-                if "%arg2%" in resp:
-                    message_builder = message_builder.replace('%arg2%', split[2])
-                if "%args%" in resp:
-                    message_builder = message_builder.replace('%args%', ' '.join(split[1:]))
-                if "%count%" in resp:
-                    # TODO: Get the count & add to it
-                    pass
+                response = command.response
 
-                elif "%name%" not in resp and "%arg1%" not in resp and "%arg1%" not in resp:
-                    yield from self.send_message(q.response)
-                else:
-                    yield from self.send_message(message_builder)
+                response = response.replace("%name%", user)
+                response = sub(
+                    "%arg(\d+)%",
+                    lambda m: split[int(m.groups()[0])],
+                    response
+                )
+                response = response.replace("%args%", ' '.join(split[1:]))
+                response = response.replace("%count%", str(command.calls))
 
+                yield from self.send_message(response)
             else:
-                # yield from self.send_message("Command not found.")
-                pass
+                yield from self.send_message("Command not found.")

@@ -20,7 +20,7 @@ class Command(Base):
     command = Column(String, unique=True)
     response = Column(String)
 
-    calls = Column(Integer)
+    calls = Column(Integer, default=0)
 
     author = Column(Integer)
     creation = Column(DateTime)
