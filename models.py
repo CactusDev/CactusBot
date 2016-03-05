@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from os.path import abspath, dirname, join
 from datetime import datetime
+from re import sub, findall
 
 basedir = abspath(dirname(__file__))
 engine = create_engine('sqlite:///' + join(basedir, 'data/data.db'))
@@ -25,31 +26,78 @@ class Command(Base):
     author = Column(Integer)
     creation = Column(DateTime)
 
+    def __call__(self, user, *args):
+        response = self.response
 
-class CommandFactory:
-    session = session
+        response = response.replace("%name%", user)
 
-    def add_command(self, command, response, author):
-        query = session.query(Command).filter_by(command=command).first()
-        if query:
-            query.response = response
-        else:
-            c = Command(
-                command=command,
-                response=response,
-                creation=datetime.utcnow(),
-                author=author
+        try:
+            response = sub(
+                "%arg(\d+)%",
+                lambda match: args[int(match.groups()[0])],
+                response
             )
-            session.add(c)
+        except IndexError:
+            return "Not enough arguments!"
+
+        response = response.replace("%args%", ' '.join(args[1:]))
+
+        self.calls += 1
         session.commit()
 
-    def remove_command(self, command):
-        query = session.query(Base).filter_by(command=command).first()
+        response = response.replace("%count%", str(self.calls))
 
-        if query:
-            query.delete()
-            return True
-        return False
+        return response
+
+
+class CommandCommand(Command):
+    def __call__(self, args, data):
+        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
+        if data["user_roles"][0] in mod_roles:
+            if args[1] in ("add", "remove"):
+                if args[1] == "add":
+                    if len(args) > 3:
+                        q = session.query(Command).filter_by(command=args[2])
+                        if q.first():
+                            q.first().response = ' '.join(args[3:])
+                        else:
+                            c = Command(
+                                command=args[2],
+                                response=' '.join(args[3:]),
+                                creation=datetime.utcnow(),
+                                author=data["user_id"]
+                            )
+                            session.add(c)
+                        return "Added command !{}.".format(args[2])
+                    else:
+                        return "Not enough arguments!"
+                elif args[1] == "remove":
+                    if len(args) > 2:
+                        q = session.query(Command).filter_by(command=args[2])
+                        if q.first():
+                            q.delete()
+                            return "Removed command !{}.".format(args[2])
+                        else:
+                            return "!{} does not exist!".format(args[2])
+                    else:
+                        return "Not enough arguments!"
+                session.commit()
+        else:
+            return "!command is moderator-only."
+
+
+class CubeCommand(Command):
+    def __call__(self, args, data=None):
+        if args[1] == '2' and len(args) == 2:
+            return "8! Whoa, that's 2Cubed!"
+        elif len(findall("\d+", ' '.join(args[1:]))) > 8:
+            return "Whoa! That's 2 many cubes!"
+        nums = sub(
+            "(\d+)",
+            lambda match: str(int(match.groups()[0])**3),
+            ' '.join(args[1:])
+        )
+        return nums
 
 
 class Friend(Base):

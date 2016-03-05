@@ -1,18 +1,10 @@
 from user import User
-from models import Command, CommandFactory, session
+from models import Command, session, CommandCommand, CubeCommand
 from asyncio import async, coroutine
 from functools import partial
-from re import sub
 
 
 class MessageHandler(User):
-    roles = {
-        "moderator": ("Owner", "Staff", "Founder", "Global Mod", "Mod"),
-        "standard": ("Subscriber", "Pro", "User"),
-        "ignored": ("Muted", "Banned")
-    }
-    factory = CommandFactory()
-
     def __init__(self, *args, **kwargs):
         super(MessageHandler, self).__init__(*args, **kwargs)
 
@@ -46,8 +38,24 @@ class MessageHandler(User):
         self.logger.info("[{user}] {message}".format(
             user=user, message=parsed))
 
-        if parsed.startswith("!"):
-            async(self.command_parser(data, parsed))
+        if parsed[0].startswith("!") and len(parsed) > 1:
+            args = parsed.split()
+
+            commands = {
+                "command": CommandCommand,
+                "cube": CubeCommand
+            }
+            if args[0][1:] in commands:
+                yield from self.send_message(
+                    commands[args[0][1:]]()(args, data))
+            else:
+                command = session.query(
+                    Command).filter_by(command=args[0][1:]).first()
+                if command:
+                    response = command(user, *args)
+                    yield from self.send_message(response)
+                else:
+                    yield from self.send_message("Command not found.")
 
     def join_handler(self, data):
         self.logger.info("[[{channel}]] {user} joined".format(
@@ -64,52 +72,3 @@ class MessageHandler(User):
         if self.config.get("announce_leave", False):
             yield from self.send_message("See you, @{username}!".format(
                 username=data["username"]))
-
-    def command_parser(self, data, message):
-        response = data
-
-        role = data["user_roles"][0]
-        user = data['user_name']
-
-        # This is very bad and will change soon! Entirely temporary.
-        split = message[1:].split()
-        if split[0] == "command":
-            if role in self.roles["moderator"]:
-                if len(split) > 2:
-                    if split[1] in ("add", "remove"):
-                        if split[1] == "add":
-                            self.factory.add_command(split[2], ' '.join(
-                                split[3:]), response["user_id"])
-                            yield from self.send_message(
-                                "Added command !{}.".format(split[2]))
-                        elif split[1] == "remove":
-                            self.factory.remove_command(split[2])
-                            yield from self.send_message(
-                                "Removed command !{}.".format(split[2]))
-                else:
-                    yield from self.send_message("Not enough arguments!")
-            else:
-                yield from self.send_message("!command is moderator-only.")
-        elif split[0] == "murdilate" and role in self.roles["moderator"]:
-            raise exit("Murdilated.")
-        else:
-            command = self.factory.session.query(
-                Command).filter_by(command=split[0]).first()
-            if command:
-                command.calls += 1
-                session.commit()
-
-                response = command.response
-
-                response = response.replace("%name%", user)
-                response = sub(
-                    "%arg(\d+)%",
-                    lambda m: split[int(m.groups()[0])],
-                    response
-                )
-                response = response.replace("%args%", ' '.join(split[1:]))
-                response = response.replace("%count%", str(command.calls))
-
-                yield from self.send_message(response)
-            else:
-                yield from self.send_message("Command not found.")
