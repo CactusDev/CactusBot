@@ -1,5 +1,6 @@
 from user import User
-from models import Command, session, CommandCommand, QuoteCommand, CubeCommand, SocialCommand
+from models import (Command, session, CommandCommand, QuoteCommand,
+                    CubeCommand, SocialCommand)
 from asyncio import async, coroutine
 from functools import partial
 

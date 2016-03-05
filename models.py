@@ -148,31 +148,43 @@ class QuoteCommand(Command):
                 random_id = randrange(0, session.query(Quote).count())
                 return session.query(Quote)[random_id].quote
         else:
-            return "!command is moderator-only."
-
-
-class CubeCommand(Command):
-    def __call__(self, args, data=None):
-        if args[1] == '2' and len(args) == 2:
-            return "8! Whoa, that's 2Cubed!"
-        elif len(findall("\d+", ' '.join(args[1:]))) > 8:
-            return "Whoa! That's 2 many cubes!"
-        nums = sub(
-            "(\d+)",
-            lambda match: str(int(match.groups()[0]) ** 3),
-            ' '.join(args[1:])
-        )
-        return nums
+            return "!quote is moderator-only."
 
 
 class SocialCommand(Command):
     user = User()
 
     def __call__(self, args, data=None):
-        social = self.user.get_channel(data["channel"])["user"]["social"]
-        if social:
-            return ', '.join(': '.join((k.title(), social[k])) for k in social)
+        s = self.user.get_channel(data["channel"])["user"]["social"]
+        a = [arg.lower() for arg in args[1:]]
+        if s:
+            if not a:
+                return ', '.join(': '.join((k.title(), s[k])) for k in s)
+            elif set(a).issubset(set(s)):
+                return ', '.join(': '.join((k.title(), s[k])) for k in a)
+            return "Data not found for service{s}: {}.".format(
+                ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
         return "No social services were found on the streamer's profile."
+
+
+class CubeCommand(Command):
+    def __call__(self, args, data=None):
+        if args[1] == '2' and len(args) == 2:
+            return "8! Whoa, that's 2Cubed!"
+
+        numbers = findall("\d+", ' '.join(args[1:]))
+
+        if len(numbers) == 0:
+            return "({})³".format(' '.join(args[1:]))
+        elif len(numbers) > 8:
+            return "Whoa! That's 2 many cubes!"
+
+        nums = sub(
+            "(\d+)",
+            lambda match: str(int(match.groups()[0]) ** 3),
+            ' '.join(args[1:])
+        )
+        return nums
 
 
 # #### TO BE REDONE IN USERS MODEL #### #
