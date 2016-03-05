@@ -30,6 +30,17 @@ class StoredCommand(Base):
     author = Column(Integer)
 
 
+class Quote(Base):
+    __tablename__ = "quotes"
+
+    id = Column(Integer, unique=True, primary_key=True)
+
+    quote = Column(String)
+
+    creation = Column(DateTime)
+    author = Column(Integer)
+
+
 class Command(StoredCommand, User):
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -56,17 +67,6 @@ class Command(StoredCommand, User):
         response = response.replace("%count%", str(self.calls))
 
         return response
-
-
-class Quote(Base):
-    __tablename__ = "quotes"
-
-    id = Column(Integer, unique=True, primary_key=True)
-
-    quote = Column(String)
-
-    creation = Column(DateTime)
-    author = Column(Integer)
 
 
 class CommandCommand(Command):
@@ -169,8 +169,7 @@ class SocialCommand(Command):
     user = User()
 
     def __call__(self, args, data=None):
-        social = self.user.request("GET", "/channels/{id}".format(
-            id=data['channel']), fields='user')["user"]["social"]
+        social = self.user.get_channel(data["channel"])["user"]["social"]
         if social:
             return ', '.join(': '.join((k.title(), social[k])) for k in social)
         return "No social services were found on the streamer's profile."
