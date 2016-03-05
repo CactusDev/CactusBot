@@ -68,7 +68,11 @@ target/
 # pyenv
 .python-version
 
-# CactusBot config files
+# CactusBot private data
 config.json
+<<<<<<< HEAD
 bot.db
 stats.json
+=======
+data/*.db
+>>>>>>> ad61c01e1ed22df7fd61e12a1cee5fc44b16030e

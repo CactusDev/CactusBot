@@ -1,73 +1,74 @@
-from json import load, loads, dumps
-from time import strftime, sleep
-import statistics
-
-import asyncio
-import websockets
+from user import User
+from models import Command, session, CommandCommand, CubeCommand
+from asyncio import async, coroutine
+from functools import partial
 
 
-def message_handler(parent, data):
-    user = data['user_name']
-    statistics.add_total_message(user)
+class MessageHandler(User):
+    def __init__(self, *args, **kwargs):
+        super(MessageHandler, self).__init__(*args, **kwargs)
 
-    # print(data)
-    msg = data["message"]["message"]
-    message = ""
-    # Iterate through the message,
-    # so we can get text from emoticons & links
-    for i in range(0, len(msg)):
-        if msg[i]["type"] in ("emoticon", "link"):
-            message += msg[i]["text"]
-        else:
-            message += msg[i]["data"]
+    def handle(self, response):
+        if "event" in response:
+            events = {
+                "ChatMessage": self.message_handler,
+                "UserJoin": self.join_handler,
+                "UserLeave": self.leave_handler
+            }
 
-    parent.logger.info("[{usr}] {msg}".format(usr=user, msg=message))
+            if response["event"] in events:
+                async(coroutine(
+                    partial(events[response["event"]], response["data"])
+                )())
+            else:
+                self.logger.debug("No function found for event {}.".format(
+                    response["event"]
+                ))
 
-    return None
+    def message_handler(self, data):
+        message = data["message"]["message"]
+        parsed = str()
+        for chunk in message:
+            if chunk["type"] == "text":
+                parsed += chunk["data"]
+            else:
+                parsed += chunk["text"]
 
+        user = data.get("user_name", "[Beam]")
+        self.logger.info("[{user}] {message}".format(
+            user=user, message=parsed))
 
-def join_handler(parent, data):
-    username = data['username']
+        if parsed[0].startswith("!") and len(parsed) > 1:
+            args = parsed.split()
 
-    statistics.add_total_view(username)
+            commands = {
+                "command": CommandCommand,
+                "cube": CubeCommand
+            }
+            if args[0][1:] in commands:
+                yield from self.send_message(
+                    commands[args[0][1:]]()(args, data))
+            else:
+                command = session.query(
+                    Command).filter_by(command=args[0][1:]).first()
+                if command:
+                    response = command(user, *args)
+                    yield from self.send_message(response)
+                else:
+                    yield from self.send_message("Command not found.")
 
-    parent.logger.info("[{room}][{rid}] {user} joined".format(user=username,
-                                                              room=parent.channel_data["token"],
-                                                              rid=parent.channel_data["id"]))
+    def join_handler(self, data):
+        self.logger.info("[[{channel}]] {user} joined".format(
+            channel=self.channel_data["token"], user=data["username"]))
 
-    if parent.config["announce_enter"]:
-        parent.send_message("Welcome {username}".format(username=data["username"]))
+        if self.config.get("announce_enter", False):
+            yield from self.send_message("Welcome, @{username}!".format(
+                username=data["username"]))
 
+    def leave_handler(self, data):
+        self.logger.info("[[{channel}]] {user} left".format(
+            channel=self.channel_data["token"], user=data["username"]))
 
-def leave_handler(parent, data):
-
-    parent.logger.info("[{room}][{rid}] {user} left".format(user=data["username"],
-                                                            room=parent.channel_data["token"],
-                                                            rid=parent.channel_data["id"]))
-
-    if parent.config["announce_leave"]:
-        parent.send_message("See you {username}".format(username=data["username"]))
-
-
-def check_spam(self, message, is_mod):
-    with open('data/config.json') as f:
-        config = load(f)
-        max_cap = config['max_caps']
-        cap = 0
-        msg = message.replace(' ', '')
-        pos = 0
-
-        for char in message:
-            if not is_mod:
-                for char in msg:
-                    if any(char.isupper()):
-
-                        if cap >= max_cap:
-                            break
-                            return True
-                        elif cap < max_cap and pos is len(msg):
-                            break
-                            return False
-
-                        cap += 1
-                        pos += 1
+        if self.config.get("announce_leave", False):
+            yield from self.send_message("See you, @{username}!".format(
+                username=data["username"]))

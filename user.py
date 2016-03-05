@@ -1,8 +1,8 @@
 from logging import getLogger as get_logger
+from logging import WARNING
 from requests import Session
 from json import dumps, loads
-import websockets
-from messages import *
+from websockets import connect
 
 
 class User:
@@ -11,12 +11,13 @@ class User:
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
         self.session = Session()
-        self.path = "https://beam.pro/api/v1"
 
     def _init_logger(self, level):
         """Initialize logger."""
 
         self.logger = get_logger('CactusBot')
+
+        level = level.upper()
 
         if level is True:
             level = "DEBUG"
@@ -24,19 +25,21 @@ class User:
             level = "WARNING"
 
         levels = ("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET")
-        if level.upper() in levels:
-            level_num = __import__("logging").__getattribute__(level.upper())
+        if level in levels:
+            level_num = __import__("logging").__getattribute__(level)
             self.logger.setLevel(level_num)
-            self.logger.info("Logger level set to: {}".format(level.upper()))
+            get_logger("urllib3").setLevel(WARNING)
+            get_logger("websockets").setLevel(WARNING)
+            self.logger.info("Logger level set to: {}".format(level))
 
             try:
                 from coloredlogs import install
-                install(level=level.upper())
+                install(level=level)
             except ImportError:
                 self.logger.warning(
                     "Module 'coloredlogs' unavailable; using ugly logging.")
         else:
-            self.logger.warn("Invalid logger level: {}".format(level.upper()))
+            self.logger.warn("Invalid logger level: {}".format(level))
 
         self.logger.info("Logger initialized!")
 
@@ -75,86 +78,60 @@ class User:
         """Get chat server data."""
         return self.request("GET", "/chats/{id}".format(id=id), params="")
 
+    def connect(self, channel_id, bot_id):
+        """Connect to a Beam chat through a websocket."""
+
+        chat = self.get_chat(channel_id)
+        server = chat["endpoints"][0]
+        authkey = chat["authkey"]
+
+        self.logger.debug("Connecting to: {server}".format(server=server))
+
+        self.websocket = yield from connect(server)
+
+        response = yield from self.send_message(
+            (channel_id, bot_id, authkey), method="auth"
+        )
+
+        response = loads(response)
+
+        if response["data"]["authenticated"]:
+            self.logger.debug(response)
+            return self.websocket
+        return False
+
     def send_message(self, arguments, method="msg"):
+        """Send a message to a Beam chat through a websocket."""
+
         if isinstance(arguments, str):
-            arguments = [arguments]
+            arguments = (arguments,)
 
         msg_packet = {
             "type": "method",
             "method": method,
             "arguments": arguments,
-            "id": self.msg_id
+            "id": self.message_id
         }
 
         yield from self.websocket.send(dumps(msg_packet))
-        self.msg_id += 1
+        self.message_id += 1
 
-        ret = yield from self.websocket.recv()
+        return (yield from self.websocket.recv())
 
-        return ret
+    def remove_message(self, channel_id, message_id):
+        """Remove a message from chat."""
+        return self.request("DELETE", "/chats/{id}/message/{message}".format(
+            id=channel_id, message=message_id))
 
-    def remove_message(self, muid):
-        """Deletes a specific message from chat
-            Requires message UUID"""
-        return self.request("DELETE", "/chats/{cid}/message/{mid}".format(cid=self.chan_id, mid=muid))
-
-    def connect(self, channel_id, bot_id):
-        # Get the channel ID from the channel name
-        self.chan_id = self.get_channel(channel_id, fields="id")["id"]
-        # Get the chat information from the channel ID
-        self.chat = self.get_chat(self.chan_id)
-        # Get the server address from the chat info
-        self.server = self.chat["endpoints"][0]
-        # Get the authkey we need to authenticate to the server
-        self.authkey = self.chat["authkey"]
-
-        self.logger.debug("Connecting to: {server}".format(server=self.server))
-
-        # Need to get the server to connect to
-        self.websocket = yield from websockets.connect(self.server)
-
-        ret = yield from self.send_message([self.chan_id, bot_id, self.authkey], method="auth")
-        yield from self.websocket.recv()
-
-        try:
-            ret = loads(ret)
-        except ValueError as e:
-            self.logger.error("JSON failure during login")
-            self.logger.error(e)
-            quit()
-
-        # Did we authenticate correctly?
-        if ret["data"]["authenticated"]:
-            self.logger.info("Authenticated successfully!")
-            return self.websocket
-        else:
-            self.logger.warn("Failed to authenticate")
-            self.logger.info(response)
-            yield from self.websocket.recv()
-            return False
-
-    def read_chat(self):
-
+    def read_chat(self, handle=None):
         while True:
-            try:
-                msg = yield from self.websocket.recv()
-                msg = loads(msg)
+            response = loads((yield from self.websocket.recv()))
+            self.logger.debug(response)
 
-                if "event" not in msg:
-                    self.logger.warning("No event key in message")
-                    self.logger.warning(msg)
-                else:
-                    switch = {
-                        "ChatMessage": message_handler,
-                        "PollStart": None,
-                        "PollEnd": None,
-                        "UserJoin": join_handler,
-                        "UserLeave": leave_handler,
-                        "DeleteMessage": None
-                    }
+            if handle:
+                handle(response)
 
-                    switch[msg["event"]](self, msg["data"])
-
-            except KeyError as e:
-                self.logger.error(e)
-                pass
+    def get_channel_name(self, id):
+        req = self.request("GET", "/channels/{id}".format(id=id))
+        j = loads(req)
+        return j['token']
