@@ -6,6 +6,7 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange
+from schedule import Schedule
 
 from user import User
 
@@ -176,6 +177,22 @@ class SocialCommand(Command):
         return "No social services were found on the streamer's profile."
 
 
+class ScheduleCommand(Command):
+    def __call__(self, args, data=None):
+        action = args[1]
+        interval = args[2]
+        text = args[3]
+
+        if action is "add":
+            time = interval[:-1]
+            modifer = interval[-1:]
+
+
+        elif action is "remove":
+            pass
+        else:
+            pass
+
 # #### TO BE REDONE IN USERS MODEL #### #
 
 
@@ -199,6 +216,7 @@ class UserPoints:
                 amount=amount
             )
             session.add(c)
+            session.commit()
         else:
             # Todo add the user.
             pass
@@ -239,3 +257,12 @@ class UserPoints:
             # TODO: Throw an error and tell the user that sent this bad things
             pass
         session.commit()
+
+
+class Schedule(Base):
+    __tablename__ = "scheduled"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    text = Column(String)
+    interval = Column(Integer)
+    last_ran = Column(DateTime)
