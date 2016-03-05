@@ -6,7 +6,6 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange
-from schedule import Schedule
 
 from user import User
 
@@ -185,12 +184,25 @@ class ScheduleCommand(Command):
         if action is "add":
             time = interval[:-1]
             modifer = interval[-1:]
-
-
         elif action is "remove":
             pass
         else:
             pass
+
+
+class WhoAmICommand(Command):
+    def __call__(self, args, data=None):
+        return 'Ohai, {name}! Want a :cactus ?'.format(name=data['token'])
+
+
+class UptimeCommand(Command):
+    def __call__(self, args, data=None):
+        return 'This isn\'t done yet. #BlameLiveLoading :cactus'
+
+
+class CactusCommand(Command):
+    def __call__(command):
+        return 'Ohai! I\'m CactusBot! And you are?'
 
 # #### TO BE REDONE IN USERS MODEL #### #
 

@@ -1,5 +1,5 @@
 from user import User
-from models import Command, session, CommandCommand, QuoteCommand, CubeCommand, SocialCommand, ScheduleCommand
+from models import Command, session, CommandCommand, QuoteCommand, CubeCommand, SocialCommand, ScheduleCommand, WhoAmICommand, UptimeCommand, CactusCommand
 from asyncio import async, coroutine
 from functools import partial
 
@@ -47,6 +47,9 @@ class MessageHandler(User):
                 "cube": CubeCommand,
                 "social": SocialCommand,
                 "schedule": ScheduleCommand,
+                "whoami": WhoAmICommand,
+                "uptime": UptimeCommand,
+                "cactus": CactusCommand
             }
             if args[0][1:] in commands:
                 yield from self.send_message(
