@@ -190,6 +190,35 @@ class CubeCommand(Command):
         return nums
 
 
+class ScheduleCommand(Command):
+    def __call__(self, args, data=None):
+        action = args[1]
+        interval = args[2]
+        text = args[3]
+
+        if action is "add":
+            time = interval[:-1]
+            modifer = interval[-1:]
+        elif action is "remove":
+            pass
+        else:
+            pass
+
+
+class WhoAmICommand(Command):
+    def __call__(self, args, data=None):
+        return 'Ohai, {name}! Want a :cactus ?'.format(name=data['token'])
+
+
+class UptimeCommand(Command):
+    def __call__(self, args, data=None):
+        return 'This isn\'t done yet. #BlameLiveLoading :cactus'
+
+
+class CactusCommand(Command):
+    def __call__(command):
+        return 'Ohai! I\'m CactusBot! And you are?'
+
 # #### TO BE REDONE IN USERS MODEL #### #
 
 
@@ -213,6 +242,7 @@ class UserPoints:
                 amount=amount
             )
             session.add(c)
+            session.commit()
         else:
             # Todo add the user.
             pass
@@ -253,3 +283,12 @@ class UserPoints:
             # TODO: Throw an error and tell the user that sent this bad things
             pass
         session.commit()
+
+
+class Schedule(Base):
+    __tablename__ = "scheduled"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    text = Column(String)
+    interval = Column(Integer)
+    last_ran = Column(DateTime)
