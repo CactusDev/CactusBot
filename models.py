@@ -6,7 +6,6 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange
-from schedule import Schedule
 
 from user import User
 

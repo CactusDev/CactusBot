@@ -1,17 +1,44 @@
-
-from models import Scheduled
 from sqlalchemy.orm import Session
 
-from time import datetime
+from time import time
 
-from asyncio import coroutine, get_event_loop
+from asyncio import coroutine, get_event_loop, sleep
+
+from collections import OrderedDict
+
+from functools import partial
 
 
-class Schedule:
+class Scheduler:
 
-    loop = get_event_loop()
+    def init_scheduler(self):
+        self.scheduled = {}
+        scheduled_db = [{"interval": 3, "message": "foo", "type": "msg"}, {"interval": 3, "message": "bar", "type": "msg"}, {"interval": 2, "message": "!bar", "type": "cmd"}, {"interval": 17, "message": "bah", "type": "msg"}]
+        # scheduled_db = sqlalchemy return list of all scheduled commands
+        # Populate list of all scheduled commands at their proper times
+        for msg in scheduled_db:
+            # Check if the interval already exists in self.scheduled
+            if msg["interval"] in self.scheduled:
+                self.scheduled[msg["interval"]].append(msg)
+            else:
+                self.scheduled[msg["interval"]] = [msg]
 
-    def add(self, text, interval):
+        self.scheduled = OrderedDict(sorted(self.scheduled.items()))
+
+        self.init_time = int(time())
+
+        interval = list(self.scheduled.items())[0][0]
+
+        self.loop.call_later(interval, self.scheduled_handler)
+
+        # print(self.scheduled)
+
+    def add(self, text, type, interval):
+        """Add a scheduled command to the DB
+        Expecting:
+            - Message's text
+            - Message's type (Bot Command/Text Message)
+            - Interval in full seconds (eg, no 1.5seconds)"""
         session = Session()
 
         query = session.query(Scheduled.Base).first()
@@ -20,7 +47,8 @@ class Schedule:
             c = Scheduled(
                 text=text,
                 interval=interval,
-                last_ran=datetime.utcnow()
+                type=type,
+                last_ran=int(time)
             )
 
             session.add(c)
@@ -39,14 +67,8 @@ class Schedule:
         else:
             raise Exception("That shouldn't have happened.")
 
-    @coroutine
-    def schedule(self, id, interval):
-        session = Session()
-        cur_time = 0
-
-        query = session.query(Scheduled.Base).filter_by(id=id).first()
-
-        if query:
-            pass
-        else:
-            raise Exception("Someting bad happened.")
+    def scheduled_handler(self):
+        """This function is the scheduler call_later callback function
+        It handles sending the scheduled message & setting the next callback"""
+        print(list(self.scheduled.items())[0])
+        pass

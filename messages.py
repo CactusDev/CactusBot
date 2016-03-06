@@ -64,7 +64,7 @@ class MessageHandler(User):
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
 
-        if self.config.get("announce_enter", False):
+        if self.config.get("announce_enter", False) and data["id"] != 25873 :
             yield from self.send_message("Welcome, @{username}!".format(
                 username=data["username"]))
 

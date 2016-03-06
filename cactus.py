@@ -2,6 +2,8 @@
 
 from messages import MessageHandler
 from user import User
+from models import Base, engine
+from schedule import Scheduler
 
 from os.path import exists
 from time import sleep
@@ -12,7 +14,7 @@ from asyncio import get_event_loop, gather, async
 
 from traceback import format_exc
 
-from models import Base, engine
+import argparse
 
 
 cactus_art = """CactusBot initialized!
@@ -38,17 +40,20 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, User):
+class Cactus(MessageHandler, User, Scheduler):
     started = False
     connected = False
     message_id = 0
 
-    def __init__(self, autorestart=True, **kwargs):
+    def __init__(self, verbose=False, silent=False, nm=False, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
         self.debug = kwargs.get("DEBUG", False)
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
         self.database = kwargs.get("database", "data/data.db")
+        self.verbose = verbose
+        self.silent = silent
+        self.no_messages = nm
 
     def check_db(self):
         """Ensure the database exists."""
@@ -88,9 +93,11 @@ class Cactus(MessageHandler, User):
             try:
                 self._run(args, kwargs)
 
-                loop = get_event_loop()
+                self.loop = get_event_loop()
 
-                self.connected = bool(loop.run_until_complete(
+                self.init_scheduler()
+
+                self.connected = bool(self.loop.run_until_complete(
                     self.connect(self.channel_data['id'], self.bot_data['id'])
                 ))
 
@@ -98,25 +105,30 @@ class Cactus(MessageHandler, User):
                     ['Uns', 'S'][self.connected], self.channel_data["token"]
                 ))
 
+                if not self.no_messages:
+                    self.loop.run_until_complete(self.send_message(
+                        "CactusBot activated. Enjoy! :cactus")
+                    )
+
                 if self.connected:
                     tasks = gather(
-                        async(self.send_message(
-                            "CactusBot activated. Enjoy! :cactus")
-                        ),
                         async(self.read_chat(self.handle))
                     )
 
-                    loop.run_until_complete(tasks)
+                    self.loop.run_until_complete(tasks)
                 else:
                     raise ConnectionError
             except KeyboardInterrupt:
-                self.logger.info("Removing thorns... done.")
-                if self.connected:
-                    loop.run_until_complete(
+                self.logger.info("Removing thorns...")
+                self.logger.info("CactusBot deactivated.")
+                if self.connected and not self.no_messages:
+                    self.loop.run_until_complete(
                         self.send_message("CactusBot deactivated! :cactus")
                     )
                     pass
-                self.logger.info("CactusBot deactivated.")
+                else:
+                    pass
+
                 exit()
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
@@ -157,5 +169,43 @@ class Cactus(MessageHandler, User):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="info", autorestart=False)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-s",
+        "--silent",
+        dest="silent",
+        help="Run the bot silently (no messages sent to chat)",
+        action="store_true",
+        default=False
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Run the bot with verbose debug output",
+        default=False
+    )
+    parser.add_argument(
+        "-nm",
+        action="store_true",
+        help="Run the bot without the startup/quit messages",
+        default=False
+    )
+    parser.add_argument(
+        "--autorestart",
+        action="store_true",
+        help="Have the bot automatically restart on crash",
+        default=False
+    )
+
+    parsed = parser.parse_args()
+
+    cactus = Cactus(
+        debug="info",
+        autorestart=parsed.autorestart,
+        # silent=parsed.silent,
+        verbose=parsed.verbose,
+        nm=parsed.nm
+    )
     cactus.run()

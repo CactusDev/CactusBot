@@ -113,10 +113,14 @@ class User:
             "id": self.message_id
         }
 
-        yield from self.websocket.send(dumps(msg_packet))
-        self.message_id += 1
+        if not self.silent:
+            yield from self.websocket.send(dumps(msg_packet))
+            self.message_id += 1
 
-        return (yield from self.websocket.recv())
+            return (yield from self.websocket.recv())
+
+        else:
+            return None
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
