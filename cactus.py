@@ -1,17 +1,69 @@
 # CactusBot!
 
+from messages import MessageHandler
 from user import User
+
+from os.path import exists
+from time import sleep
 from json import load
+from shutil import copyfile
+
+from asyncio import get_event_loop, gather, async
+
 from traceback import format_exc
 from time import sleep
 import os
 
+from models import Base, engine
 
-class Cactus(User):
+
+cactus_art = """CactusBot initialized!
+
+      ,`""',
+      ;' ` ;
+      ;`,',;
+      ;' ` ;
+ ,,,  ;`,',;               _____           _
+;,` ; ;' ` ;   ,',        / ____|         | |
+;`,'; ;`,',;  ;,' ;      | |     __ _  ___| |_ _   _ ___
+;',`; ;` ' ; ;`'`';      | |    / _` |/ __| __| | | / __|
+;` '',''` `,',`',;       | |___| (_| | (__| |_| |_| \__ \\
+ `''`'; ', ;`'`'          \_____\__,_|\___|\__|\__,_|___/
+      ;' `';
+      ;` ' ;
+      ;' `';
+      ;` ' ;
+      ; ',';
+      ;,' ';
+
+Made by: 2Cubed, Innectic, and ParadigmShift3d
+"""
+
+
+class Cactus(MessageHandler, User):
+    started = False
+    connected = False
+    message_id = 0
+
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
-        self.debug = kwargs.get('debug', False)
+        self.debug = kwargs.get("DEBUG", False)
         self.autorestart = autorestart
+        self.config_file = kwargs.get("config_file", "data/config.json")
+        self.database = kwargs.get("database", "data/data.db")
+
+    def check_db(self):
+        """Ensure the database exists."""
+
+        if exists(self.database):
+            self.logger.info("Found database.")
+        else:
+            self.logger.info("Database wasn't found.")
+            self.logger.info("Creating and setting defaults...")
+
+            Base.metadata.create_all(engine)
+
+            self.logger.info("Done!")
 
     def load_config(self, filename):
         """Load configuration."""
@@ -29,25 +81,72 @@ class Cactus(User):
                 "Config created. Please enter information, and restart.")
             exit(0)
 
-    def run(self, config_file="config.json"):
+        if exists(filename):
+            self.logger.info("Config file was found. Loading...")
+            with open(filename) as config:
+                self.config = load(config)
+                return True
+        else:
+            self.logger.warn("Config file was not found. Creating...")
+            copyfile("data/config-template.json", filename)
+            self.logger.error(
+                "Config created. Please enter information, and restart.")
+            raise FileNotFoundError("Config not found.")
+
+    def run(self, *args, **kwargs):
         """Run bot."""
-        try:
-            self.load_config(filename=config_file)
-            self.logger.info("Authenticated as: {}.".format(self.username))
-        except KeyboardInterrupt:
-            self.logger.info("Removing thorns... done.")
-            self.logger.info("CactusBot deactivated.")
-        except Exception:
-            self.logger.critical("Oh no, I crashed!")
-            self.logger.debug(format_exc())
-            if self.autorestart:
-                self.logger.info("Restarting in 10 seconds...")
-                try:
-                    sleep(10)
-                except KeyboardInterrupt:
+
+        self.logger.info(cactus_art)
+        self.check_db()
+
+        while self.autorestart or not self.started:
+            try:
+                self._run(args, kwargs)
+
+                loop = get_event_loop()
+
+                self.connected = bool(loop.run_until_complete(
+                    self.connect(self.channel_data['id'], self.bot_data['id'])
+                ))
+
+                self.logger.info("{}uccessfully connected to chat {}.".format(
+                    ['Uns', 'S'][self.connected], self.channel_data["token"]
+                ))
+
+                if self.connected:
+                    tasks = gather(
+                        async(self.send_message(
+                            "CactusBot activated. Enjoy! :cactus")
+                        ),
+                        async(self.read_chat(self.handle))
+                    )
+
+                    loop.run_until_complete(tasks)
+                else:
+                    raise ConnectionError
+            except KeyboardInterrupt:
+                self.logger.info("Removing thorns... done.")
+                if self.connected:
+                    loop.run_until_complete(
+                        self.send_message("CactusBot deactivated! :cactus")
+                    )
+                    pass
+                self.logger.info("CactusBot deactivated.")
+                exit()
+            except Exception:
+                self.logger.critical("Oh no, I crashed!")
+                self.logger.error("\n\n" + format_exc())
+
+                if self.autorestart:
+                    self.logger.info("Restarting in 10 seconds...")
+                    try:
+                        sleep(10)
+                    except KeyboardInterrupt:
+                        self.logger.info("CactusBot deactivated.")
+                        exit()
+                else:
                     self.logger.info("CactusBot deactivated.")
                     exit()
-                self.run(config_file=config_file)
 
 cactus = Cactus(debug=True, autorestart=False)
 cactus.run()
