@@ -219,6 +219,11 @@ class CactusCommand(Command):
     def __call__(command):
         return 'Ohai! I\'m CactusBot! And you are?'
 
+
+class CmdListCommand(Command):
+    def __call__(command):
+        return ''
+
 # #### TO BE REDONE IN USERS MODEL #### #
 
 
