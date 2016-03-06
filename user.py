@@ -10,7 +10,7 @@ class User:
 
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
-        self.session = Session()
+        self.http_session = Session()
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -47,12 +47,12 @@ class User:
         """Send HTTP request to Beam."""
         if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
             if req.lower() == "get":
-                response = self.session.get(
+                response = self.http_session.get(
                     self.path + url,
                     params=kwargs.get("params")
                 )
             else:
-                response = self.session.__getattribute__(req.lower())(
+                response = self.http_session.__getattribute__(req.lower())(
                     self.path + url,
                     data=kwargs.get("data")
                 )

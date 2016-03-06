@@ -85,8 +85,7 @@ class CommandCommand(Command):
                         session.add(c)
                         session.commit()
                     return "Added command !{}.".format(args[2])
-                else:
-                    return "Not enough arguments!"
+                return "Not enough arguments!"
             elif args[1] == "remove":
                 if len(args) > 2:
                     q = session.query(Command).filter_by(command=args[2])
@@ -94,14 +93,10 @@ class CommandCommand(Command):
                         q.delete()
                         session.commit()
                         return "Removed command !{}.".format(args[2])
-                    else:
-                        return "!{} does not exist!".format(args[2])
-                else:
-                    return "Not enough arguments!"
-            else:
-                return "Invalid argument: {}.".format(args[1])
-        else:
-            return "!command is moderator-only."
+                    return "!{} does not exist!".format(args[2])
+                return "Not enough arguments!"
+            return "Invalid argument: {}.".format(args[1])
+        return "!command is moderator-only."
 
 
 class QuoteCommand(Command):
@@ -138,19 +133,15 @@ class QuoteCommand(Command):
                             q.delete()
                             session.commit()
                             return "Removed quote with ID {}.".format(args[2])
-                        else:
-                            return "Quote {} does not exist!".format(args[2])
-                    else:
-                        return "Invalid argument: '{}'".format(args[1])
-                else:
-                    return "Not enough arguments."
+                        return "Quote {} does not exist!".format(args[2])
+                    return "Invalid argument: '{}'".format(args[1])
+                return "Not enough arguments."
             else:
-                if session.query(Quote).count():
+                if not session.query(Quote).count():
                     return "No quotes added."
                 random_id = randrange(0, session.query(Quote).count())
                 return session.query(Quote)[random_id].quote
-        else:
-            return "!quote is moderator-only."
+        return "!quote is moderator-only."
 
 
 class SocialCommand(Command):
