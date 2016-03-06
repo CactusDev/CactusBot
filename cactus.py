@@ -78,6 +78,19 @@ class Cactus(MessageHandler, User):
                 "Config created. Please enter information, and restart.")
             raise FileNotFoundError("Config not found.")
 
+    def load_stats(self):
+        if exists('data/stats.json'):
+            self.logger.info("Config file was found. Loading...")
+            with open('data/stats.json') as config:
+                self.config = load(config)
+                return True
+        else:
+            self.logger.warn("Config file was not found. Creating...")
+            copyfile("data/stats.json", 'data/stats.json')
+            self.logger.error(
+                "Config created. Please enter information, and restart.")
+            raise FileNotFoundError("Config not found.")
+
     def run(self, *args, **kwargs):
         """Run bot."""
 
