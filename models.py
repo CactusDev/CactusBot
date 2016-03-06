@@ -120,30 +120,33 @@ class QuoteCommand(Command):
                 except AttributeError:
                     return "Undefined quote with ID {}.".format(id)
 
-                if args[1] == "add":
-                    q = Quote(
-                        quote=' '.join(args[2:]),
-                        creation=datetime.utcnow(),
-                        author=data["user_id"]
-                    )
-                    session.add(q)
-                    session.flush()
-                    session.commit()
-                    return "Added quote with ID {}.".format(q.id)
-                elif args[1] == "remove":
-                    try:
-                        id = int(args[2])
-                    except ValueError:
-                        return "Invalid quote ID '{}'.".format(args[2])
-                    q = session.query(Quote).filter_by(id=id)
-                    if q.first():
-                        q.delete()
+                if len(args) > 2:
+                    if args[1] == "add":
+                        q = Quote(
+                            quote=' '.join(args[2:]),
+                            creation=datetime.utcnow(),
+                            author=data["user_id"]
+                        )
+                        session.add(q)
+                        session.flush()
                         session.commit()
-                        return "Removed quote {}.".format(args[2])
+                        return "Added quote with ID {}.".format(q.id)
+                    elif args[1] == "remove":
+                        try:
+                            id = int(args[2])
+                        except ValueError:
+                            return "Invalid quote ID '{}'.".format(args[2])
+                        q = session.query(Quote).filter_by(id=id)
+                        if q.first():
+                            q.delete()
+                            session.commit()
+                            return "Removed quote with ID {}.".format(args[2])
+                        else:
+                            return "Quote {} does not exist!".format(args[2])
                     else:
-                        return "Quote {} does not exist!".format(args[2])
+                        return "Invalid argument: '{}'".format(args[1])
                 else:
-                    return "Invalid argument: '{}'".format(args[1])
+                    return "Not enough arguments."
             else:
                 random_id = randrange(0, session.query(Quote).count())
                 return session.query(Quote)[random_id].quote
