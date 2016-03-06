@@ -4,13 +4,13 @@ from messages import MessageHandler
 from user import User
 
 from os.path import exists
-from time import sleep
 from json import load
 from shutil import copyfile
 
 from asyncio import get_event_loop, gather, async
 
 from traceback import format_exc
+from time import sleep
 
 from models import Base, engine
 
@@ -168,5 +168,5 @@ class Cactus(MessageHandler, User):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="info", autorestart=False)
+    cactus = Cactus(debug="debug", autorestart=False)
     cactus.run()

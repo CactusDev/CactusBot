@@ -43,7 +43,7 @@ class User:
 
         self.logger.info("Logger initialized!")
 
-    def request(self, req, url, **kwargs):
+    def _request(self, req, url, **kwargs):
         """Send HTTP request to Beam."""
         if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
             if req.lower() == "get":
@@ -68,15 +68,15 @@ class User:
         """Authenticate and login with Beam."""
         l = locals()
         packet = {n: l[n] for n in ("username", "password", "code")}
-        return self.request("POST", "/users/login", data=packet)
+        return self._request("POST", "/users/login", data=packet)
 
     def get_channel(self, id, **p):
         """Get channel data by username."""
-        return self.request("GET", "/channels/{id}".format(id=id), params=p)
+        return self._request("GET", "/channels/{id}".format(id=id), params=p)
 
     def get_chat(self, id):
         """Get chat server data."""
-        return self.request("GET", "/chats/{id}".format(id=id))
+        return self._request("GET", "/chats/{id}".format(id=id))
 
     def connect(self, channel_id, bot_id):
         """Connect to a Beam chat through a websocket."""
@@ -120,7 +120,7 @@ class User:
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
-        return self.request("DELETE", "/chats/{id}/message/{message}".format(
+        return self._request("DELETE", "/chats/{id}/message/{message}".format(
             id=channel_id, message=message_id))
 
     def read_chat(self, handle=None):
@@ -132,6 +132,6 @@ class User:
                 handle(response)
 
     def get_channel_name(self, id):
-        req = self.request("GET", "/channels/{id}".format(id=id))
+        req = self._request("GET", "/channels/{id}".format(id=id))
         j = loads(req)
         return j['token']
