@@ -1,6 +1,6 @@
 from user import User
 from models import Command, session, CommandCommand, QuoteCommand, CubeCommand
-from models import importSocialCommand, ScheduleCommand, WhoAmICommand
+from models import SocialCommand, ScheduleCommand, WhoAmICommand
 from models import UptimeCommand, CactusCommand, CmdListCommand
 from asyncio import async, coroutine
 from functools import partial
