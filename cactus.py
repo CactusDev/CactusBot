@@ -2,6 +2,7 @@
 
 from messages import MessageHandler
 from user import User
+from liveloading import Liveloading
 
 from os.path import exists
 from json import load
@@ -38,10 +39,12 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, User):
+class Cactus(MessageHandler, Liveloading, User):
     started = False
     connected = False
     message_id = 0
+
+    liveloading = Liveloading()
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
@@ -116,7 +119,8 @@ class Cactus(MessageHandler, User):
                         async(self.send_message(
                             "CactusBot activated. Enjoy! :cactus")
                         ),
-                        async(self.read_chat(self.handle))
+                        async(self.read_chat(self.handle)),
+                        # async(self.liveloading.live_connect(self.channel)),
                     )
 
                     loop.run_until_complete(tasks)
@@ -166,6 +170,7 @@ class Cactus(MessageHandler, User):
             status=["offline", "online"][self.channel_data["online"]]
         ))
 
+        # print(self.channel)
 
 if __name__ == "__main__":
     cactus = Cactus(debug="debug", autorestart=False)

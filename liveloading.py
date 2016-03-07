@@ -4,9 +4,10 @@ from user import User
 import logging
 from time import sleep
 from json import loads, load, dump
+from asyncio import coroutine
 
 
-class Server:
+class Liveloading(User):
 
     pid = 0
     packet_recv = ""
@@ -18,11 +19,10 @@ class Server:
     total_viewed = 0
 
     total_followers = 0
-    total_unfollowers = 0
+    total_unfollows = 0
 
-    def __init__(self):
-        logging.getLogger('requests').setLevel(logging.WARNING)
-        logging.basicConfig(level=logging.DEBUG)
+    total_subs = 0
+    total_resubs = 0
 
     def check_partnered(self, username):
         user = User()
@@ -31,7 +31,8 @@ class Server:
 
         return partnered
 
-    def connect(self, username):
+    @coroutine
+    def live_connect(self, username):
         print("Connecting to the live-socket")
 
         ws = create_connection('wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket')
@@ -39,21 +40,40 @@ class Server:
         status = str(self.packet_recv.split()[0][0])
 
         is_partnered = self.check_partnered(username)
+        user_id = str(self.get_channel(username, fields='id')['id'])
 
         if status == "0":
             # Subscribing to channel events
-            self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["channel:17887:update"]},"url":"/api/v1/live"}]'
-            ws.send(self.packet_send)
-
-            # Subscribing to user events
-            self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["user:20621:update"]},"url":"/api/v1/live"}]'
-            ws.send(self.packet_send)
-
-            # Subscribe to follows
-            self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["channel:17887:followed"]},"url":"/api/v1/live"}]'
+            self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["channel:' + user_id + ':update"]},"url":"/api/v1/live"}]'
             ws.send(self.packet_send)
 
             self.pid += 1
+
+            # Subscribing to user events
+            self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["user:' + user_id + ':update"]},"url":"/api/v1/live"}]'
+            ws.send(self.packet_send)
+
+            self.pid += 1
+
+            # Subscribe to follows
+            self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["channel:' + user_id + ':followed"]},"url":"/api/v1/live"}]'
+            ws.send(self.packet_send)
+
+            self.pid += 1
+
+            # Subscribe to subs if needed
+
+            if is_partnered:
+                self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["channel:' + user_id + ':subscribed"]},"url":"/api/v1/live"}]'
+                ws.send(self.packet_send)
+
+                self.pid += 1
+
+                self.packet_send = '42' + str(self.pid) + '["put",{"method":"put","headers":{},"data":{"slug":["channel:' + user_id + ':resubscribed"]},"url":"/api/v1/live"}]'
+                ws.send(self.packet_send)
+
+                self.pid += 1
+
             self.packet_recv = ws.recv()
             status = str(self.packet_recv.split()[0][:2])
         else:
@@ -69,8 +89,8 @@ class Server:
         if status == "42":
             print("Connected to the live-socket")
 
-            while True:
-                try:
+            try:
+                while True:
                     recv = str(ws.recv())
                     print(recv)
 
@@ -93,29 +113,33 @@ class Server:
 
                         if is_following is True:
                             self.total_followers += 1
+                            print(data)
+                            yield from self.send_message("Thanks for the follow, {user}".format(user=""))
                         else:
                             self.total_unfollowers += 1
-                except:
-                    average = self.total_viewer / self.total_index
+                    elif "subscribed" in recv:
+                        self.total_subs += 1
+                    elif "resubscribed" in recv:
+                        self.total_resubs += 1
 
-                    with open('data/stats.json', 'r+') as f:
-                        stats = load(f)
-                        
-                        stats['average-viewers'] = average
-                        stats['total-views'] = curr
+            except:
+                if self.total_index is 0:
+                    print("Not enough samples.")
 
-                        curr_followers = stats['total-followers']
-                        stats['total-followers'] = (self.total_followers + int(curr_followers))
+                average = self.total_viewer / self.total_index
 
-                        curr_unfollows = stats['total-unfollows']
-                        stats['total-unfolows'] = (self.total_unfollows + int(curr_unfollows))
+                with open('data/stats.json', 'r+') as f:
+                    stats = load(f)
 
-                        dump(stats, f, indent=4, sort_keys=True)
+                    stats['average-viewers'] = average
+                    stats['total-views'] = curr
 
-                    exit()
-        else:
-            raise Exception("Oh noes! Something went boom!")
+                    curr_followers = stats['total-followers']
+                    stats['total-followers'] = (self.total_followers + int(curr_followers))
 
-server = Server()
+                    curr_unfollows = stats['total-unfollows']
+                    stats['total-unfolows'] = (self.total_unfollows + int(curr_unfollows))
 
-server.connect('innectic')
+                    dump(stats, f, indent=4, sort_keys=True)
+
+                exit()
