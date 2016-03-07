@@ -4,6 +4,7 @@ from models import (Command, session, CommandCommand, QuoteCommand,
                     UptimeCommand, CactusCommand, CmdListCommand)
 from asyncio import async, coroutine
 from functools import partial
+from json import load, dump
 
 
 class MessageHandler(User):
@@ -15,7 +16,8 @@ class MessageHandler(User):
             events = {
                 "ChatMessage": self.message_handler,
                 "UserJoin": self.join_handler,
-                "UserLeave": self.leave_handler
+                "UserLeave": self.leave_handler,
+                "DeleteMessage": self.deleted_message_handler,
             }
 
             if response["event"] in events:
@@ -81,3 +83,12 @@ class MessageHandler(User):
         if self.config.get("announce_leave", False):
             yield from self.send_message("See you, @{username}!".format(
                 username=data["username"]))
+
+    def deleted_message_handler(self, data):
+            print(data)
+
+            with open('data/stats.json', 'r+') as f:
+                stats = load(f)
+                curr_deleted = int(stats['total-deleted-messages']) + 1
+                stats['total-deleted-messages'] = curr_deleted
+                dump(stats, f, indent=4, sort_keys=True)

@@ -59,10 +59,7 @@ def add_unique_viewer(username):
 
 
 def add_deleted_message(username):
-    with open('data/stats.json') as f:
-        stats = load(f)
-        stats['total-deleted-messages'] += 1
-        dump(stats, f)
+
 
 
 def add_banned_user(username):
