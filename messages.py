@@ -46,7 +46,7 @@ class MessageHandler(User):
                 "command": CommandCommand,
                 "quote": QuoteCommand,
                 "cube": CubeCommand,
-                "social": SocialCommand,
+                "social": SocialCommand
             }
             if args[0][1:] in commands:
                 yield from self.send_message(

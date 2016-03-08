@@ -11,8 +11,6 @@ from shutil import copyfile
 from asyncio import get_event_loop, gather, async
 
 from traceback import format_exc
-from time import sleep
-import os
 
 from models import Base, engine
 
@@ -67,19 +65,6 @@ class Cactus(MessageHandler, User):
 
     def load_config(self, filename):
         """Load configuration."""
-
-        if os.path.exists('config.json'):
-            self.logger.info("Config file was found. Loading...")
-            with open(filename) as config:
-                self.config = load(config)
-                self.channel_data = self.login(**self.config)
-                self.username = self.channel_data['username']
-        else:
-            self.logger.error("Config file was not found. Creating...")
-            os.system('cp config-template.json config.json')
-            self.logger.info(
-                "Config created. Please enter information, and restart.")
-            exit(0)
 
         if exists(filename):
             self.logger.info("Config file was found. Loading...")
@@ -148,5 +133,27 @@ class Cactus(MessageHandler, User):
                     self.logger.info("CactusBot deactivated.")
                     exit()
 
-cactus = Cactus(debug=True, autorestart=False)
-cactus.run()
+    def _run(self, *args, **kwargs):
+        """Bot execution code."""
+
+        if self.load_config(filename=self.config_file):
+            auth = {n: self.config[n] for n in ("username", "password")}
+            self.bot_data = self.login(**auth)
+            self.username = self.bot_data["username"]
+            self.bot_id = self.bot_data["id"]
+            self.logger.info("Authenticated as: {}.".format(self.username))
+
+        self.started = True
+
+        self.channel = self.config["channel"]
+        self.channel_data = self.get_channel(self.channel)
+
+        self.logger.info("Channel {ch} (id {id}) is {status}.".format(
+            ch=self.channel_data["token"], id=self.channel_data["id"],
+            status=["offline", "online"][self.channel_data["online"]]
+        ))
+
+
+if __name__ == "__main__":
+    cactus = Cactus(debug="info", autorestart=False)
+    cactus.run()

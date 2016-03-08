@@ -210,6 +210,7 @@ class UserPoints:
                 amount=amount
             )
             session.add(c)
+            session.commit()
         else:
             # Todo add the user.
             pass
@@ -250,3 +251,12 @@ class UserPoints:
             # TODO: Throw an error and tell the user that sent this bad things
             pass
         session.commit()
+
+
+class Schedule(Base):
+    __tablename__ = "scheduled"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    text = Column(String)
+    interval = Column(Integer)
+    last_ran = Column(DateTime)
