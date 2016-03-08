@@ -70,4 +70,5 @@ target/
 
 # CactusBot private data
 config.json
+stats.json
 data/*.db

@@ -4,13 +4,13 @@ from messages import MessageHandler
 from user import User
 
 from os.path import exists
-from time import sleep
 from json import load
 from shutil import copyfile
 
 from asyncio import get_event_loop, gather, async
 
 from traceback import format_exc
+from time import sleep
 
 from models import Base, engine
 
@@ -78,6 +78,19 @@ class Cactus(MessageHandler, User):
                 "Config created. Please enter information, and restart.")
             raise FileNotFoundError("Config not found.")
 
+    def load_stats(self):
+        if exists('data/stats.json'):
+            self.logger.info("Config file was found. Loading...")
+            with open('data/stats.json') as config:
+                self.config = load(config)
+                return True
+        else:
+            self.logger.warn("Config file was not found. Creating...")
+            copyfile("data/stats-templace.json", 'data/stats.json')
+            self.logger.error(
+                "Config created. Please enter information, and restart.")
+            raise FileNotFoundError("Config not found.")
+
     def run(self, *args, **kwargs):
         """Run bot."""
 
@@ -101,7 +114,7 @@ class Cactus(MessageHandler, User):
                 if self.connected:
                     tasks = gather(
                         async(self.send_message(
-                             "Ohai. I'm CactusBot. :cactus")
+                            "CactusBot activated. Enjoy! :cactus")
                         ),
                         async(self.read_chat(self.handle))
                     )
@@ -113,7 +126,7 @@ class Cactus(MessageHandler, User):
                 self.logger.info("Removing thorns... done.")
                 if self.connected:
                     loop.run_until_complete(
-                        self.send_message("Bye-Bye")
+                        self.send_message("CactusBot deactivated! :cactus")
                     )
                     pass
                 self.logger.info("CactusBot deactivated.")
@@ -145,8 +158,6 @@ class Cactus(MessageHandler, User):
 
         self.started = True
 
-        self.channel = self.get_channel(self.config["channel"])
-
         self.channel = self.config["channel"]
         self.channel_data = self.get_channel(self.channel)
 
@@ -157,5 +168,5 @@ class Cactus(MessageHandler, User):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="DEBUG", autorestart=False)
+    cactus = Cactus(debug="debug", autorestart=False)
     cactus.run()

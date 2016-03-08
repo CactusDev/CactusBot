@@ -1,7 +1,3 @@
-from websocket import create_connection
-from socketIO_client import SocketIO, LoggingNamespace
-
-
 from user import User
 import logging
 from json import load, loads, dump, dumps
@@ -18,11 +14,10 @@ class Server:
     def connect(self, username):
         print("Connecting to the live-socket")
 
-        print("Connected to the live-socket")
-
         self.websocket = SocketIO('realtime.beam.pro', 8000, LoggingNamespace)
         # self.websocket.wait(seconds=1)
         response = self.websocket.recv()
+        print("Connected to the live-socket")
 
         is_partnered = User().get_channel(username, fields="partnered")["partnered"]
 
