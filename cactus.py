@@ -120,7 +120,7 @@ class Cactus(MessageHandler, Liveloading, User):
                             "CactusBot activated. Enjoy! :cactus")
                         ),
                         async(self.read_chat(self.handle)),
-                        # async(self.liveloading.live_connect(self.channel)),
+                        async(self.liveloading.live_connect(self.channel)),
                     )
 
                     loop.run_until_complete(tasks)

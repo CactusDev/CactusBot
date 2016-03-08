@@ -185,7 +185,7 @@ class ScheduleCommand(Command):
         action = args[1]
         interval = args[2]
         text = args[3]
-    
+
         if action is "add":
             time = interval[:-1]
             modifer = interval[-1:]
@@ -197,7 +197,11 @@ class ScheduleCommand(Command):
 
 class WhoAmICommand(Command):
     def __call__(self, args, data=None):
+<<<<<<< HEAD
         return self.user.get_channel(data["channel"], fields="token")["token"]
+=======
+        return 'Ohai! Want a :cactus ?'
+>>>>>>> 3c6c6985d92bd9842a644180e9cfec56643c6a14
 
 
 class UptimeCommand(Command):
@@ -206,12 +210,12 @@ class UptimeCommand(Command):
 
 
 class CactusCommand(Command):
-    def __call__(command):
+    def __call__(self, args, data=None):
         return 'Ohai! I\'m CactusBot! And you are?'
 
 
 class CmdListCommand(Command):
-    def __call__(command):
+    def __call__(self, args, data=None):
         return ''
 
 # #### TO BE REDONE IN USERS MODEL #### #
