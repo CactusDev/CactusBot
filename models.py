@@ -29,16 +29,11 @@ class Command(Base):
 class CommandFactory:
     session = session
 
-    def add_command(self, command, response, author):
-        query = session.query(Command).filter_by(command=command).first()
-        if query:
-            query.response = response
-        else:
-            c = Command(
-                command=command,
-                response=response,
-                creation=datetime.utcnow(),
-                author=author
+        try:
+            response = sub(
+                "%arg(\d+)%",
+                lambda match: args[int(match.group(1))],
+                response
             )
             session.add(c)
         session.commit()
