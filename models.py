@@ -183,7 +183,7 @@ class ScheduleCommand(Command):
         action = args[1]
         interval = args[2]
         text = args[3]
-    
+
         if action is "add":
             time = interval[:-1]
             modifer = interval[-1:]
@@ -204,13 +204,36 @@ class UptimeCommand(Command):
 
 
 class CactusCommand(Command):
-    def __call__(command):
+    def __call__(self, args, data=None):
         return 'Ohai! I\'m CactusBot! And you are?'
 
 
 class CmdListCommand(Command):
-    def __call__(command):
+    def __call__(self, args, data=None):
         return ''
+
+
+class SpamProt(Command):
+    def __call__(self, args, data=None):
+        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
+        if data["user_roles"][0] in mod_roles:
+            if len(args) >= 3:
+                if args[1] == "caps":
+                    self.config.set('max-caps', args[2])
+                    return 'Max amount of caps per message is now: {}'.format(args[2])
+                elif args[1] == "link":
+                    self.config.set('allow-links', args[2])
+                    return 'Allow links is now: {}'.format(args[2])
+                elif args[1] == "length":
+                    self.config.set('max-message-length', args[2])
+                    return 'New max message length is: {}'.format(args[2])
+                elif args[1] == "emotes":
+                    self.config.set('max-emotes', args[2])
+                    return 'New max emotes per message is: {}'.format(args[2])
+            else:
+                return 'Not enough arguments!'
+        else:
+            return 'Only mods can run this.'
 
 # #### TO BE REDONE IN USERS MODEL #### #
 

@@ -1,9 +1,10 @@
 from user import User
 from models import (Command, session, CommandCommand, QuoteCommand,
                     CubeCommand, SocialCommand, ScheduleCommand, WhoAmICommand,
-                    UptimeCommand, CactusCommand, CmdListCommand)
+                    UptimeCommand, CactusCommand, CmdListCommand, SpamProt)
 from asyncio import async, coroutine
 from functools import partial
+from requests import delete
 
 
 class MessageHandler(User):
@@ -36,6 +37,14 @@ class MessageHandler(User):
             else:
                 parsed += chunk["text"]
 
+        # Checking for spam
+        if len(parsed) >= self.config.get('max-message-length', 256):
+            # async(coroutine(partial(self.remove_message, data["channel"], data["id"])))
+            print("STARTING")
+            delete("https://beam.pro/api/v1/chats/{id}/message/{message}".format(
+                id=data['channel'], message=data['id']))
+            print("DONE")
+
         user = data.get("user_name", "[Beam]")
         self.logger.info("[{user}] {message}".format(
             user=user, message=parsed))
@@ -53,6 +62,7 @@ class MessageHandler(User):
                 "uptime": UptimeCommand,
                 "cactus": CactusCommand,
                 "cmdlist": CmdListCommand,
+                "spamprot": SpamProt,
             }
             if args[0][1:] in commands:
                 yield from self.send_message(

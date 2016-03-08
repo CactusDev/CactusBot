@@ -11,6 +11,7 @@ class User:
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
         self.http_session = Session()
+        self.config = kwargs.get("config", dict())
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -130,8 +131,3 @@ class User:
 
             if handle:
                 handle(response)
-
-    def get_channel_name(self, id):
-        req = self._request("GET", "/channels/{id}".format(id=id))
-        j = loads(req)
-        return j['token']
