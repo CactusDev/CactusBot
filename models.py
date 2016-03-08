@@ -197,26 +197,23 @@ class ScheduleCommand(Command):
 
 class WhoAmICommand(Command):
     def __call__(self, args, data=None):
-<<<<<<< HEAD
         return self.user.get_channel(data["channel"], fields="token")["token"]
-=======
-        return 'Ohai! Want a :cactus ?'
->>>>>>> 3c6c6985d92bd9842a644180e9cfec56643c6a14
 
 
 class UptimeCommand(Command):
     def __call__(self, args, data=None):
-        return 'This isn\'t done yet. #BlameLiveLoading :cactus'
+        return "We're working on it. Will be implemented soon! :cactus"
 
 
 class CactusCommand(Command):
     def __call__(self, args, data=None):
-        return 'Ohai! I\'m CactusBot! And you are?'
+        return "Ohai! I'm CactusBot! :cactus"
 
 
 class CmdListCommand(Command):
     def __call__(self, args, data=None):
-        return ''
+        return "We're working on it. Will be implemented soon! :cactus"
+
 
 # #### TO BE REDONE IN USERS MODEL #### #
 
