@@ -261,7 +261,8 @@ class UserPoints:
 class Schedule(Base):
     __tablename__ = "scheduled"
 
-    id = Column(Integer, unique=True, primary_key=True)
+    id = Column(Integer, unique=True, primary_key=True, autoincrement=True, nullable=False)
     text = Column(String)
     interval = Column(Integer)
-    last_ran = Column(DateTime)
+    last_ran = Column(Integer)
+    uid = Column(String)
