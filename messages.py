@@ -85,10 +85,9 @@ class MessageHandler(User):
                 username=data["username"]))
 
     def deleted_message_handler(self, data):
-            print(data)
-
-            with open('data/stats.json', 'r+') as f:
+            with open("data/stats.json", 'r') as f:
                 stats = load(f)
-                curr_deleted = int(stats['total-deleted-messages']) + 1
-                stats['total-deleted-messages'] = curr_deleted
+                stats['total-deleted-messages'] += 1
+
+            with open("data/stats.json", 'w') as f:
                 dump(stats, f, indent=4, sort_keys=True)

@@ -57,10 +57,14 @@ class User:
                     data=kwargs.get("data")
                 )
 
-            if 'error' in response.json().keys():
-                self.logger.warn("Error: {}".format(response.json()['error']))
-
-            return response.json()
+            try:
+                json = response.json()
+            except ValueError:
+                return None
+            else:
+                if "error" in json.keys():
+                    self.logger.warn("Error: {}".format(json["error"]))
+                return json
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
@@ -130,8 +134,3 @@ class User:
 
             if handle:
                 handle(response)
-
-    def get_channel_name(self, id):
-        req = self._request("GET", "/channels/{id}".format(id=id))
-        j = loads(req)
-        return j['token']

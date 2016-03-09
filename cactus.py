@@ -2,13 +2,12 @@
 
 from messages import MessageHandler
 from user import User
-from liveloading import Liveloading
 
 from os.path import exists
 from json import load
 from shutil import copyfile
 
-from asyncio import get_event_loop, gather, async
+from asyncio import get_event_loop, gather
 
 from traceback import format_exc
 from time import sleep
@@ -39,12 +38,9 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, Liveloading, User):
+class Cactus(MessageHandler, User):
     started = False
-    connected = False
     message_id = 0
-
-    liveloading = Liveloading()
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
@@ -116,11 +112,12 @@ class Cactus(MessageHandler, Liveloading, User):
 
                 if self.connected:
                     tasks = gather(
-                        async(self.send_message(
-                            "CactusBot activated. Enjoy! :cactus")
+                        self.send_message(
+                            "@{}: CactusBot activated. Enjoy! :cactus".format(
+                                self.channel_data["token"]
+                            )
                         ),
-                        async(self.read_chat(self.handle)),
-                        async(self.liveloading.live_connect(self.channel)),
+                        self.read_chat(self.handle),
                     )
 
                     loop.run_until_complete(tasks)

@@ -147,17 +147,41 @@ class QuoteCommand(Command):
 
 
 class SocialCommand(Command):
+    user = User()
+
     def __call__(self, args, data=None):
-        s = self.user.get_channel(data["channel"])["user"]["social"]
-        a = [arg.lower() for arg in args[1:]]
-        if s:
-            if not a:
-                return ', '.join(': '.join((k.title(), s[k])) for k in s)
-            elif set(a).issubset(set(s)):
-                return ', '.join(': '.join((k.title(), s[k])) for k in a)
-            return "Data not found for service{s}: {}.".format(
-                ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
-        return "No social services were found on the streamer's profile."
+        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
+
+        if len(args) < 3:
+            s = self.user.get_channel(data["channel"])["user"]["social"]
+            if s:
+                a = [arg.lower() for arg in args[1:]]
+                if not a:
+                    return ', '.join(': '.join((k.title(), s[k])) for k in s)
+                elif set(a).issubset(set(s)):
+                    return ', '.join(': '.join((k.title(), s[k])) for k in a)
+                return "Data not found for service{s}: {}.".format(
+                    ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
+            return "No social services were found on the streamer's profile."
+        elif data["user_roles"][0] in mod_roles:
+            user = self.user.get_channel(args[1])
+            if user:
+                s = user["user"]["social"]
+            else:
+                return "Unknown user {user}.".format(user=args[1])
+
+            if s:
+                a = [arg.lower() for arg in args[2:]]
+                if a == ["all"]:
+                    return ', '.join(': '.join((k.title(), s[k])) for k in s)
+                elif set(a).issubset(set(s)):
+                    return ', '.join(': '.join((k.title(), s[k])) for k in a)
+                return "Data not found for service{s}: {}.".format(
+                    ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
+            return "No social services were found on {user}'s profile.".format(
+                user=args[1])
+        else:
+            return "Retrieving user social links is mod-only."
 
 
 class CubeCommand(Command):
