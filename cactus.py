@@ -112,11 +112,11 @@ class Cactus(MessageHandler, User):
 
                 if self.connected:
                     tasks = gather(
-                        self.send_message(
-                            "@{}: CactusBot activated. Enjoy! :cactus".format(
-                                self.channel_data["token"]
-                            )
-                        ),
+                        # self.send_message(
+                        #     "@{}: CactusBot activated. Enjoy! :cactus".format(
+                        #         self.channel_data["token"]
+                        #     )
+                        # ),
                         self.read_chat(self.handle),
                     )
 
@@ -126,9 +126,9 @@ class Cactus(MessageHandler, User):
             except KeyboardInterrupt:
                 self.logger.info("Removing thorns... done.")
                 if self.connected:
-                    loop.run_until_complete(
-                        self.send_message("CactusBot deactivated! :cactus")
-                    )
+                    # loop.run_until_complete(
+                    #     self.send_message("CactusBot deactivated! :cactus")
+                    # )
                     pass
                 self.logger.info("CactusBot deactivated.")
                 exit()

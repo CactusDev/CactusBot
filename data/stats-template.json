@@ -9,10 +9,10 @@
   "total-banned-users": 0,
   "average-viewers": 0,
   "total-unfollows": 0,
+  "commands-run": 0,
+  "average-message-length": 0,
   "latest-subs": [
-
   ],
   "latest-follows": [
-    
   ]
 }

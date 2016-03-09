@@ -4,10 +4,20 @@ from re import match
 from asyncio import get_event_loop, gather
 from time import time
 from threading import Thread
+from statistics import Statistics
+from user import User
 
 
 class Liveloading:
     last_ping = 0
+
+    follows = 0
+    unfollows = 0
+    subs = 0
+    resubs = 0
+
+    view_index = 0
+    viewers = 0
 
     def connect(self, username):
         print("Connecting to the live-socket")
@@ -67,9 +77,10 @@ class Liveloading:
             while True:
                 if time() - self.last_ping > self.interval/1000:
                     self.last_ping = time()
-                    print("RECONNECTED"*100)
                     self.websocket.send("2")
-        Thread(target=ping_again).start()
+                    print(self.websocket.recv())
+                    print("Reconnecting")
+                Thread(target=ping_again).start()
 
         while True:
             response = yield from self.websocket.recv()
@@ -83,14 +94,15 @@ class Liveloading:
                         if packet[1].get("viewersCurrent"):
                             print("Viewer count is now {}.".format(
                                 packet[1].get("viewersCurrent")))
-                        if packet[1].get("numFollowers"):
-                            print("Viewer count is now {}.".format(
+                        elif packet[1].get("numFollowers"):
+                            print("Follower count is now {}.".format(
                                 packet[1].get("viewersCurrent")))
+                            print(packet[1])
 
     def parse_packet(self, packet):
         return match('\d+(.+)?', packet).group(1)
 
 server = Liveloading()
 loop = get_event_loop()
-loop.run_until_complete(gather(server.connect("2Cubed")))
+loop.run_until_complete(gather(server.connect("misterjoker")))
 # server.connect('2Cubed')
