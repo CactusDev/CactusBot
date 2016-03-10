@@ -37,13 +37,16 @@ class MessageHandler(User):
             else:
                 parsed += chunk["text"]
 
+        print(data)
+
         # Checking for spam
         if len(parsed) >= self.config.get('max-message-length', 256):
-            # async(coroutine(partial(self.remove_message, data["channel"], data["id"])))
-            print("STARTING")
-            delete("https://beam.pro/api/v1/chats/{id}/message/{message}".format(
-                id=data['channel'], message=data['id']))
-            print("DONE")
+            async(coroutine(partial(self.remove_message, data["channel"], data["id"])))
+            self.send_mesage(("{}".format(data['user_name']), "Please stop spamming."), "whisper")
+        elif sum(1 for c in parsed if c.isupper()) >= 10:
+            async(User().send_message(("{}".format(data['user_name']), "Please stop speaking in all caps."), "whisper"))
+        elif parsed:
+            pass
 
         user = data.get("user_name", "[Beam]")
         self.logger.info("[{user}] {message}".format(

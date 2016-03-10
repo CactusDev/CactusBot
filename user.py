@@ -8,6 +8,9 @@ from websockets import connect
 class User:
     path = "https://beam.pro/api/v1"
 
+    message_id = "1"
+    websocket = None
+
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
         self.http_session = Session()

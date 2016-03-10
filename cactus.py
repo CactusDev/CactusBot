@@ -96,6 +96,7 @@ class Cactus(MessageHandler, User):
 
         self.logger.info(cactus_art)
         self.check_db()
+        self.connect()
 
         while self.autorestart or not self.started:
             try:
@@ -113,9 +114,9 @@ class Cactus(MessageHandler, User):
 
                 if self.connected:
                     tasks = gather(
-                        async(self.send_message(
-                            "CactusBot activated. Enjoy! :cactus")
-                        ),
+                        # async(self.send_message(
+                        #     "CactusBot activated. Enjoy! :cactus")
+                        # ),
                         async(self.read_chat(self.handle))
                     )
 
@@ -125,9 +126,9 @@ class Cactus(MessageHandler, User):
             except KeyboardInterrupt:
                 self.logger.info("Removing thorns... done.")
                 if self.connected:
-                    loop.run_until_complete(
-                        self.send_message("CactusBot deactivated! :cactus")
-                    )
+                    # loop.run_until_complete(
+                    #     self.send_message("CactusBot deactivated! :cactus")
+                    # )
                     pass
                 self.logger.info("CactusBot deactivated.")
                 exit()
