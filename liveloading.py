@@ -6,6 +6,7 @@ from time import time
 from threading import Thread
 from statistics import Statistics
 from user import User
+from messages import MessageHandler as mh
 
 
 class Liveloading:
@@ -28,9 +29,6 @@ class Liveloading:
         self.interval = int(loads(self.parse_packet(response))["pingInterval"])
         self.last_ping = time()
         print("Connected to the live-socket")
-
-        # is_partnered = User().get_channel(
-        #     username, fields="partnered")["partnered"]
 
         packet_template = [
             "put",
@@ -81,23 +79,41 @@ class Liveloading:
                     print(self.websocket.recv())
                     print("Reconnecting")
                 Thread(target=ping_again).start()
+        try:
+            while True:
+                response = yield from self.websocket.recv()
+                print(response, "RESPONSE")
+                packet = match('\d+(.+)?', response)
+                if packet:
+                    self.websocket.send("2")
+                    if packet.group(1):
+                        packet = loads(packet.group(1))
+                        if isinstance(packet[0], str):
+                            if packet[1].get("viewersCurrent"):
+                                print("Viewer count is now {}.".format(
+                                    packet[1].get("viewersCurrent")))
+                            elif packet[1].get("numFollowers"):
+                                print("Follower count is now {}.".format(
+                                    packet[1].get("viewersCurrent")))
+                                print(packet[1])
+        except:
+            if self.view_index is 0:
+                print("Not enough samples!")
+            else:
+                average = self.viewers / self.view_index
 
-        while True:
-            response = yield from self.websocket.recv()
-            print(response, "RESPONSE")
-            packet = match('\d+(.+)?', response)
-            if packet:
-                self.websocket.send("2")
-                if packet.group(1):
-                    packet = loads(packet.group(1))
-                    if isinstance(packet[0], str):
-                        if packet[1].get("viewersCurrent"):
-                            print("Viewer count is now {}.".format(
-                                packet[1].get("viewersCurrent")))
-                        elif packet[1].get("numFollowers"):
-                            print("Follower count is now {}.".format(
-                                packet[1].get("viewersCurrent")))
-                            print(packet[1])
+            data = {
+                "location": "live",
+
+                "Subs": self.subs,
+                "Resubs": self.resubs,
+                "Follows": self.followers,
+                "Unfollows": self.unfollowers,
+                "AverageViewers": average
+            }
+
+            Statistics.recv(data)
+            Statistics.recv(mh.get_data())
 
     def parse_packet(self, packet):
         return match('\d+(.+)?', packet).group(1)

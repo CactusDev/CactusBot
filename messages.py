@@ -4,10 +4,16 @@ from models import (Command, session, CommandCommand, QuoteCommand,
                     UptimeCommand, CactusCommand, CmdListCommand)
 from asyncio import async, coroutine
 from functools import partial
-from json import load, dump
+from json import load, dump, dumps
 
 
 class MessageHandler(User):
+
+    deleted_messages = 0
+    views = 0
+    commands = 0
+    messages = 0
+
     def __init__(self, *args, **kwargs):
         super(MessageHandler, self).__init__(*args, **kwargs)
 
@@ -30,6 +36,8 @@ class MessageHandler(User):
                 ))
 
     def message_handler(self, data):
+        self.messages += 1
+
         message = data["message"]["message"]
         parsed = str()
         for chunk in message:
@@ -43,6 +51,7 @@ class MessageHandler(User):
             user=user, message=parsed))
 
         if parsed[0].startswith("!") and len(parsed) > 1:
+            self.commands += 1
             args = parsed.split()
 
             commands = {
@@ -69,6 +78,8 @@ class MessageHandler(User):
                     yield from self.send_message("Command not found.")
 
     def join_handler(self, data):
+        self.views += 1
+
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
 
@@ -85,9 +96,14 @@ class MessageHandler(User):
                 username=data["username"]))
 
     def deleted_message_handler(self, data):
-            with open("data/stats.json", 'r') as f:
-                stats = load(f)
-                stats['total-deleted-messages'] += 1
+        self.deleted_messages += 1
 
-            with open("data/stats.json", 'w') as f:
-                dump(stats, f, indent=4, sort_keys=True)
+    def get_data(self):
+        data = {
+            "location": "close",
+            "Views": self.views,
+            "Deleted": self.deleted_messages,
+            "Commands": self.commands,
+            "Messages": self.messages
+        }
+        return dumps(data)
