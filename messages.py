@@ -1,12 +1,12 @@
-from user import User
+from beam import Beam
 from models import (Command, session, CommandCommand, QuoteCommand,
-                    CubeCommand, SocialCommand, ScheduleCommand, WhoAmICommand,
-                    UptimeCommand, CactusCommand, CmdListCommand)
+                    CubeCommand, SocialCommand, ScheduleCommand, UptimeCommand,
+                    CactusCommand, PointsCommand)
 from asyncio import async, coroutine
 from functools import partial
 
 
-class MessageHandler(User):
+class MessageHandler(Beam):
     def __init__(self, *args, **kwargs):
         super(MessageHandler, self).__init__(*args, **kwargs)
 
@@ -28,17 +28,15 @@ class MessageHandler(User):
                 ))
 
     def message_handler(self, data):
-        message = data["message"]["message"]
         parsed = str()
-        for chunk in message:
+        for chunk in data["message"]["message"]:
             if chunk["type"] == "text":
                 parsed += chunk["data"]
             else:
                 parsed += chunk["text"]
 
-        user = data.get("user_name", "[Beam]")
         self.logger.info("[{user}] {message}".format(
-            user=user, message=parsed))
+            user=data["user_name"], message=parsed))
 
         if parsed[0].startswith("!") and len(parsed) > 1:
             args = parsed.split()
@@ -49,10 +47,9 @@ class MessageHandler(User):
                 "cube": CubeCommand,
                 "social": SocialCommand,
                 "schedule": ScheduleCommand,
-                "whoami": WhoAmICommand,
                 "uptime": UptimeCommand,
                 "cactus": CactusCommand,
-                "cmdlist": CmdListCommand,
+                "points": PointsCommand
             }
             if args[0][1:] in commands:
                 yield from self.send_message(
@@ -61,7 +58,8 @@ class MessageHandler(User):
                 command = session.query(
                     Command).filter_by(command=args[0][1:]).first()
                 if command:
-                    response = command(user, *args)
+                    data["channel_name"] = self.channel_data["token"]
+                    response = command(args, data)
                     yield from self.send_message(response)
                 else:
                     yield from self.send_message("Command not found.")

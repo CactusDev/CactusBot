@@ -5,7 +5,7 @@ from json import dumps, loads
 from websockets import connect
 
 
-class User:
+class Beam:
     path = "https://beam.pro/api/v1"
 
     def __init__(self, debug="WARNING", **kwargs):

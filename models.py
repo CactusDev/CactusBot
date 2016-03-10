@@ -7,7 +7,7 @@ from datetime import datetime
 from re import sub, findall
 from random import randrange
 
-from user import User
+from beam import Beam
 
 basedir = abspath(dirname(__file__))
 engine = create_engine('sqlite:///' + join(basedir, 'data/data.db'))
@@ -41,13 +41,21 @@ class Quote(Base):
     author = Column(Integer)
 
 
-class Command(StoredCommand):
-    user = User()
+class User(Base):
+    __tablename__ = "users"
 
-    def __call__(self, user, *args):
+    id = Column(Integer, unique=True, primary_key=True)
+
+    points = Column(Integer, default=0)
+
+
+class Command(StoredCommand):
+    user = Beam()
+
+    def __call__(self, args, data):
         response = self.response
 
-        response = response.replace("%name%", user)
+        response = response.replace("%name%", data["user_name"])
 
         try:
             response = sub(
@@ -64,6 +72,14 @@ class Command(StoredCommand):
         session.commit()
 
         response = response.replace("%count%", str(self.calls))
+
+        response = response.replace(
+            "%channel%",
+            data.get(
+                "channel_name",
+                self.user.get_channel(data["channel"], fields="token")["token"]
+            )
+        )
 
         return response
 
@@ -97,6 +113,10 @@ class CommandCommand(Command):
                         return "Removed command !{}.".format(args[2])
                     return "!{} does not exist!".format(args[2])
                 return "Not enough arguments!"
+            elif args[1] == "list":
+                q = session.query(Command).all()
+                return "Commands: {commands}".format(
+                    commands=', '.join([c.command for c in q if c.command]))
             return "Invalid argument: {}.".format(args[1])
         return "!command is moderator-only."
 
@@ -173,8 +193,8 @@ class CubeCommand(Command):
             return "Whoa! That's 2 many cubes!"
 
         nums = sub(
-            "(\d+)",
-            lambda match: str(int(match.groups()[0]) ** 3),
+            "([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
+            lambda match: "{:g}".format(float(match.groups()[0]) ** 3),
             ' '.join(args[1:])
         )
         return nums
@@ -185,7 +205,7 @@ class ScheduleCommand(Command):
         action = args[1]
         interval = args[2]
         text = args[3]
-    
+
         if action is "add":
             time = interval[:-1]
             modifer = interval[-1:]
@@ -195,89 +215,29 @@ class ScheduleCommand(Command):
             pass
 
 
-class WhoAmICommand(Command):
-    def __call__(self, args, data=None):
-        return self.user.get_channel(data["channel"], fields="token")["token"]
-
-
 class UptimeCommand(Command):
     def __call__(self, args, data=None):
         return 'This isn\'t done yet. #BlameLiveLoading :cactus'
 
 
 class CactusCommand(Command):
-    def __call__(command):
-        return 'Ohai! I\'m CactusBot! And you are?'
+    def __call__(self, args=None, data=None):
+        return "Ohai! I'm CactusBot. :cactus"
 
 
-class CmdListCommand(Command):
-    def __call__(command):
-        return ''
-
-# #### TO BE REDONE IN USERS MODEL #### #
-
-
-class Points(Base):
-    __tablename__ = "points"
-
-    id = Column(Integer, unique=True, primary_key=True)
-    user = Column(String, unique=True)
-    amount = Column(Integer)
-
-
-class UserPoints:
-    session = Session
-
-    def add_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=amount
+class PointsCommand(Command):
+    def __call__(self, args, data):
+        q = session.query(User).filter_by(id=data["user_id"]).first()
+        if q:
+            q.points += 8
+            return str(q.points)
+        else:
+            u = User(
+                id=data["user_id"]
             )
-            session.add(c)
+            session.add(u)
             session.commit()
-        else:
-            # Todo add the user.
-            pass
-        session.commit()
-
-    def remove_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            query.delete()
-            return True
-        return False
-
-    def set_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=amount
-            )
-            session.add(c)
-        else:
-            # Todo add the user.
-            pass
-        session.commit()
-
-    def reset_points(self, username):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=0
-            )
-            session.add(c)
-        else:
-            # TODO: Throw an error and tell the user that sent this bad things
-            pass
-        session.commit()
+            return '0'
 
 
 class Schedule(Base):

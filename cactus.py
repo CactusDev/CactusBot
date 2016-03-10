@@ -1,7 +1,7 @@
 # CactusBot!
 
 from messages import MessageHandler
-from user import User
+from beam import Beam
 
 from os.path import exists
 from json import load
@@ -38,7 +38,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, User):
+class Cactus(MessageHandler, Beam):
     started = False
     connected = False
     message_id = 0
