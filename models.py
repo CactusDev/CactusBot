@@ -230,6 +230,16 @@ class SpamProt(Command):
                 elif args[1] == "emotes":
                     self.config.set('max-emotes', args[2])
                     return 'New max emotes per message is: {}'.format(args[2])
+                elif args[1] == "addfriend":
+                    if args[2]:
+                        Friend.add_friend(args[2])
+                    else:
+                        return 'Please supply a user!'
+                elif args[1] == "rmfriend":
+                    if args[2]:
+                        Friend.remove_friend(args[2])
+                    else:
+                        return 'Please supply a user!'
             else:
                 return 'Not enough arguments!'
         else:
@@ -308,3 +318,49 @@ class Schedule(Base):
     text = Column(String)
     interval = Column(Integer)
     last_ran = Column(DateTime)
+
+
+class ChatFriends(Base):
+    __tablename__ = "friends"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    text = Column(String)
+
+
+class Friend:
+    session = Session
+
+    def add_friend(self, username):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            return 'This user is already a friend'
+        else:
+            user = ChatFriends(
+                username=username
+            )
+
+            session.add(user)
+
+            session.commit()
+
+            return '{} has been added as a friend!'.format(username)
+
+    def remove_friend(self, username):
+
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            query.delete()
+
+            return '{} has been removed as a friend!'.format(username)
+        else:
+            return 'This user was never a friend'
+
+    def is_friend(self, username):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            return True
+        else:
+            return False

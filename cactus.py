@@ -96,8 +96,7 @@ class Cactus(MessageHandler, User):
 
         self.logger.info(cactus_art)
         self.check_db()
-        self.connect()
-
+        
         while self.autorestart or not self.started:
             try:
                 self._run(args, kwargs)
