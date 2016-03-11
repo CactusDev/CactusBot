@@ -16,6 +16,40 @@ Base = declarative_base()
 session = Session(engine)
 
 
+class Users(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, unique=True, primary_key=True)
+
+    username = Column(String, unique=True)
+    join_times = Column(Integer)
+
+
+class ChannelUser:
+    def add_new(self, username):
+        user = Users(
+            username=username
+        )
+
+        session.add(user)
+        session.commit()
+
+    def add_join(self, username):
+        query = session.query(Users).filter_by(username=username).first()
+
+        if query:
+            join_times = query.join_times + 1
+
+            q = Users(
+                join_times=(join_times)
+            )
+
+            session.add(q)
+            session.commit()
+        else:
+            raise Exception('That user doesn\'t exist in the database.')
+
+
 class StoredCommand(Base):
     __tablename__ = "commands"
 
@@ -247,71 +281,6 @@ class SpamProt(Command):
         else:
             return 'Only mods can run this.'
 
-# #### TO BE REDONE IN USERS MODEL #### #
-
-
-class Points(Base):
-    __tablename__ = "points"
-
-    id = Column(Integer, unique=True, primary_key=True)
-    user = Column(String, unique=True)
-    amount = Column(Integer)
-
-
-class UserPoints:
-    session = Session
-
-    def add_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=amount
-            )
-            session.add(c)
-            session.commit()
-        else:
-            # Todo add the user.
-            pass
-        session.commit()
-
-    def remove_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            query.delete()
-            return True
-        return False
-
-    def set_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=amount
-            )
-            session.add(c)
-        else:
-            # Todo add the user.
-            pass
-        session.commit()
-
-    def reset_points(self, username):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=0
-            )
-            session.add(c)
-        else:
-            # TODO: Throw an error and tell the user that sent this bad things
-            pass
-        session.commit()
-
 
 class Schedule(Base):
     __tablename__ = "scheduled"
@@ -343,9 +312,7 @@ class Friend:
             )
 
             session.add(user)
-
             session.commit()
-
             return '{} has been added as a friend!'.format(username)
 
     def remove_friend(username):
@@ -354,7 +321,6 @@ class Friend:
 
         if query:
             query.delete()
-
             return '{} has been removed as a friend!'.format(username)
         else:
             return 'This user was never a friend'
