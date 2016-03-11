@@ -52,15 +52,12 @@ class MessageHandler(User):
 
         # Checking for spam
 
-        is_friend = Friend.is_friend(data['user_name'])
+        is_friend = Friend.is_friend(self, data['user_name'])
 
         if len(parsed) >= self.config.get('max-message-length', 128) and data['user_roles'][0] not in mod_roles and not is_friend:
             yield from self.remove_message(data["channel"], data["id"])
             yield from self.send_mesage(("{}".format(data['user_name']), "Please stop spamming."), "whisper")
         elif sum(1 for c in parsed if c.isupper()) >= self.config.get('max-caps') and data['user_roles'][0] not in mod_roles and not is_friend:
-            print(data['channel'])
-            print(data['id'])
-            print(data['user_name'])
             yield from self.remove_message(data["channel"], data["id"])
             yield from self.send_message(("{}".format(data['user_name']), "Please stop speaking in all caps."), "whisper")
         elif self.check_link(parsed) and data['user_roles'][0] not in mod_roles and not is_friend:

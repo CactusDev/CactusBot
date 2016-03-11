@@ -330,7 +330,7 @@ class ChatFriends(Base):
 class Friend:
     session = Session
 
-    def add_friend(self, username):
+    def add_friend(username):
         query = session.query(Base).filter_by(username=username).first()
 
         if query:
@@ -346,7 +346,7 @@ class Friend:
 
             return '{} has been added as a friend!'.format(username)
 
-    def remove_friend(self, username):
+    def remove_friend(username):
 
         query = session.query(Base).filter_by(username=username).first()
 
@@ -357,7 +357,7 @@ class Friend:
         else:
             return 'This user was never a friend'
 
-    def is_friend(self, username):
+    def is_friend(username):
         query = session.query(Base).filter_by(username=username).first()
 
         if query:
