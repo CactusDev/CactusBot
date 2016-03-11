@@ -23,16 +23,21 @@ class Users(Base):
 
     username = Column(String, unique=True)
     join_times = Column(Integer)
+    points = Column(Integer)
 
 
 class ChannelUser:
-    def add_new(self, username):
-        user = Users(
-            username=username
-        )
 
-        session.add(user)
-        session.commit()
+    def add_new(self, username):
+        query = session.query(Users).filter_by(username=username).first()
+
+        if not query:
+            user = Users(
+                username=username
+            )
+
+            session.add(user)
+            session.commit()
 
     def add_join(self, username):
         query = session.query(Users).filter_by(username=username).first()
@@ -47,7 +52,21 @@ class ChannelUser:
             session.add(q)
             session.commit()
         else:
-            raise Exception('That user doesn\'t exist in the database.')
+            self.add_new(username)
+
+    def add_points(self, username):
+        query = session.query(Users).filter_by(username=username).first()
+        amt = User().config.get('points_per_interval')
+
+        if query:
+            new_points = query.points + amt
+
+            q = ChannelUser(
+                points=new_points
+            )
+
+            session.add(q)
+            session.commit()
 
 
 class StoredCommand(Base):

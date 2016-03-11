@@ -2,10 +2,9 @@ from user import User
 from models import (Command, session, CommandCommand, QuoteCommand,
                     CubeCommand, SocialCommand, ScheduleCommand, WhoAmICommand,
                     UptimeCommand, CactusCommand, CmdListCommand, SpamProt,
-                    Friend)
+                    Friend, ChannelUser)
 from asyncio import async, coroutine
 from functools import partial
-from requests import delete
 from re import findall
 
 
@@ -96,6 +95,8 @@ class MessageHandler(User):
                     yield from self.send_message("Command not found.")
 
     def join_handler(self, data):
+        ChannelUser.add_join(data['username'])
+
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
 
