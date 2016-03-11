@@ -7,5 +7,9 @@
   "points_enabled": true,
   "interval": 1,
   "announce_enter": false,
-  "announce_leave": false
+  "announce_leave": false,
+  "max-caps": "6",
+  "allow-links": "false",
+  "max-message-length": "256",
+  "max-emotes": "2"
 }

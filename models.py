@@ -185,7 +185,7 @@ class ScheduleCommand(Command):
         action = args[1]
         interval = args[2]
         text = args[3]
-    
+
         if action is "add":
             time = interval[:-1]
             modifer = interval[-1:]
@@ -206,13 +206,46 @@ class UptimeCommand(Command):
 
 
 class CactusCommand(Command):
-    def __call__(command):
+    def __call__(self, args, data=None):
         return 'Ohai! I\'m CactusBot! And you are?'
 
 
 class CmdListCommand(Command):
-    def __call__(command):
+    def __call__(self, args, data=None):
         return ''
+
+
+class SpamProt(Command):
+    def __call__(self, args, data=None):
+        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
+        if data["user_roles"][0] in mod_roles:
+            if len(args) >= 3:
+                if args[1] == "caps":
+                    self.config.set('max-caps', args[2])
+                    return 'Max amount of caps per message is now: {}'.format(args[2])
+                elif args[1] == "link":
+                    self.config.set('allow-links', args[2])
+                    return 'Allow links is now: {}'.format(args[2])
+                elif args[1] == "length":
+                    self.config.set('max-message-length', args[2])
+                    return 'New max message length is: {}'.format(args[2])
+                elif args[1] == "emotes":
+                    self.config.set('max-emotes', args[2])
+                    return 'New max emotes per message is: {}'.format(args[2])
+                elif args[1] == "addfriend":
+                    if args[2]:
+                        Friend.add_friend(args[2])
+                    else:
+                        return 'Please supply a user!'
+                elif args[1] == "rmfriend":
+                    if args[2]:
+                        Friend.remove_friend(args[2])
+                    else:
+                        return 'Please supply a user!'
+            else:
+                return 'Not enough arguments!'
+        else:
+            return 'Only mods can run this.'
 
 # #### TO BE REDONE IN USERS MODEL #### #
 
@@ -287,3 +320,49 @@ class Schedule(Base):
     text = Column(String)
     interval = Column(Integer)
     last_ran = Column(DateTime)
+
+
+class ChatFriends(Base):
+    __tablename__ = "friends"
+
+    id = Column(Integer, unique=True, primary_key=True)
+    text = Column(String)
+
+
+class Friend:
+    session = Session
+
+    def add_friend(username):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            return 'This user is already a friend'
+        else:
+            user = ChatFriends(
+                username=username
+            )
+
+            session.add(user)
+
+            session.commit()
+
+            return '{} has been added as a friend!'.format(username)
+
+    def remove_friend(username):
+
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            query.delete()
+
+            return '{} has been removed as a friend!'.format(username)
+        else:
+            return 'This user was never a friend'
+
+    def is_friend(username):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            return True
+        else:
+            return False

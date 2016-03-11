@@ -1,16 +1,25 @@
 from logging import getLogger as get_logger
 from logging import WARNING
 from requests import Session
-from json import dumps, loads
+from json import dumps, loads, load, dump
 from websockets import connect
 
 
 class User:
     path = "https://beam.pro/api/v1"
 
+    message_id = "1"
+
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
         self.http_session = Session()
+        self.config = kwargs.get("config", dict())
+
+    def set(self, location, data):
+        with open('data/config.json', 'r+') as f:
+            f2 = load(f)
+            f2[location] = data
+            dump(f2, f, indent=4, sort_keys=True)
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -130,8 +139,3 @@ class User:
 
             if handle:
                 handle(response)
-
-    def get_channel_name(self, id):
-        req = self._request("GET", "/channels/{id}".format(id=id))
-        j = loads(req)
-        return j['token']

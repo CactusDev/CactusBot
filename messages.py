@@ -1,9 +1,12 @@
 from user import User
 from models import (Command, session, CommandCommand, QuoteCommand,
                     CubeCommand, SocialCommand, ScheduleCommand, WhoAmICommand,
-                    UptimeCommand, CactusCommand, CmdListCommand)
+                    UptimeCommand, CactusCommand, CmdListCommand, SpamProt,
+                    Friend)
 from asyncio import async, coroutine
 from functools import partial
+from requests import delete
+from re import findall
 
 
 class MessageHandler(User):
@@ -27,6 +30,11 @@ class MessageHandler(User):
                     response["event"]
                 ))
 
+    def check_link(self, message):
+        if findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message):
+            return True
+        return False
+
     def message_handler(self, data):
         message = data["message"]["message"]
         parsed = str()
@@ -35,6 +43,26 @@ class MessageHandler(User):
                 parsed += chunk["data"]
             else:
                 parsed += chunk["text"]
+
+        print(data)
+
+        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
+
+        print(data['user_roles'])
+
+        # Checking for spam
+
+        is_friend = Friend.is_friend(self, data['user_name'])
+
+        if len(parsed) >= self.config.get('max-message-length', 128) and data['user_roles'][0] not in mod_roles and not is_friend:
+            yield from self.remove_message(data["channel"], data["id"])
+            yield from self.send_mesage(("{}".format(data['user_name']), "Please stop spamming."), "whisper")
+        elif sum(1 for c in parsed if c.isupper()) >= self.config.get('max-caps') and data['user_roles'][0] not in mod_roles and not is_friend:
+            yield from self.remove_message(data["channel"], data["id"])
+            yield from self.send_message(("{}".format(data['user_name']), "Please stop speaking in all caps."), "whisper")
+        elif self.check_link(parsed) and data['user_roles'][0] not in mod_roles and not is_friend:
+            yield from self.remove_message(data["channel"], data["id"])
+            yield from self.send_message(("{}".format(data['user_name']), "Please stop posting links,."), "whisper")
 
         user = data.get("user_name", "[Beam]")
         self.logger.info("[{user}] {message}".format(
@@ -53,6 +81,7 @@ class MessageHandler(User):
                 "uptime": UptimeCommand,
                 "cactus": CactusCommand,
                 "cmdlist": CmdListCommand,
+                "spamprot": SpamProt,
             }
             if args[0][1:] in commands:
                 yield from self.send_message(
