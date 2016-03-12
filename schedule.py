@@ -3,7 +3,7 @@ from time import time
 from asyncio import coroutine, get_event_loop, sleep
 from collections import OrderedDict
 from models import session, Schedule
-from User import User
+from user import User
 from uuid import uuid1
 
 
