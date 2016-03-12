@@ -25,9 +25,23 @@ class Users(Base):
     join_times = Column(Integer)
     points = Column(Integer)
     points_spent = Column(Integer)
+    messages_sent = Column(Integer)
 
 
 class ChannelUser:
+
+    def add_message(self, username):
+        query = session.query(Users).filter_by(username=username).first()
+
+        if query:
+            q = Users(
+                messages_sent=query.messages_sent + username
+            )
+
+            session.add(q)
+            session.commit()
+        else:
+            add_new(username)
 
     def add_spent(self, username, amount):
         query = session.query(Users).filter_by(username=username).first()
