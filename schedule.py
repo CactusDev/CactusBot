@@ -11,35 +11,29 @@ class Scheduler:
         self.scheduled = {}
         self.active_msgs = []
         self.run_msgs = []
-        scheduled_db = [
-            {"interval": 3, "message": "foo", "type": "msg", "uid": "bdc5aedce56f11e5b019448a5b8774ea"},
-            {"interval": 3, "message": "bar", "type": "msg", "uid": "c5c3a012e56f11e5b019448a5b8774ea"},
-            {"interval": 2, "message": "bar", "type": "cmd", "uid": "bb9f1fa8e56f11e5b019448a5b8774ea"},
-            {"interval": 5, "message": "bah", "type": "msg", "uid": "caa1fa7ae56f11e5b019448a5b8774ea"}
-        ]
 
-        scheduled_db = session.query(Schedule)
+        scheduled_db = session.query(Schedule).all()
 
-        print(scheduled_db)
-
-        # scheduled_db = sqlalchemy return list of all scheduled commands
         # Populate list of all scheduled commands at their proper times
         for msg in scheduled_db:
+            # self.logger.debug("[{id}] - {type} - {text} - {uid}".format(id=msg.id, type=msg.type, text=msg.text, uid=msg.uid))
             # Check if the interval already exists in self.scheduled
-            if msg["interval"] in self.scheduled:
-                self.scheduled[msg["interval"]].append(msg)
+            if msg.interval in self.scheduled:
+                self.scheduled[msg.interval].append(msg)
             else:
-                self.scheduled[msg["interval"]] = [msg]
+                self.scheduled[msg.interval] = [msg]
 
         self.scheduled = OrderedDict(sorted(self.scheduled.items()))
+
+        print(self.scheduled)
 
         self.init_time = int(time())
 
         for msg in self.scheduled.items():
+            print(msg)
             callback_time = int(time() + msg[0])
-            self.loop.call_later(msg[0], self.scheduled_handler, msg[0], callback_time, msg[1])
+            self.loop.call_later(msg[0], self.scheduled_handler, msg[0], callback_time)
             self.active_msgs.append(callback_time)
-            self.run_msgs.append(msg[1][0]["uid"])
 
     def add(self, text, type, interval):
         """Add a scheduled command to the DB
@@ -59,6 +53,9 @@ class Scheduler:
                 last_ran=int(time)
             )
 
+            # Add the new scheduled sqlalchemy object to the list of cmds
+            self.scheduled[interval].insert(c, 0)
+
             session.add(c)
             session.flush()
             session.commit()
@@ -75,14 +72,12 @@ class Scheduler:
         else:
             raise Exception("That shouldn't have happened.")
 
-    def scheduled_handler(self, interval, prev_call, group):
+    def scheduled_handler(self, interval, prev_call):
         """This function is the scheduler call_later callback function
         It handles sending the scheduled message & setting the next callback"""
-        # print("Callback")
-        # print("interval:\t", interval)
-        # print("prev_call:\t", prev_call)
+        print("Callback")
+        print("interval:\t", interval, prev_call)
         next_call = int(time() + interval)
-        # print("next_call:\t", next_call)
 
         while True:
             # Is there already another callback scheduled for that future time?
@@ -95,7 +90,12 @@ class Scheduler:
                 Pop top message into prev_msg from group
                 Append prev_msg to group"""
 
+                # Remove the first item in the list for the interval
+                cur_msg = self.scheduled[interval].popitem(last=False)
+                # Add it again, at the end of the list
+                self.scheduled[interval].append(cur_msg)
+
                 self.active_msgs.remove(prev_call)
                 self.active_msgs.append(next_call)
-                self.loop.call_later(interval, self.scheduled_handler, interval, next_call, )
+                self.loop.call_later(interval, self.scheduled_handler, interval, next_call)
                 break

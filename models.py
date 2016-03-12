@@ -266,3 +266,4 @@ class Schedule(Base):
     interval = Column(Integer)
     last_ran = Column(Integer)
     uid = Column(String)
+    type = Column(String)
