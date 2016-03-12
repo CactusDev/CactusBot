@@ -24,9 +24,23 @@ class Users(Base):
     username = Column(String, unique=True)
     join_times = Column(Integer)
     points = Column(Integer)
+    points_spent = Column(Integer)
 
 
 class ChannelUser:
+
+    def add_spent(self, username, amount):
+        query = session.query(Users).filter_by(username=username).first()
+
+        if query:
+            q = Users(
+                points_spent=query.points_spent + amount
+            )
+
+            session.add(q)
+            session.commit(q)
+        else:
+            add_new(username)
 
     def add_new(self, username):
         query = session.query(Users).filter_by(username=username).first()
@@ -63,6 +77,17 @@ class ChannelUser:
 
             q = ChannelUser(
                 points=new_points
+            )
+
+            session.add(q)
+            session.commit()
+
+    def remove_points(self, username, amount):
+        query = session.query(Users).filter_by(username=username).first()
+
+        if query:
+            q = Users(
+                points=query.points - amount
             )
 
             session.add(q)
