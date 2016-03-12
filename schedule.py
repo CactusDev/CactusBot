@@ -3,6 +3,7 @@ from time import time
 from asyncio import coroutine, get_event_loop, sleep
 from collections import OrderedDict
 from models import session, Schedule
+from User import User
 
 
 class Scheduler:
@@ -16,7 +17,6 @@ class Scheduler:
 
         # Populate list of all scheduled commands at their proper times
         for msg in scheduled_db:
-            # self.logger.debug("[{id}] - {type} - {text} - {uid}".format(id=msg.id, type=msg.type, text=msg.text, uid=msg.uid))
             # Check if the interval already exists in self.scheduled
             if msg.interval in self.scheduled:
                 self.scheduled[msg.interval].append(msg)
@@ -30,7 +30,6 @@ class Scheduler:
         self.init_time = int(time())
 
         for msg in self.scheduled.items():
-            print(msg)
             callback_time = int(time() + msg[0])
             self.loop.call_later(msg[0], self.scheduled_handler, msg[0], callback_time)
             self.active_msgs.append(callback_time)
@@ -60,7 +59,7 @@ class Scheduler:
             session.flush()
             session.commit()
         else:
-            raise Exception("WHAT ARE YOU DOING?!")
+            raise Exception("There was an error in the adding.")
 
     def remove(self, id):
         session = Session()
@@ -70,7 +69,17 @@ class Scheduler:
             query.delete()
             session.commit()
         else:
-            raise Exception("That shouldn't have happened.")
+            raise Exception("There was an error in the removal.")
+
+    def get_message(self, id):
+        session = Session()
+
+        query = session.query(Scheduled.Base).filter_by(id=id).first()
+
+        if query:
+            return query.text
+        else:
+            raise Exception("That doesn't exist.")
 
     def scheduled_handler(self, interval, prev_call):
         """This function is the scheduler call_later callback function
@@ -89,6 +98,8 @@ class Scheduler:
                 """
                 Pop top message into prev_msg from group
                 Append prev_msg to group"""
+
+                yield from User().send_message(get_message(cur_msg))
 
                 # Remove the first item in the list for the interval
                 cur_msg = self.scheduled[interval].popitem(last=False)
