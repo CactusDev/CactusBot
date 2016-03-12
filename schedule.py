@@ -4,6 +4,7 @@ from asyncio import coroutine, get_event_loop, sleep
 from collections import OrderedDict
 from models import session, Schedule
 from User import User
+from uuid import uuid1
 
 
 class Scheduler:
@@ -24,14 +25,15 @@ class Scheduler:
                 self.scheduled[msg.interval] = [msg]
 
         self.scheduled = OrderedDict(sorted(self.scheduled.items()))
-
-        print(self.scheduled)
-
         self.init_time = int(time())
 
         for msg in self.scheduled.items():
             callback_time = int(time() + msg[0])
-            self.loop.call_later(msg[0], self.scheduled_handler, msg[0], callback_time)
+            self.loop.call_later(msg[0],
+                                 self.scheduled_handler,
+                                 msg[0],
+                                 callback_time,
+                                 msg[1][0].uid)
             self.active_msgs.append(callback_time)
 
     def add(self, text, type, interval):
@@ -49,7 +51,8 @@ class Scheduler:
                 text=text,
                 interval=interval,
                 type=type,
-                last_ran=int(time)
+                last_ran=int(time),
+                uid=uuid1()
             )
 
             # Add the new scheduled sqlalchemy object to the list of cmds
@@ -71,42 +74,41 @@ class Scheduler:
         else:
             raise Exception("There was an error in the removal.")
 
-    def get_message(self, id):
-        session = Session()
-
-        query = session.query(Scheduled.Base).filter_by(id=id).first()
-
-        if query:
-            return query.text
-        else:
-            raise Exception("That doesn't exist.")
-
-    def scheduled_handler(self, interval, prev_call):
+    def scheduled_handler(self, interval, prev_call, uid):
         """This function is the scheduler call_later callback function
         It handles sending the scheduled message & setting the next callback"""
-        print("Callback")
-        print("interval:\t", interval, prev_call)
+        # print("Callback")
         next_call = int(time() + interval)
 
         while True:
             # Is there already another callback scheduled for that future time?
-            if next_call in self.active_msgs:
-                # Yes, so go to next iteration of the loop
+            if range(next_call - 3, next_call + 3) in self.active_msgs:
+                # Yes, so add the interval to the call time again
                 next_call += interval
+                # Go to next iteration of the loop
                 continue
             else:
-                """
-                Pop top message into prev_msg from group
-                Append prev_msg to group"""
+                scheduled_msg = session.query(Schedule).filter_by(uid=uid).one()
+                text = scheduled_msg.text
 
-                yield from User().send_message(get_message(cur_msg))
+                # Is it the output of a bot command?
+                if scheduled_msg.type == "cmd":
+                    yield from self.send_message(get_message(scheduled_msg))
+                else:
+                    print(scheduled_msg.text)
+                    yield from self.send_message(scheduled_msg.text)
 
-                # Remove the first item in the list for the interval
-                cur_msg = self.scheduled[interval].popitem(last=False)
-                # Add it again, at the end of the list
-                self.scheduled[interval].append(cur_msg)
+                self.scheduled[interval].append(self.scheduled[interval].pop(0))
 
+                # Remove the previous callback timestamp
                 self.active_msgs.remove(prev_call)
+                # Add the next callback timestamp so we can compare @ callback
                 self.active_msgs.append(next_call)
-                self.loop.call_later(interval, self.scheduled_handler, interval, next_call)
+
+                # Schedule next call
+                self.loop.call_later(interval,
+                                     self.scheduled_handler,
+                                     interval,
+                                     next_call,
+                                     self.scheduled[interval][0].uid)
                 break
