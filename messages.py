@@ -95,7 +95,8 @@ class MessageHandler(User):
                     yield from self.send_message("Command not found.")
 
     def join_handler(self, data):
-        ChannelUser.add_join(data['username'])
+        ch = ChannelUser()
+        ChannelUser.add_join(ch, data['username'])
 
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
