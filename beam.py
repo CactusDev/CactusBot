@@ -123,7 +123,7 @@ class Beam:
         }
 
         if not self.silent:
-            yield from self.websocket.send(dumps(msg_packet))
+            yield from self.websocket.send(dumps(message_packet))
             self.message_id += 1
 
             if method in ("msg", "auth"):
@@ -132,11 +132,11 @@ class Beam:
             return True
 
         elif method == "auth":
-            yield from self.websocket.send(dumps(msg_packet))
+            yield from self.websocket.send(dumps(message_packet))
             self.message_id += 1
 
             return (yield from self.websocket.recv())
-            
+
         else:
             return None
 

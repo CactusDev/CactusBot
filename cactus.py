@@ -1,9 +1,7 @@
 # CactusBot!
 
 from messages import MessageHandler
-from user import User
 from models import Base, engine
-from schedule import Scheduler
 
 from beam import Beam
 
@@ -58,6 +56,7 @@ class Cactus(MessageHandler, Beam):
         self.verbose = verbose
         self.silent = silent
         self.no_messages = nm
+        self.loop = get_event_loop()
 
     def _init_database(self, database):
         """Ensure the database exists."""
@@ -71,6 +70,9 @@ class Cactus(MessageHandler, Beam):
             Base.metadata.create_all(engine)
 
             self.logger.info("Done!")
+
+    def return_loop(self):
+        return self.loop
 
     def load_config(self, filename):
         """Load configuration."""
@@ -130,11 +132,7 @@ class Cactus(MessageHandler, Beam):
             try:
                 self._run(args, kwargs)
 
-                self.loop = get_event_loop()
-
-                self.init_scheduler()
-
-                self.connected = bool(loop.run_until_complete(
+                self.connected = bool(self.loop.run_until_complete(
                     self.connect(self.channel_data["id"], self.bot_data["id"])
                 ))
 

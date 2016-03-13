@@ -2,7 +2,7 @@ from beam import Beam
 from models import (Command, User, session, CommandCommand, QuoteCommand,
                     CubeCommand, SocialCommand, UptimeCommand, PointsCommand,
                     TemmieCommand, FriendCommand, SpamProtCommand, ProCommand,
-                    SubCommand)
+                    SubCommand, ScheduleCommand)
 from asyncio import async, coroutine
 from functools import partial
 from re import findall
@@ -23,6 +23,7 @@ class MessageHandler(Beam):
             "help": "Check out my documentation at cactusbot.readthedocs.org.",
             "command": CommandCommand(),
             "quote": QuoteCommand(),
+            "schedule": ScheduleCommand(self.return_loop),
             "social": SocialCommand(),
             "uptime": UptimeCommand(),
             "friend": FriendCommand(),
