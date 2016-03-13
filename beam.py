@@ -1,25 +1,19 @@
 from logging import getLogger as get_logger
 from logging import WARNING
 from requests import Session
-from json import dumps, loads, load, dump
+from json import dumps, loads
 from websockets import connect
 
 
-class User:
+class Beam:
     path = "https://beam.pro/api/v1"
 
-    message_id = "1"
+    message_id = 0
 
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
         self.http_session = Session()
         self.config = kwargs.get("config", dict())
-
-    def set(self, location, data):
-        with open('data/config.json', 'r+') as f:
-            f2 = load(f)
-            f2[location] = data
-            dump(f2, f, indent=4, sort_keys=True)
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -66,10 +60,14 @@ class User:
                     data=kwargs.get("data")
                 )
 
-            if 'error' in response.json().keys():
-                self.logger.warn("Error: {}".format(response.json()['error']))
-
-            return response.json()
+            try:
+                json = response.json()
+            except ValueError:
+                return None
+            else:
+                if "error" in json.keys():
+                    self.logger.warn("Error: {}".format(json["error"]))
+                return json
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
@@ -115,17 +113,19 @@ class User:
         if isinstance(arguments, str):
             arguments = (arguments,)
 
-        msg_packet = {
+        message_packet = {
             "type": "method",
             "method": method,
             "arguments": arguments,
             "id": self.message_id
         }
 
-        yield from self.websocket.send(dumps(msg_packet))
+        yield from self.websocket.send(dumps(message_packet))
         self.message_id += 1
 
-        return (yield from self.websocket.recv())
+        if method in ("msg", "auth"):
+            return (yield from self.websocket.recv())
+        return True
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
