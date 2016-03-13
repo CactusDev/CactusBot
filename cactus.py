@@ -238,7 +238,7 @@ if __name__ == "__main__":
     cactus = Cactus(
         debug="info",
         autorestart=parsed.autorestart,
-        # silent=parsed.silent,
+        silent=parsed.silent,
         verbose=parsed.verbose,
         nm=parsed.nm
     )

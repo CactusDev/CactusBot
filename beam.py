@@ -3,6 +3,7 @@ from logging import WARNING
 from requests import Session
 from json import dumps, loads
 from websockets import connect
+from asyncio import coroutine
 
 
 class Beam:
@@ -107,6 +108,7 @@ class Beam:
             return self.websocket
         return False
 
+    @coroutine
     def send_message(self, arguments, method="msg"):
         """Send a message to a Beam chat through a websocket."""
 
@@ -129,6 +131,12 @@ class Beam:
 
             return True
 
+        elif method == "auth":
+            yield from self.websocket.send(dumps(msg_packet))
+            self.message_id += 1
+
+            return (yield from self.websocket.recv())
+            
         else:
             return None
 

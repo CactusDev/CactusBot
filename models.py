@@ -8,6 +8,7 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange, choice
+from uuid import uuid1
 
 from beam import Beam
 
@@ -76,7 +77,7 @@ class User(Base):
 class Command(StoredCommand):
     user = Beam()
 
-    def __call__(self, args, data, channel_name=None):
+    def __call__(self, user, *args, **kwargs):
         response = self.response
 
         response = response.replace("%name%", data["user_name"])
@@ -198,7 +199,7 @@ class SocialCommand(Command):
 
 
 class CubeCommand(Command):
-    def __call__(self, args, data=None):
+    def __call__(self, args, data=None, **kwargs):
         if args[1] == '2' and len(args) == 2:
             return "8! Whoa, that's 2Cubed!"
 
@@ -215,11 +216,6 @@ class CubeCommand(Command):
             ' '.join(args[1:])
         )
         return nums
-
-
-class ScheduleCommand(Command):
-    def __call__(self, args, data=None):
-        return "In development. :cactus"
 
 
 class UptimeCommand(Command):
@@ -240,6 +236,68 @@ class PointsCommand(Command):
             session.commit()
             return '0'
 
+
+class ScheduleCommand(Command):
+    session = Session
+
+    def __init__(self, foo):
+        self.foo = foo
+        pass
+
+    def __call__(self, args, data=None):
+        """The way the command should work is: !schedule <INTERVAL> [MSG/!CMD]"""
+        # If # of args is less than 4 (required minimum) ...
+        if len(args) < 2:
+            # ... then don't continue, return an error message
+            # NOTE: Needs to return the proper usage
+            return "INCORRECT ARGUMENTS (not enough arguing going on up in here!)"
+
+        action = args[0]
+
+        # Passed all of the parsing, begin the SQL stuffs
+        # Parse data for add & edit separate from remove
+        if action == "add" or action == "edit":
+            if args[2].startswith("!"):
+                type = "cmd"
+            else:
+                type = "msg"
+
+            try:
+                interval = int(args[1])
+            except ValueError:
+                return "INCORRECT ARGUMENTS (interval not int)"
+
+            text = args[2]
+
+        elif action == "remove":
+            try:
+                id = int(args[1])
+            # Okay, it's not actually an int
+            except ValueError:
+                return "INCORRECT ARGUMENTS (ID not int)"
+
+        else:
+            # It's an unknown action
+            # Return an error message
+            return "INCORRECT ARGUMENTS (unknown action)"
+
+        # Adding a new scheduled message
+        if action == "add":
+            return scheduled_add(text=text, interval=interval, type=type)
+
+        # Remove a scheduled message
+        elif action == "remove":
+            return scheduled_remove(id=id)
+
+        # Edit a scheduled message
+        elif action == "edit":
+            pass
+
+# #### TO BE REDONE IN USERS MODEL #### #
+
+
+class Points(Base):
+    __tablename__ = "points"
 
 class TemmieCommand(Command):
     quotes = [
@@ -274,6 +332,14 @@ class FriendCommand(Command):
             return "Too many arguments."
         else:
             return "Not enough arguments."
+
+    def remove_points(self, username, amount):
+        query = session.query(Base).filter_by(username=username).first()
+
+        if query:
+            session.delete(query)
+            return True
+        return False
 
 
 class SpamProtCommand(Command):
@@ -314,7 +380,7 @@ class ProCommand(Command):
 class Schedule(Base):
     __tablename__ = "scheduled"
 
-    id = Column(Integer, unique=True, primary_key=True, autoincrement=True, nullable=False)
+    id = Column(Integer, unique=True, primary_key=True)
     text = Column(String)
     interval = Column(Integer)
     last_ran = Column(Integer)
@@ -325,4 +391,3 @@ class SubCommand(Command):
     @role_specific("Subscriber", reply="sub")
     def __call__(self, args=None, data=None):
         return "I'm a subscriber! :salute"
-
