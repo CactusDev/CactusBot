@@ -5,12 +5,15 @@ from json import dumps, loads
 from websockets import connect
 
 
-class User:
+class Beam:
     path = "https://beam.pro/api/v1"
+
+    message_id = 0
 
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug)
-        self.session = Session()
+        self.http_session = Session()
+        self.config = kwargs.get("config", dict())
 
     def _init_logger(self, level):
         """Initialize logger."""
@@ -43,24 +46,28 @@ class User:
 
         self.logger.info("Logger initialized!")
 
-    def request(self, req, url, **kwargs):
+    def _request(self, req, url, **kwargs):
         """Send HTTP request to Beam."""
         if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
             if req.lower() == "get":
-                response = self.session.get(
+                response = self.http_session.get(
                     self.path + url,
                     params=kwargs.get("params")
                 )
             else:
-                response = self.session.__getattribute__(req.lower())(
+                response = self.http_session.__getattribute__(req.lower())(
                     self.path + url,
                     data=kwargs.get("data")
                 )
 
-            if 'error' in response.json().keys():
-                self.logger.warn("Error: {}".format(response.json()['error']))
-
-            return response.json()
+            try:
+                json = response.json()
+            except ValueError:
+                return None
+            else:
+                if "error" in json.keys():
+                    self.logger.warn("Error: {}".format(json["error"]))
+                return json
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
@@ -68,15 +75,15 @@ class User:
         """Authenticate and login with Beam."""
         l = locals()
         packet = {n: l[n] for n in ("username", "password", "code")}
-        return self.request("POST", "/users/login", data=packet)
+        return self._request("POST", "/users/login", data=packet)
 
     def get_channel(self, id, **p):
         """Get channel data by username."""
-        return self.request("GET", "/channels/{id}".format(id=id), params=p)
+        return self._request("GET", "/channels/{id}".format(id=id), params=p)
 
     def get_chat(self, id):
         """Get chat server data."""
-        return self.request("GET", "/chats/{id}".format(id=id), params="")
+        return self._request("GET", "/chats/{id}".format(id=id))
 
     def connect(self, channel_id, bot_id):
         """Connect to a Beam chat through a websocket."""
@@ -106,7 +113,7 @@ class User:
         if isinstance(arguments, str):
             arguments = (arguments,)
 
-        msg_packet = {
+        message_packet = {
             "type": "method",
             "method": method,
             "arguments": arguments,
@@ -117,14 +124,17 @@ class User:
             yield from self.websocket.send(dumps(msg_packet))
             self.message_id += 1
 
-            return (yield from self.websocket.recv())
+            if method in ("msg", "auth"):
+                return (yield from self.websocket.recv())
+
+            return True
 
         else:
             return None
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
-        return self.request("DELETE", "/chats/{id}/message/{message}".format(
+        return self._request("DELETE", "/chats/{id}/message/{message}".format(
             id=channel_id, message=message_id))
 
     def read_chat(self, handle=None):
@@ -134,8 +144,3 @@ class User:
 
             if handle:
                 handle(response)
-
-    def get_channel_name(self, id):
-        req = self.request("GET", "/channels/{id}".format(id=id))
-        j = loads(req)
-        return j['token']
