@@ -1,11 +1,23 @@
 {
-  "username": "USERNAME",
-  "password": "PASSWORD",
-  "channel": "CHANNELNAME",
-  "points_name": "Thorns",
-  "points_per_interval": 5,
-  "points_enabled": true,
-  "interval": 1,
-  "announce_enter": false,
-  "announce_leave": false
+  "channel": "CHANNEL",
+  "auth": {
+    "username": "USERNAME",
+    "password": "PASSWORD"
+  },
+  "spam_protection": {
+    "maximum_message_length": 256,
+    "maximum_message_capitals": 32,
+    "maximum_message_emotes": 8,
+    "allow_links": false
+  },
+  "announcements": {
+    "announce_enter": false,
+    "announce_leave": false
+  },
+  "points": {
+    "points_name": "Coins",
+    "points_per_interval": 5,
+    "points_enabled": true,
+    "interval": 1
+  }
 }
