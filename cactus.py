@@ -189,5 +189,5 @@ class Cactus(MessageHandler, Beam):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="debug", autorestart=False)
+    cactus = Cactus(debug="debug", autorestart=False, log_to_file=True)
     cactus.run()

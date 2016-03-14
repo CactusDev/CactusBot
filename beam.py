@@ -1,10 +1,8 @@
 from logging import getLogger as get_logger
-from logging import WARNING
+from logging import INFO, WARNING, FileHandler
 from requests import Session
 from json import dumps, loads
 from websockets import connect
-from os.path import exists
-from os import rename
 
 
 class Beam:
@@ -13,18 +11,19 @@ class Beam:
     message_id = 0
 
     def __init__(self, debug="WARNING", **kwargs):
-        self._init_logger(debug)
+        self._init_logger(debug, kwargs.get("log_to_file"))
         self.http_session = Session()
         self.config = kwargs.get("config", dict())
 
-    def _init_logger(self, level):
+    def _init_logger(self, level, log_to_file=False):
         """Initialize logger."""
 
         self.logger = get_logger('CactusBot')
 
-        fh = logging.FileHandler('latest.log')
-        fh.setLevel(logging.DEBUG)
-        logger.addHandler(fh)
+        if log_to_file:
+            fh = FileHandler('latest.log')
+            fh.setLevel(INFO)
+            self.logger.addHandler(fh)
 
         level = level.upper()
 
