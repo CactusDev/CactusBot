@@ -3,6 +3,8 @@ from logging import WARNING
 from requests import Session
 from json import dumps, loads, load, dump
 from websockets import connect
+from os.path import exists
+from os import rename
 
 
 class User:
@@ -25,6 +27,10 @@ class User:
         """Initialize logger."""
 
         self.logger = get_logger('CactusBot')
+
+        fh = logging.FileHandler('latest.log')
+        fh.setLevel(logging.DEBUG)
+        logger.addHandler(fh)
 
         level = level.upper()
 
