@@ -244,7 +244,7 @@ class ScheduleCommand(Command):
 
     def __init__(self, loop):
         super(ScheduleCommand, self).__init__()
-        self.loop = loop
+        self.loop = loop()
         self.scheduled = {}
         self.active_msgs = []
         self.run_msgs = []
@@ -288,17 +288,20 @@ class ScheduleCommand(Command):
         # Passed all of the parsing, begin the SQL stuffs
         # Parse data for add & edit separate from remove
         if action == "add" or action == "edit":
-            if args[2].startswith("!"):
-                type = "cmd"
+            if len(args) >= 3:
+                if args[2].startswith("!"):
+                    type = "cmd"
+                else:
+                    type = "msg"
+
+                try:
+                    interval = int(args[1])
+                except ValueError:
+                    return "INCORRECT ARGUMENTS (interval not int)"
+
+                text = args[2]
             else:
-                type = "msg"
-
-            try:
-                interval = int(args[1])
-            except ValueError:
-                return "INCORRECT ARGUMENTS (interval not int)"
-
-            text = args[2]
+                return "INCORRECT ARGUMENTS (not enough args)"
 
         elif action == "remove":
             try:
@@ -324,7 +327,7 @@ class ScheduleCommand(Command):
 
             # Add the new scheduled sqlalchemy object to the list of cmds\
             if interval in self.scheduled:
-                self.scheduled[interval].insert(0, c)
+                self.scheduled[interval].insert(1, c)
             else:
                 self.scheduled[interval] = [c]
 
@@ -336,6 +339,7 @@ class ScheduleCommand(Command):
 
         # Remove a scheduled message
         elif action == "remove":
+            # !schedule remove <ID>
             # Find the command that matches the ID
             query = session.query(Schedule).filter_by(id=id).first()
 
@@ -355,7 +359,38 @@ class ScheduleCommand(Command):
 
         # Edit a scheduled message
         elif action == "edit":
-            pass
+            """!schedule edit <ID> [INTERVAL] [MESSAGE/CMD]
+            Can be just changing the interval, or can be just changing msg/cmd,
+                or changing both
+            """
+            # Make sure it's long enough to have action, ID, and interval/msg
+            if len(args) < 3:
+                return "INCORRECT ARGUMENTS (not enough args)"
+
+            try:
+                id = int(args[1])
+            # Okay, it's not actually an int
+            except ValueError:
+                return "INCORRECT ARGUMENTS (ID not int)"
+
+            # Find the command that matches the ID
+            query = session.query(Schedule).filter_by(id=id).first()
+
+            # Did that query return any results for that ID?
+            if query:
+                try:
+                    interval = int(interval)
+                    # It converted, so update the query interval
+                    query.interval = interval
+                # It's not an interval, so just change the text
+                except ValueError:
+                    interval = query.interval
+                    if args[2].startswith("!"):
+                        query.type = "cmd"
+                    query.text = args[2:]
+                finally:
+                    session.commit(query)
+
 
     def scheduled_handler(self, interval, prev_call, uid):
         """This function is the scheduler call_later callback function
