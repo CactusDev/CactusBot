@@ -2,6 +2,7 @@
 
 from messages import MessageHandler
 from user import User
+from liveloading import Liveloading
 
 from os.path import exists
 from json import load
@@ -38,7 +39,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, User):
+class Cactus(MessageHandler, User, Liveloading):
     started = False
     message_id = 0
 
@@ -118,6 +119,7 @@ class Cactus(MessageHandler, User):
                             )
                         ),
                         self.read_chat(self.handle),
+                        self.live_connect("innectic")
                     )
 
                     loop.run_until_complete(tasks)

@@ -82,6 +82,10 @@ class User:
         """Get chat server data."""
         return self._request("GET", "/chats/{id}".format(id=id))
 
+    def get_user(self, username):
+        channel = self.get_channel(username)['user']
+        return channel['id']
+
     def connect(self, channel_id, bot_id):
         """Connect to a Beam chat through a websocket."""
 

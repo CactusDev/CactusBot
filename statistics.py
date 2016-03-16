@@ -56,7 +56,7 @@ class Statistics:
             raise Exception("{} is not a known location".format(where))
 
     def get(self, location):
-        with open('data/stats.json', 'r+') as f:
+        with open('data/stats.json', 'r') as f:
             f = load(f)
 
             try:
@@ -65,21 +65,12 @@ class Statistics:
                 raise Exception("{} is not in the stats file".format(location))
 
     def write(self, location, data):
-        with open('data/stats.json', 'r+') as f:
+        with open('data/stats.json', 'w', encoding='utf-8') as f:
             stats = load(f)
 
             stats[location] = data
 
-            dump(stats, f, indent=4, sort_keys=True)
-
-
-class Output:
-
-    def email(self, to):
-        pass
-
-    def gen_graph(self, data):
-        pass
+            dump(stats, f, indent=4, skipkeys=False, sort_keys=True)
 
 stat = Statistics()
 
