@@ -96,20 +96,20 @@ class Cactus(MessageHandler, Beam):
         self.stats_file = filename
 
     def update_config(self, keys, value):
-        with open(self.config_file, 'r') as config:
+        with open(self.config_file, "r") as config:
             config_data = load(config)
-            reduce(lambda d, k: d[k], keys.split('.')[:-1], config_data)[
-                keys.split('.')[-1]] = value
-        with open(self.config_file, 'w+') as config:
+            reduce(lambda d, k: d[k], keys.split(".")[:-1], config_data)[
+                keys.split(".")[-1]] = value
+        with open(self.config_file, "w+") as config:
             dump(config_data, config, indent=4, sort_keys=True)
         self.config = config_data
 
     def update_stats(self, keys, value):
-        with open(self.stats_file, 'r') as stats:
+        with open(self.stats_file, "r") as stats:
             stats_data = load(stats)
-            reduce(lambda d, k: d[k], keys.split('.')[:-1], stats_data)[
-                keys.split('.')[-1]] = value
-        with open(self.config_file, 'w+') as config:
+            reduce(lambda d, k: d[k], keys.split(".")[:-1], stats_data)[
+                keys.split(".")[-1]] = value
+        with open(self.config_file, "w+") as config:
             dump(stats_data, config, indent=4, sort_keys=True)
         self.config = stats_data
 
@@ -130,7 +130,7 @@ class Cactus(MessageHandler, Beam):
                 ))
 
                 self.logger.info("{}uccessfully connected to chat {}.".format(
-                    ['Uns', 'S'][self.connected], self.channel_data["token"]
+                    ["Uns", "S"][self.connected], self.channel_data["token"]
                 ))
 
                 if self.connected:

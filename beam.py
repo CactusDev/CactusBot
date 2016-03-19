@@ -18,10 +18,10 @@ class Beam:
     def _init_logger(self, level, log_to_file=False):
         """Initialize logger."""
 
-        self.logger = get_logger('CactusBot')
+        self.logger = get_logger("CactusBot")
 
         if log_to_file:
-            fh = FileHandler('latest.log')
+            fh = FileHandler("latest.log")
             fh.setLevel(INFO)
             self.logger.addHandler(fh)
 
@@ -53,7 +53,7 @@ class Beam:
 
     def _request(self, req, url, **kwargs):
         """Send HTTP request to Beam."""
-        if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
+        if req.lower() in ("get", "head", "post", "put", "delete", "options"):
             if req.lower() == "get":
                 response = self.http_session.get(
                     self.path + url,
@@ -76,7 +76,7 @@ class Beam:
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
-    def login(self, username, password, code=''):
+    def login(self, username, password, code=""):
         """Authenticate and login with Beam."""
         l = locals()
         packet = {n: l[n] for n in ("username", "password", "code")}
