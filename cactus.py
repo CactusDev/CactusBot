@@ -4,6 +4,7 @@ from messages import MessageHandler
 from beam import Beam
 
 from os.path import exists
+from sys import exit
 from json import load, dump
 from shutil import copyfile
 from functools import reduce
@@ -79,6 +80,7 @@ class Cactus(MessageHandler, Beam):
             self.logger.error(
                 "Config file created. Please enter values and restart.")
             raise FileNotFoundError("Config not found.")
+            exit()
         self.config_file = filename
 
     def load_stats(self, filename):
