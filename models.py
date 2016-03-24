@@ -9,6 +9,7 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange, choice
+from json import load
 
 from beam import Beam
 
@@ -230,16 +231,22 @@ class UptimeCommand(Command):
 
 class PointsCommand(Command):
     def __call__(self, args, data):
-        q = session.query(User).filter_by(id=data["user_id"]).first()
-        if q:
-            q.points += 8
-            session.commit()
-            return str(q.points)
-        else:
-            u = User(id=data["user_id"])
-            session.add(u)
-            session.commit()
-            return '0'
+        with open("data/config.json", "r") as f:
+            d = load(f)
+
+            points_name = d["points"]["points_name"]
+
+            q = session.query(User).filter_by(id=data["user_id"]).first()
+            if q:
+                return "@{user} You have {amt} {point}".format(
+                    user=data['user_name'],
+                    amt=str(q.points),
+                    point=points_name)
+            else:
+                u = User(id=data["user_id"])
+                session.add(u)
+                session.commit()
+                return '0'
 
 
 class TemmieCommand(Command):
@@ -267,7 +274,7 @@ class FriendCommand(Command):
             if query:
                 query.friend = not query.friend
                 session.commit()
-                return "{}ed {} as a friend.".format(
+                return "{}ed @{} as a friend.".format(
                     ["Remov", "Add"][query.friend], args[1])
             else:
                 return "User has not entered this channel."
