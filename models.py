@@ -91,7 +91,7 @@ class Command(StoredCommand):
         except IndexError:
             return "Not enough arguments!"
 
-        response = response.replace("%args%", " ".join(args[1:]))
+        response = response.replace("%args%", ' '.join(args[1:]))
 
         self.calls += 1
         session.commit()
@@ -113,11 +113,11 @@ class CommandCommand(Command):
             if len(args) > 3:
                 q = session.query(Command).filter_by(command=args[2])
                 if q.first():
-                    q.first().response = " ".join(args[3:])
+                    q.first().response = ' '.join(args[3:])
                 else:
                     c = Command(
                         command=args[2],
-                        response=" ".join(args[3:]),
+                        response=' '.join(args[3:]),
                         creation=datetime.utcnow(),
                         author=data["user_id"]
                     )
@@ -137,7 +137,7 @@ class CommandCommand(Command):
         elif args[1] == "list":
             q = session.query(Command).all()
             return "Commands: {commands}".format(
-                commands=", ".join([c.command for c in q if c.command]))
+                commands=', '.join([c.command for c in q if c.command]))
         return "Invalid argument: {}.".format(args[1])
 
 
@@ -156,7 +156,7 @@ class QuoteCommand(Command):
             if len(args) > 2:
                 if args[1] == "add":
                     q = Quote(
-                        quote=" ".join(args[2:]),
+                        quote=' '.join(args[2:]),
                         creation=datetime.utcnow(),
                         author=data["user_id"]
                     )
@@ -190,30 +190,30 @@ class SocialCommand(Command):
         a = [arg.lower() for arg in args[1:]]
         if s:
             if not a:
-                return ", ".join(": ".join((k.title(), s[k])) for k in s)
+                return ', '.join(': '.join((k.title(), s[k])) for k in s)
             elif set(a).issubset(set(s)):
-                return ", ".join(": ".join((k.title(), s[k])) for k in a)
+                return ', '.join(': '.join((k.title(), s[k])) for k in a)
             return "Data not found for service{s}: {}.".format(
-                ", ".join(set(a)-set(s)), s="s"*(len(set(a)-set(s)) != 1))
+                ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
         return "No social services were found on the streamer's profile."
 
 
 class CubeCommand(Command):
     def __call__(self, args, data=None):
-        if args[1] == "2" and len(args) == 2:
+        if args[1] == '2' and len(args) == 2:
             return "8! Whoa, that's 2Cubed!"
 
-        numbers = findall("\d+", " ".join(args[1:]))
+        numbers = findall("\d+", ' '.join(args[1:]))
 
         if len(numbers) == 0:
-            return "({})³".format(" ".join(args[1:]))
+            return "({})³".format(' '.join(args[1:]))
         elif len(numbers) > 8:
             return "Whoa! That's 2 many cubes!"
 
         nums = sub(
             "([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
             lambda match: "{:g}".format(float(match.groups()[0]) ** 3),
-            " ".join(args[1:])
+            ' '.join(args[1:])
         )
         return nums
 
@@ -239,7 +239,7 @@ class PointsCommand(Command):
             u = User(id=data["user_id"])
             session.add(u)
             session.commit()
-            return "0"
+            return '0'
 
 
 class TemmieCommand(Command):

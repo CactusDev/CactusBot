@@ -55,7 +55,7 @@ class MessageHandler(Beam):
                 parsed += chunk["text"]
 
         self.logger.info("{me}[{user}] {message}".format(
-            me="*" if data["message"]["meta"].get("me") else "",
+            me='*' if data["message"]["meta"].get("me") else '',
             user=data["user_name"],
             message=parsed)
         )
@@ -125,7 +125,7 @@ class MessageHandler(Beam):
                     yield from self.send_message(response(args, data))
             else:
                 options = [
-                    ("-".join(args[:2])[1:], ["-".join(args[:2])] + args[2:]),
+                    ('-'.join(args[:2])[1:], ['-'.join(args[:2])] + args[2:]),
                     (args[0][1:], args)
                 ]
 
