@@ -13,7 +13,6 @@ class Beam:
     def __init__(self, debug="WARNING", **kwargs):
         self._init_logger(debug, kwargs.get("log_to_file", False))
         self.http_session = Session()
-        self.config = kwargs.get("config", dict())
 
     def _init_logger(self, level, log_to_file=False):
         """Initialize logger."""
@@ -124,6 +123,10 @@ class Beam:
             "arguments": arguments,
             "id": self.message_id
         }
+
+        if method == "msg":
+            self.logger.info("$[CactusBot] {message}".format(
+                message=arguments[0]))
 
         yield from self.websocket.send(dumps(message_packet))
         self.message_id += 1
