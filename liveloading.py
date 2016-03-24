@@ -4,8 +4,7 @@ from re import match
 from time import time
 from threading import Thread
 from beam import Beam
-# from messages import MessageHandler as mh
-# from statistics import Statistics
+from cactus import Cactus
 
 
 class Liveloading:
@@ -18,8 +17,25 @@ class Liveloading:
 
     view_index = 0
     viewers = 0
+    views = 0
+
+    commands_run = 0
+    deleted_messages = 0
+    total_messages = 0
 
     usr = Beam()
+
+    def add_run_command(self):
+        self.commands_run += 1
+
+    def add_deleted(self):
+        self.deleted_messages += 1
+
+    def add_message(self):
+        self.total_messages += 1
+
+    def add_view(self):
+        self.views += 1
 
     def live_connect(self, username):
         self.logger.info("Connecting to the live-socket")
@@ -55,7 +71,7 @@ class Liveloading:
             "channel:{cid}:followed".format(cid=cid),
             "channel:{cid}:subscribed".format(cid=cid),
             "channel:{cid}:resubscribed".format(cid=cid),
-            "usr:{uid}:update".format(uid=uid)
+            "user:{uid}:update".format(uid=uid)
         )
 
         for event in events:
@@ -74,8 +90,6 @@ class Liveloading:
         yield from self.websocket.send("42")
 
         def ping_again():
-            print(time())
-            print(time() - self.last_ping)
             while True:
                 if time() - self.last_ping > 10:
                     self.last_ping = time()
@@ -84,7 +98,7 @@ class Liveloading:
                 Thread(target=ping_again).start()
         try:
             while True:
-                # ping_again()
+                ping_again()
                 response = yield from self.websocket.recv()
                 packet = match('\d+(.+)?', response)
                 if packet:
@@ -93,45 +107,46 @@ class Liveloading:
                         packet = loads(packet.group(1))
                         if isinstance(packet[0], str):
                             if packet[1].get("viewersCurrent"):
-                                print("Viewer count is now {}.".format(
-                                    packet[1].get("viewersCurrent")))
-                            elif packet[1].get("numFollowers"):
-                                print("Follower count is now {}.".format(
-                                    packet[1].get("numFollowers")))
+                                self.view_index += 1
+                                self.viewers += packet[1].get('viewersCurrent')
                             elif packet[1].get('subscribed'):
+                                self.subs += 1
                                 username = packet[1]['user']['username']
                                 yield from self.send_message(
                                     "{} just subscribed to the channel!")
                             elif packet[1].get("resubscribed"):
                                 username = packet[1]
+                                self.resubs += 1
                             elif packet[1].get("followed"):
                                 username = packet[1]
 
                                 if packet[1]['following'] is True:
+                                    self.follows += 1
+
                                     yield from self.send_message(
                                         "{} just followed the channel!".format(username))
         except:
             if self.view_index is 0:
-                print("Not enough samples!")
+                self.logger.error("Not enough samples for average viewers!")
             else:
                 average = self.viewers / self.view_index
+                cur_views = Cactus.get_stat("total-views")
+                cur_commands = Cactus.get_stat("commands-run")
+                cur_subs = Cactus.get_stat("total-subs")
+                cur_resubs = Cactus.get_stat("total-resubs")
+                cur_follows = Cactus.get_stat("total-subs")
+                cur_unfollows = Cactus.get_stat("total-unfollows")
+                cur_deleted = Cactus.get_stat("total-deleted")
+                cur_messages = Cactus.get_stat("total-messages")
 
-            # data = {
-            #     "location": "live",
-            #
-            #     "Subs": self.subs,
-            #     "Resubs": self.resubs,
-            #     "Follows": self.followers,
-            #     "Unfollows": self.unfollowers,
-            #     "AverageViewers": average
-            # }
-
-            # Statistics.recv(data)
-            # Statistics.recv(mh.get_data())
+                Cactus.update_stats("average-viewers", str(average))
+                Cactus.update_stats("total-followers", str(self.follows + cur_follows))
+                Cactus.update_stats("total-unfollows", str(self.unfollows + cur_unfollows))
+                Cactus.update_stats("total-subs", str(self.subs + cur_subs))
+                Cactus.update_stats("total-resubs", str(self.resubs + cur_resubs))
+                Cactus.update_stats("total-views", str(self.views + cur_views))
+                Cactus.update_stats("commands-run", str(self.commands_run + cur_commands))
+                Cactus.update_stats("total-messages", str(self.total_messages + cur_messages))
 
     def parse_packet(self, packet):
         return match('\d+(.+)?', packet).group(1)
-
-# server = Liveloading()
-# loop = get_event_loop()
-# loop.run_until_complete(gather(server.connect("innectic")))

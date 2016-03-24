@@ -9,6 +9,8 @@ from json import load, dump, dumps
 
 from re import findall
 
+from liveloading import Liveloading
+
 
 class MessageHandler(Beam):
 
@@ -22,7 +24,8 @@ class MessageHandler(Beam):
         self.events = {
             "ChatMessage": self.message_handler,
             "UserJoin": self.join_handler,
-            "UserLeave": self.leave_handler
+            "UserLeave": self.leave_handler,
+            "DeletedMessage": self.deleted_message_handler
         }
 
         self.commands = {
@@ -54,7 +57,7 @@ class MessageHandler(Beam):
                 ))
 
     def message_handler(self, data):
-        self.messages += 1
+        Liveloading.add_message()
         message = data["message"]["message"]
 
         parsed = str()
@@ -125,7 +128,7 @@ class MessageHandler(Beam):
                     "whisper"))
 
         if parsed[0].startswith("!") and len(parsed) > 1:
-            self.commands += 1
+            Liveloading.add_run_command()
             args = parsed.split()
 
             if args[0][1:] in self.commands:
@@ -152,7 +155,7 @@ class MessageHandler(Beam):
                 return (yield from self.send_message("Command not found."))
 
     def join_handler(self, data):
-        self.views += 1
+        Liveloading.add_view()
 
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
@@ -169,3 +172,6 @@ class MessageHandler(Beam):
             if self.config.get("announce_leave", False):
                 yield from self.send_message("See you, @{username}!".format(
                     username=data["username"]))
+
+    def deleted_message_handler(self, data):
+        Liveloading.add_deleted()

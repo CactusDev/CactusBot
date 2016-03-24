@@ -10,27 +10,10 @@
   "total-unfollows": 0,
   "commands-run": 0,
   "average-message-length": 0,
-
   "latest-subs": [
   ],
+  "latest-resubs": [
+  ],
   "latest-follows": [
-  ],
-  "daily-deletes": [
-  ],
-  "daily-commands": [
-  ],
-  "daily-average": [
-  ],
-  "daily-subs": [
-  ],
-  "daily-follows": [
-  ],
-  "daily-resubs": [
-  ],
-  "daily-messages": [
-  ],
-  "daily-unfollows": [
-  ],
-  "daily-views": [
   ]
 }

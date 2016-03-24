@@ -113,6 +113,12 @@ class Cactus(MessageHandler, Beam, Liveloading):
             dump(stats_data, config, indent=4, sort_keys=True)
         self.config = stats_data
 
+    def get_stat(self, loc):
+        with open(self.stats_file, "r") as conf:
+            conf = load(conf)
+
+            return conf[loc]
+
     def run(self, *args, **kwargs):
         """Run bot."""
 
