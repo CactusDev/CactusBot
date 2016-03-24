@@ -2,6 +2,7 @@
 
 from messages import MessageHandler
 from beam import Beam
+from points import Points
 
 from os.path import exists
 from sys import exit

@@ -75,6 +75,42 @@ class User(Base):
     points = Column(Integer, default=0)
 
 
+class PtsCmd:
+
+    def add(self, user, amt):
+        q = session.query(User).filter_by(id=user).first()
+
+        if not q:
+            self.set(user, amt)
+        else:
+            q.points += amt
+
+            session.add(user)
+            session.commit()
+
+    def remove(self, user, amt):
+        q = session.query(User).filter_by(id=user).first()
+
+        if q:
+            if amt > q.points:
+                q.points = 0
+            else:
+                q.points = q.points - amt
+        else:
+            self.set(user, 0)
+
+    def set(self, user, amt):
+        q = session.query(User).filter_by(id=user).first()
+
+        if q:
+            q.points = amt
+        else:
+            user = User(id=user, points=amt)
+
+            session.add(user)
+            session.commit()
+
+
 class Command(StoredCommand):
     user = Beam()
 
