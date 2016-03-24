@@ -3,7 +3,7 @@ from json import loads, dumps
 from re import match
 from time import time
 from threading import Thread
-from user import User
+from beam import Beam
 # from messages import MessageHandler as mh
 # from statistics import Statistics
 
@@ -19,7 +19,7 @@ class Liveloading:
     view_index = 0
     viewers = 0
 
-    usr = User()
+    usr = Beam()
 
     def live_connect(self, username):
         self.logger.info("Connecting to the live-socket")
