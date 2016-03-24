@@ -85,7 +85,7 @@ class Command(StoredCommand):
         try:
             response = sub(
                 "%arg(\d+)%",
-                lambda match: args[int(match.groups()[0])],
+                lambda match: args[int(match.group(1))],
                 response
             )
         except IndexError:
