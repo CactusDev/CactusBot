@@ -1,19 +1,38 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import (create_engine, Column, Integer, String, DateTime,
+                        Boolean)
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
+
+from functools import wraps
 
 from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
-from random import randrange
+from random import randrange, choice
 
-from user import User
+from beam import Beam
 
 basedir = abspath(dirname(__file__))
-engine = create_engine('sqlite:///' + join(basedir, 'data/data.db'))
+engine = create_engine("sqlite:///" + join(basedir, "data/data.db"))
 Base = declarative_base()
 
 session = Session(engine)
+
+
+def role_specific(*roles, reply=None):
+    roles += ("Owner",)
+
+    def role_specific_decorator(function):
+        @wraps(function)
+        def wrapper(self, args, data):
+            if any(filter(lambda r: r in data["user_roles"], roles)):
+                return function(self, args, data)
+            r = reply if reply else roles[0].lower() if roles else "permission"
+            return "This command is {}-only!".format(r)
+        return wrapper
+    return role_specific_decorator
+
+mod_only = role_specific("Founder", "Staff", "Global Mod", "Mod", reply="mod")
 
 
 class StoredCommand(Base):
@@ -41,18 +60,32 @@ class Quote(Base):
     author = Column(Integer)
 
 
-class Command(StoredCommand):
-    user = User()
+class User(Base):
+    __tablename__ = "users"
 
-    def __call__(self, user, *args):
+    id = Column(Integer, unique=True, primary_key=True)
+
+    friend = Column(Boolean, default=False)
+
+    joins = Column(Integer, default=0)
+    messages = Column(Integer, default=0)
+    strikes = Column(Integer, default=0)
+
+    points = Column(Integer, default=0)
+
+
+class Command(StoredCommand):
+    user = Beam()
+
+    def __call__(self, args, data, channel_name=None):
         response = self.response
 
-        response = response.replace("%name%", user)
+        response = response.replace("%name%", data["user_name"])
 
         try:
             response = sub(
                 "%arg(\d+)%",
-                lambda match: args[int(match.group(1))],
+                lambda match: args[int(match.groups()[0])],
                 response
             )
         except IndexError:
@@ -65,123 +98,104 @@ class Command(StoredCommand):
 
         response = response.replace("%count%", str(self.calls))
 
+        response = response.replace(
+            "%channel%",
+            channel_name if channel_name else data["id"]
+        )
+
         return response
 
 
 class CommandCommand(Command):
+    @mod_only
     def __call__(self, args, data):
-        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-        if data["user_roles"][0] in mod_roles:
-            if args[1] == "add":
-                if len(args) > 3:
-                    q = session.query(Command).filter_by(command=args[2])
-                    if q.first():
-                        q.first().response = ' '.join(args[3:])
-                    else:
-                        c = Command(
-                            command=args[2],
-                            response=' '.join(args[3:]),
-                            creation=datetime.utcnow(),
-                            author=data["user_id"]
-                        )
-                        session.add(c)
-                        session.commit()
-                    return "Added command !{}.".format(args[2])
-                return "Not enough arguments!"
-            elif args[1] == "remove":
-                if len(args) > 2:
-                    q = session.query(Command).filter_by(command=args[2])
-                    if q.first():
-                        q.delete()
-                        session.commit()
-                        return "Removed command !{}.".format(args[2])
-                    return "!{} does not exist!".format(args[2])
-                return "Not enough arguments!"
-            return "Invalid argument: {}.".format(args[1])
-        return "!command is moderator-only."
+        if args[1] == "add":
+            if len(args) > 3:
+                q = session.query(Command).filter_by(command=args[2])
+                if q.first():
+                    q.first().response = ' '.join(args[3:])
+                else:
+                    c = Command(
+                        command=args[2],
+                        response=' '.join(args[3:]),
+                        creation=datetime.utcnow(),
+                        author=data["user_id"]
+                    )
+                    session.add(c)
+                    session.commit()
+                return "Added command !{}.".format(args[2])
+            return "Not enough arguments!"
+        elif args[1] == "remove":
+            if len(args) > 2:
+                q = session.query(Command).filter_by(command=args[2])
+                if q.first():
+                    q.delete()
+                    session.commit()
+                    return "Removed command !{}.".format(args[2])
+                return "!{} does not exist!".format(args[2])
+            return "Not enough arguments!"
+        elif args[1] == "list":
+            q = session.query(Command).all()
+            return "Commands: {commands}".format(
+                commands=', '.join([c.command for c in q if c.command]))
+        return "Invalid argument: {}.".format(args[1])
 
 
 class QuoteCommand(Command):
+    @mod_only
     def __call__(self, args, data):
-        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-        if data["user_roles"][0] in mod_roles:
-            if len(args) > 1:
-                try:
-                    id = int(args[1])
-                    return session.query(Quote).filter_by(id=id).first().quote
-                except ValueError:
-                    pass
-                except AttributeError:
-                    return "Undefined quote with ID {}.".format(id)
+        if len(args) > 1:
+            try:
+                id = int(args[1])
+                return session.query(Quote).filter_by(id=id).first().quote
+            except ValueError:
+                pass
+            except AttributeError:
+                return "Undefined quote with ID {}.".format(id)
 
-                if len(args) > 2:
-                    if args[1] == "add":
-                        q = Quote(
-                            quote=' '.join(args[2:]),
-                            creation=datetime.utcnow(),
-                            author=data["user_id"]
-                        )
-                        session.add(q)
-                        session.flush()
+            if len(args) > 2:
+                if args[1] == "add":
+                    q = Quote(
+                        quote=' '.join(args[2:]),
+                        creation=datetime.utcnow(),
+                        author=data["user_id"]
+                    )
+                    session.add(q)
+                    session.flush()
+                    session.commit()
+                    return "Added quote with ID {}.".format(q.id)
+                elif args[1] == "remove":
+                    try:
+                        id = int(args[2])
+                    except ValueError:
+                        return "Invalid quote ID '{}'.".format(args[2])
+                    q = session.query(Quote).filter_by(id=id)
+                    if q.first():
+                        q.delete()
                         session.commit()
-                        return "Added quote with ID {}.".format(q.id)
-                    elif args[1] == "remove":
-                        try:
-                            id = int(args[2])
-                        except ValueError:
-                            return "Invalid quote ID '{}'.".format(args[2])
-                        q = session.query(Quote).filter_by(id=id)
-                        if q.first():
-                            q.delete()
-                            session.commit()
-                            return "Removed quote with ID {}.".format(args[2])
-                        return "Quote {} does not exist!".format(args[2])
-                    return "Invalid argument: '{}'".format(args[1])
-                return "Not enough arguments."
-            else:
-                if not session.query(Quote).count():
-                    return "No quotes added."
-                random_id = randrange(0, session.query(Quote).count())
-                return session.query(Quote)[random_id].quote
-        return "!quote is moderator-only."
+                        return "Removed quote with ID {}.".format(args[2])
+                    return "Quote {} does not exist!".format(args[2])
+                return "Invalid argument: '{}'".format(args[1])
+            return "Not enough arguments."
+        else:
+            if not session.query(Quote).count():
+                return "No quotes added."
+            random_id = randrange(0, session.query(Quote).count())
+            return session.query(Quote)[random_id].quote
 
 
 class SocialCommand(Command):
-    user = User()
-
     def __call__(self, args, data=None):
-        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-
-        if len(args) < 3:
-            s = self.user.get_channel(data["channel"])["user"]["social"]
-            if s:
-                a = [arg.lower() for arg in args[1:]]
-                if not a:
-                    return ', '.join(': '.join((k.title(), s[k])) for k in s)
-                elif set(a).issubset(set(s)):
-                    return ', '.join(': '.join((k.title(), s[k])) for k in a)
-                return "Data not found for service{s}: {}.".format(
-                    ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
-            return "No social services were found on the streamer's profile."
-        elif data["user_roles"][0] in mod_roles:
-            user = self.user.get_channel(args[1])
-            if user:
-                s = user["user"]["social"]
-            else:
-                return "Unknown user {user}.".format(user=args[1])
-
-            if s:
-                a = [arg.lower() for arg in args[2:]]
-                if a == ["all"]:
-                    return ', '.join(': '.join((k.title(), s[k])) for k in s)
-                elif set(a).issubset(set(s)):
-                    return ', '.join(': '.join((k.title(), s[k])) for k in a)
-                return "Data not found for service{s}: {}.".format(
-                    ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
-            return "No social services were found on {user}'s profile.".format(
-                user=args[1])
-        else:
-            return "Retrieving user social links is mod-only."
+        s = self.user.get_channel(data["channel"])["user"]["social"]
+        a = [arg.lower() for arg in args[1:]]
+        if s:
+            if not a:
+                return ', '.join(': '.join((k.title(), s[k])) for k in s)
+            elif set(a).issubset(set(s)):
+                return ', '.join(': '.join((k.title(), s[k])) for k in a)
+            return "Data not found for service{s}: {}.".format(
+                ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
+        return "No social services were found on the streamer's profile."
 
 
 class CubeCommand(Command):
@@ -197,8 +211,8 @@ class CubeCommand(Command):
             return "Whoa! That's 2 many cubes!"
 
         nums = sub(
-            "(\d+)",
-            lambda match: str(int(match.groups()[0]) ** 3),
+            "([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
+            lambda match: "{:g}".format(float(match.groups()[0]) ** 3),
             ' '.join(args[1:])
         )
         return nums
@@ -206,109 +220,99 @@ class CubeCommand(Command):
 
 class ScheduleCommand(Command):
     def __call__(self, args, data=None):
-        action = args[1]
-        interval = args[2]
-        text = args[3]
-
-        if action is "add":
-            time = interval[:-1]
-            modifer = interval[-1:]
-        elif action is "remove":
-            pass
-        else:
-            pass
-
-
-class WhoAmICommand(Command):
-    def __call__(self, args, data=None):
-        return self.user.get_channel(data["channel"], fields="token")["token"]
+        return "In development. :cactus"
 
 
 class UptimeCommand(Command):
     def __call__(self, args, data=None):
-        return "We're working on it. Will be implemented soon! :cactus"
+        return "In development. :cactus"
 
 
-class CactusCommand(Command):
-    def __call__(self, args, data=None):
-        return "Ohai! I'm CactusBot! :cactus"
-
-
-class CmdListCommand(Command):
-    def __call__(self, args, data=None):
-        return "We're working on it. Will be implemented soon! :cactus"
-
-
-# #### TO BE REDONE IN USERS MODEL #### #
-
-
-class Points(Base):
-    __tablename__ = "points"
-
-    id = Column(Integer, unique=True, primary_key=True)
-    user = Column(String, unique=True)
-    amount = Column(Integer)
-
-
-class UserPoints:
-    session = Session
-
-    def add_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            c = Points(
-                username=username,
-                amount=amount
-            )
-            session.add(c)
+class PointsCommand(Command):
+    def __call__(self, args, data):
+        q = session.query(User).filter_by(id=data["user_id"]).first()
+        if q:
+            q.points += 8
             session.commit()
+            return str(q.points)
         else:
-            # Todo add the user.
-            pass
-        session.commit()
+            u = User(id=data["user_id"])
+            session.add(u)
+            session.commit()
+            return '0'
 
-    def remove_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
 
-        if query:
-            query.delete()
-            return True
-        return False
+class TemmieCommand(Command):
+    quotes = [
+        "fhsdhjfdsfjsddshjfsd",
+        "hOI!!!!!! i'm tEMMIE!!",
+        "awwAwa cute!! (pets u)",
+        "OMG!! humans TOO CUTE (dies)",
+        "NO!!!!! muscles r... NOT CUTE",
+        "NO!!! so hungr... (dies)",
+        "FOOB!!!",
+        "can't blame a BARK for tryin'..."
+    ]
 
-    def set_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
+    def __call__(self, args=None, data=None):
+        return choice(self.quotes)
 
-        if query:
-            c = Points(
-                username=username,
-                amount=amount
-            )
-            session.add(c)
+
+class FriendCommand(Command):
+    @mod_only
+    def __call__(self, args, data):
+        if len(args) == 2:
+            id = self.user.get_channel(args[1])["user"]["id"]
+            query = session.query(User).filter_by(id=id).first()
+            if query:
+                query.friend = not query.friend
+                session.commit()
+                return "{}ed {} as a friend.".format(
+                    ["Remov", "Add"][query.friend], args[1])
+            else:
+                return "User has not entered this channel."
+        elif len(args) > 2:
+            return "Too many arguments."
         else:
-            # Todo add the user.
-            pass
-        session.commit()
+            return "Not enough arguments."
 
-    def reset_points(self, username):
-        query = session.query(Base).filter_by(username=username).first()
 
-        if query:
-            c = Points(
-                username=username,
-                amount=0
-            )
-            session.add(c)
+class SpamProtCommand(Command):
+    def __init__(self, update_config):
+        super(SpamProtCommand, self).__init__()
+        self.update_config = update_config
+
+    @mod_only
+    def __call__(self, args, data=None):
+        if len(args) >= 3:
+            if args[1] == "length":
+                self.update_config("spam_protection.maximum_message_length",
+                                   int(args[2]))
+                return "Maximum message length set to {}.".format(args[2])
+            elif args[1] == "caps":
+                self.update_config("spam_protection.maximum_message_capitals",
+                                   int(args[2]))
+                return "Maximum capitals per message set to {}.".format(
+                    args[2])
+            elif args[1] == "emotes":
+                self.update_config("spam_protection.maximum_message_emotes",
+                                   int(args[2]))
+                return "Maximum emotes per message set to {}.".format(args[2])
+            elif args[1] == "link":
+                self.update_config("spam_protection.allow_links",
+                                   bool(args[2]))
+                return "Links are now {}allowed.".format("dis"*bool(args[2]))
         else:
-            # TODO: Throw an error and tell the user that sent this bad things
-            pass
-        session.commit()
+            return "Not enough arguments"
 
 
-class Schedule(Base):
-    __tablename__ = "scheduled"
+class ProCommand(Command):
+    @role_specific("Pro", reply="pro")
+    def __call__(self, args=None, data=None):
+        return "I'm such a Pro! B)"
 
-    id = Column(Integer, unique=True, primary_key=True)
-    text = Column(String)
-    interval = Column(Integer)
-    last_ran = Column(DateTime)
+
+class SubCommand(Command):
+    @role_specific("Subscriber", reply="sub")
+    def __call__(self, args=None, data=None):
+        return "I'm a subscriber! :salute"
