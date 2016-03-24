@@ -349,6 +349,27 @@ class SpamProtCommand(Command):
             return "Not enough arguments"
 
 
+class PermitCommand(Command):
+        @mod_only
+        def __call__(self, args, data):
+            if len(args) == 3:
+                id = self.user.get_channel(args[1])["user"]["id"]
+                query = session.query(User).filter_by(id=id).first()
+                if query:
+                    query.friend = not query.friend
+                    session.commit()
+
+                    # TODO: Make the timer to unpermit people when time runs out.
+                    return "@{} is permitted for {} min.".format(
+                        args[1], args[2])
+                else:
+                    return "User has not entered this channel."
+            elif len(args) > 3:
+                return "Too many arguments."
+            else:
+                return "Not enough arguments."
+
+
 class ProCommand(Command):
     @role_specific("Pro", reply="pro")
     def __call__(self, args=None, data=None):
