@@ -1,10 +1,10 @@
 from websockets import connect
-from json import loads, dumps
+from json import loads, dumps, load, dump
 from re import match
 from time import time
 from threading import Thread
 from beam import Beam
-from cactus import Cactus
+from functools import reduce
 
 
 class Liveloading:
@@ -37,12 +37,32 @@ class Liveloading:
     def add_view(self):
         self.views += 1
 
+    def update_stats(self, keys, value):
+        with open(self.stats_file, "r") as stats:
+            stats_data = load(stats)
+            reduce(lambda d, k: d[k], keys.split(".")[:-1], stats_data)[
+                keys.split(".")[-1]] = value
+        with open(self.config_file, "w+") as config:
+            dump(stats_data, config, indent=4, sort_keys=True)
+        self.config = stats_data
+
+    def get_stat(self, loc):
+        with open(self.stats_file, "r") as conf:
+            conf = load(conf)
+
+            return conf[loc]
+
+    def parse_packet(self, packet):
+        return match('\d+(.+)?', packet).group(1)
+
     def live_connect(self, username):
         self.logger.info("Connecting to the live-socket")
 
         self.websocket = yield from connect(
             "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
+
         response = yield from self.websocket.recv()
+
         self.interval = int(loads(self.parse_packet(response))["pingInterval"])
         self.last_ping = time()
         self.logger.info("Connected to the live-socket")
@@ -130,23 +150,38 @@ class Liveloading:
                 self.logger.error("Not enough samples for average viewers!")
             else:
                 average = self.viewers / self.view_index
-                cur_views = Cactus.get_stat("total-views")
-                cur_commands = Cactus.get_stat("commands-run")
-                cur_subs = Cactus.get_stat("total-subs")
-                cur_resubs = Cactus.get_stat("total-resubs")
-                cur_follows = Cactus.get_stat("total-subs")
-                cur_unfollows = Cactus.get_stat("total-unfollows")
-                cur_deleted = Cactus.get_stat("total-deleted")
-                cur_messages = Cactus.get_stat("total-messages")
+                cur_views = self.get_stat("total-views")
+                cur_commands = self.get_stat("commands-run")
+                cur_subs = self.get_stat("total-subs")
+                cur_resubs = self.get_stat("total-resubs")
+                cur_follows = self.get_stat("total-subs")
+                cur_unfollows = self.get_stat("total-unfollows")
+                cur_deleted = self.get_stat("total-deleted")
+                cur_messages = self.get_stat("total-messages")
 
-                Cactus.update_stats("average-viewers", str(average))
-                Cactus.update_stats("total-followers", str(self.follows + cur_follows))
-                Cactus.update_stats("total-unfollows", str(self.unfollows + cur_unfollows))
-                Cactus.update_stats("total-subs", str(self.subs + cur_subs))
-                Cactus.update_stats("total-resubs", str(self.resubs + cur_resubs))
-                Cactus.update_stats("total-views", str(self.views + cur_views))
-                Cactus.update_stats("commands-run", str(self.commands_run + cur_commands))
-                Cactus.update_stats("total-messages", str(self.total_messages + cur_messages))
+                self.update_stats("average-viewers",
+                                  average)
 
-    def parse_packet(self, packet):
-        return match('\d+(.+)?', packet).group(1)
+                self.update_stats("total-followers",
+                                  self.follows + cur_follows)
+
+                self.update_stats("total-unfollows",
+                                  self.unfollows + cur_unfollows)
+
+                self.update_stats("total-subs",
+                                  self.subs + cur_subs)
+
+                self.update_stats("total-resubs",
+                                  self.resubs + cur_resubs)
+
+                self.update_stats("total-views",
+                                  self.views + cur_views)
+
+                self.update_stats("commands-run",
+                                  self.commands_run + cur_commands)
+
+                self.update_stats("total-messages",
+                                  self.total_messages + cur_messages)
+
+                self.update_stats("deleted-messages",
+                                  self.deleted_messages + cur_deleted)

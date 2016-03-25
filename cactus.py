@@ -104,21 +104,6 @@ class Cactus(MessageHandler, Beam, Liveloading):
             dump(config_data, config, indent=4, sort_keys=True)
         self.config = config_data
 
-    def update_stats(self, keys, value):
-        with open(self.stats_file, "r") as stats:
-            stats_data = load(stats)
-            reduce(lambda d, k: d[k], keys.split(".")[:-1], stats_data)[
-                keys.split(".")[-1]] = value
-        with open(self.config_file, "w+") as config:
-            dump(stats_data, config, indent=4, sort_keys=True)
-        self.config = stats_data
-
-    def get_stat(self, loc):
-        with open(self.stats_file, "r") as conf:
-            conf = load(conf)
-
-            return conf[loc]
-
     def run(self, *args, **kwargs):
         """Run bot."""
 
