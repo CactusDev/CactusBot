@@ -9,7 +9,6 @@ from os.path import abspath, dirname, join
 from datetime import datetime
 from re import sub, findall
 from random import randrange, choice
-from json import load
 
 from beam import Beam
 
@@ -70,45 +69,9 @@ class User(Base):
 
     joins = Column(Integer, default=0)
     messages = Column(Integer, default=0)
-    strikes = Column(Integer, default=0)
+    offenses = Column(Integer, default=0)
 
     points = Column(Integer, default=0)
-
-
-class PtsCmd:
-
-    def add(self, user, amt):
-        q = session.query(User).filter_by(id=user).first()
-
-        if not q:
-            self.set(user, amt)
-        else:
-            q.points += amt
-
-            session.add(user)
-            session.commit()
-
-    def remove(self, user, amt):
-        q = session.query(User).filter_by(id=user).first()
-
-        if q:
-            if amt > q.points:
-                q.points = 0
-            else:
-                q.points = q.points - amt
-        else:
-            self.set(user, 0)
-
-    def set(self, user, amt):
-        q = session.query(User).filter_by(id=user).first()
-
-        if q:
-            q.points = amt
-        else:
-            user = User(id=user, points=amt)
-
-            session.add(user)
-            session.commit()
 
 
 class Command(StoredCommand):
@@ -148,33 +111,35 @@ class CommandCommand(Command):
     def __call__(self, args, data):
         if args[1] == "add":
             if len(args) > 3:
-                q = session.query(Command).filter_by(command=args[2])
-                if q.first():
-                    q.first().response = ' '.join(args[3:])
+                command = session.query(Command).filter_by(
+                    command=args[2]).first()
+                if command:
+                    command.response = ' '.join(args[3:])
                 else:
-                    c = Command(
+                    command = Command(
                         command=args[2],
                         response=' '.join(args[3:]),
                         creation=datetime.utcnow(),
                         author=data["user_id"]
                     )
-                    session.add(c)
+                    session.add(command)
                     session.commit()
                 return "Added command !{}.".format(args[2])
             return "Not enough arguments!"
         elif args[1] == "remove":
             if len(args) > 2:
-                q = session.query(Command).filter_by(command=args[2])
-                if q.first():
-                    q.delete()
+                command = session.query(Command).filter_by(
+                    command=args[2]).first()
+                if command:
+                    command.delete()
                     session.commit()
                     return "Removed command !{}.".format(args[2])
                 return "!{} does not exist!".format(args[2])
             return "Not enough arguments!"
         elif args[1] == "list":
-            q = session.query(Command).all()
+            commands = session.query(Command).all()
             return "Commands: {commands}".format(
-                commands=', '.join([c.command for c in q if c.command]))
+                commands=', '.join([c.command for c in commands if c.command]))
         return "Invalid argument: {}.".format(args[1])
 
 
@@ -192,23 +157,23 @@ class QuoteCommand(Command):
 
             if len(args) > 2:
                 if args[1] == "add":
-                    q = Quote(
+                    quote = Quote(
                         quote=' '.join(args[2:]),
                         creation=datetime.utcnow(),
                         author=data["user_id"]
                     )
-                    session.add(q)
+                    session.add(quote)
                     session.flush()
                     session.commit()
-                    return "Added quote with ID {}.".format(q.id)
+                    return "Added quote with ID {}.".format(quote.id)
                 elif args[1] == "remove":
                     try:
                         id = int(args[2])
                     except ValueError:
                         return "Invalid quote ID '{}'.".format(args[2])
-                    q = session.query(Quote).filter_by(id=id)
-                    if q.first():
-                        q.delete()
+                    quote = session.query(Quote).filter_by(id=id)
+                    if quote.first():
+                        quote.delete()
                         session.commit()
                         return "Removed quote with ID {}.".format(args[2])
                     return "Quote {} does not exist!".format(args[2])
@@ -266,23 +231,18 @@ class UptimeCommand(Command):
 
 
 class PointsCommand(Command):
+    def __init__(self, points_name):
+        super(PointsCommand, self).__init__()
+        self.points_name = points_name
+
     def __call__(self, args, data):
-        with open("data/config.json", "r") as f:
-            d = load(f)
-
-            points_name = d["points"]["points_name"]
-
-            q = session.query(User).filter_by(id=data["user_id"]).first()
-            if q:
-                return "@{user} You have {amt} {point}".format(
-                    user=data['user_name'],
-                    amt=str(q.points),
-                    point=points_name)
-            else:
-                u = User(id=data["user_id"])
-                session.add(u)
-                session.commit()
-                return '0'
+        if len(args) > 1:
+            return "Points update in development. :cactus"
+        user = session.query(User).filter_by(id=data["user_id"]).first()
+        return "@{user} has {amount} {name}.".format(
+            user=data["user_name"],
+            amount=user.points,
+            name=self.points_name + ('s' if user.points != 1 else ''))
 
 
 class TemmieCommand(Command):
@@ -347,27 +307,6 @@ class SpamProtCommand(Command):
                 return "Links are now {}allowed.".format("dis"*bool(args[2]))
         else:
             return "Not enough arguments"
-
-
-class PermitCommand(Command):
-        @mod_only
-        def __call__(self, args, data):
-            if len(args) == 3:
-                id = self.user.get_channel(args[1])["user"]["id"]
-                query = session.query(User).filter_by(id=id).first()
-                if query:
-                    query.friend = not query.friend
-                    session.commit()
-
-                    # TODO: Make the timer to unpermit people when time runs out.
-                    return "@{} is permitted for {} min.".format(
-                        args[1], args[2])
-                else:
-                    return "User has not entered this channel."
-            elif len(args) > 3:
-                return "Too many arguments."
-            else:
-                return "Not enough arguments."
 
 
 class ProCommand(Command):

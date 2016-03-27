@@ -2,7 +2,6 @@
 
 from messages import MessageHandler
 from beam import Beam
-from points import Points
 
 from os.path import exists
 from sys import exit
@@ -189,6 +188,8 @@ class Cactus(MessageHandler, Beam):
             ch=self.channel_data["token"], id=self.channel_data["id"],
             status=["offline", "online"][self.channel_data["online"]]
         ))
+
+        self._init_commands()
 
 
 if __name__ == "__main__":

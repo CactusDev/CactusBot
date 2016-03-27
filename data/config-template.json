@@ -15,9 +15,9 @@
     "announce_leave": false
   },
   "points": {
-    "points_name": "Coins",
-    "points_per_interval": 5,
-    "points_enabled": true,
-    "interval": 1
+    "name": "coin",
+    "per_interval": 5,
+    "interval": 1,
+    "enabled": true
   }
 }

@@ -77,8 +77,11 @@ class Beam:
 
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        l = locals()
-        packet = {n: l[n] for n in ("username", "password", "code")}
+        packet = {
+            "username": username,
+            "password": password,
+            "code": code
+        }
         return self._request("POST", "/users/login", data=packet)
 
     def get_channel(self, id, **p):

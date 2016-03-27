@@ -17,6 +17,7 @@ class MessageHandler(Beam):
             "UserLeave": self.leave_handler
         }
 
+    def _init_commands(self):
         self.commands = {
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
@@ -26,7 +27,7 @@ class MessageHandler(Beam):
             "social": SocialCommand(),
             "uptime": UptimeCommand(),
             "friend": FriendCommand(),
-            "points": PointsCommand(),
+            "points": PointsCommand(self.config["points"]["name"]),
             "spamprot": SpamProtCommand(self.update_config),
             "pro": ProCommand(),
             "sub": SubCommand(),
@@ -74,7 +75,7 @@ class MessageHandler(Beam):
             if (len(parsed) > self.config["spam_protection"].get(
                     "maximum_message_length", 256)):
                 self.remove_message(data["channel"], data["id"])
-                user.strikes += 1
+                user.offenses += 1
                 session.commit()
                 return (yield from self.send_message(
                     (data["user_name"],
@@ -84,7 +85,7 @@ class MessageHandler(Beam):
                     self.config["spam_protection"].get(
                         "maximum_message_capitals", 32)):
                 self.remove_message(data["channel"], data["id"])
-                user.strikes += 1
+                user.offenses += 1
                 session.commit()
                 return (yield from self.send_message(
                     (data["user_name"],
@@ -95,7 +96,7 @@ class MessageHandler(Beam):
                     self.config["spam_protection"].get(
                     "maximum_message_emotes", 8)):
                 self.remove_message(data["channel"], data["id"])
-                user.strikes += 1
+                user.offenses += 1
                 session.commit()
                 return (yield from self.send_message(
                     (data["user_name"],
@@ -107,7 +108,7 @@ class MessageHandler(Beam):
                     self.config["spam_protection"].get(
                         "allow_links", False)):
                 self.remove_message(data["channel"], data["id"])
-                user.strikes += 1
+                user.offenses += 1
                 session.commit()
                 return (yield from self.send_message(
                     (data["user_name"],
