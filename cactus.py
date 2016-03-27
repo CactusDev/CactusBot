@@ -70,32 +70,30 @@ class Cactus(MessageHandler, Beam):
         """Load configuration."""
 
         if exists(filename):
-            self.logger.info("Config file was found. Loading...")
+            self.logger.info("Configuration file was found. Loading...")
             self.config_file = filename
             with open(filename) as config:
                 self.config = load(config)
                 return self.config
         else:
-            self.logger.warn("Config file was not found. Creating...")
+            self.logger.warn("Configuration file was not found. Creating...")
             copyfile("data/config-template.json", filename)
             self.logger.error(
-                "Config file created. Please enter values and restart.")
-            raise FileNotFoundError("Config not found.")
+                "Configuration file created. Please enter values and restart.")
+            raise FileNotFoundError("Configuration not found.")
             exit()
 
     def load_stats(self, filename):
         if exists(filename):
             self.stats_file = filename
-            self.logger.info("Stats file was found. Loading...")
+            self.logger.info("Statistics file was found. Loading...")
             with open(filename) as stats:
                 self.stats = load(stats)
                 return self.stats
         else:
             self.logger.warn("Statistics file was not found. Creating...")
             copyfile("data/stats-template.json", "data/stats.json")
-            self.logger.error(
-                "Statistics file created. Please enter values and restart.")
-            raise FileNotFoundError("Statistics file not found.")
+            self.logger.info("Statistics file created.")
 
     def update_config(self, keys, value):
         with open(self.config_file, 'r') as config:
@@ -174,6 +172,7 @@ class Cactus(MessageHandler, Beam):
         """Bot execution code."""
 
         if self.load_config(filename=self.config_file):
+            self.load_stats(filename=self.stats_file)
             self.bot_data = self.login(**self.config["auth"])
             self.username = self.bot_data["username"]
             self.bot_id = self.bot_data["id"]
