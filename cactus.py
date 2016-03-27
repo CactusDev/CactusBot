@@ -71,6 +71,7 @@ class Cactus(MessageHandler, Beam):
 
         if exists(filename):
             self.logger.info("Config file was found. Loading...")
+            self.config_file = filename
             with open(filename) as config:
                 self.config = load(config)
                 return self.config
@@ -81,21 +82,20 @@ class Cactus(MessageHandler, Beam):
                 "Config file created. Please enter values and restart.")
             raise FileNotFoundError("Config not found.")
             exit()
-        self.config_file = filename
 
     def load_stats(self, filename):
         if exists(filename):
+            self.stats_file = filename
             self.logger.info("Stats file was found. Loading...")
             with open(filename) as stats:
                 self.stats = load(stats)
                 return self.stats
         else:
             self.logger.warn("Statistics file was not found. Creating...")
-            copyfile("data/stats-templace.json", "data/stats.json")
+            copyfile("data/stats-template.json", "data/stats.json")
             self.logger.error(
                 "Statistics file created. Please enter values and restart.")
             raise FileNotFoundError("Statistics file not found.")
-        self.stats_file = filename
 
     def update_config(self, keys, value):
         with open(self.config_file, 'r') as config:
