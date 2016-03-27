@@ -1,21 +1,28 @@
 from logging import getLogger as get_logger
-from logging import WARNING
+from logging import INFO, WARNING, FileHandler
 from requests import Session
 from json import dumps, loads
 from websockets import connect
 
 
-class User:
+class Beam:
     path = "https://beam.pro/api/v1"
 
-    def __init__(self, debug="WARNING", **kwargs):
-        self._init_logger(debug)
-        self.session = Session()
+    message_id = 0
 
-    def _init_logger(self, level):
+    def __init__(self, debug="WARNING", **kwargs):
+        self._init_logger(debug, kwargs.get("log_to_file", False))
+        self.http_session = Session()
+
+    def _init_logger(self, level, log_to_file=False):
         """Initialize logger."""
 
-        self.logger = get_logger('CactusBot')
+        self.logger = get_logger("CactusBot")
+
+        if log_to_file:
+            file_handler = FileHandler("latest.log")
+            file_handler.setLevel(INFO)
+            self.logger.addHandler(file_handler)
 
         if level is True:
             level = "DEBUG"
@@ -43,40 +50,47 @@ class User:
 
         self.logger.info("Logger initialized!")
 
-    def request(self, req, url, **kwargs):
+    def _request(self, req, url, **kwargs):
         """Send HTTP request to Beam."""
-        if req.lower() in ('get', 'head', 'post', 'put', 'delete', 'options'):
+        if req.lower() in ("get", "head", "post", "put", "delete", "options"):
             if req.lower() == "get":
-                response = self.session.get(
+                response = self.http_session.get(
                     self.path + url,
                     params=kwargs.get("params")
                 )
             else:
-                response = self.session.__getattribute__(req.lower())(
+                response = self.http_session.__getattribute__(req.lower())(
                     self.path + url,
                     data=kwargs.get("data")
                 )
 
-            if 'error' in response.json().keys():
-                self.logger.warn("Error: {}".format(response.json()['error']))
-
-            return response.json()
+            try:
+                json = response.json()
+            except ValueError:
+                return None
+            else:
+                if "error" in json.keys():
+                    self.logger.warn("Error: {}".format(json["error"]))
+                return json
         else:
             self.logger.debug("Invalid request: {}".format(req))
 
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        l = locals()
-        packet = {n: l[n] for n in ("username", "password", "code")}
-        return self.request("POST", "/users/login", data=packet)
+        packet = {
+            "username": username,
+            "password": password,
+            "code": code
+        }
+        return self._request("POST", "/users/login", data=packet)
 
     def get_channel(self, id, **p):
         """Get channel data by username."""
-        return self.request("GET", "/channels/{id}".format(id=id), params=p)
+        return self._request("GET", "/channels/{id}".format(id=id), params=p)
 
     def get_chat(self, id):
         """Get chat server data."""
-        return self.request("GET", "/chats/{id}".format(id=id))
+        return self._request("GET", "/chats/{id}".format(id=id))
 
     def connect(self, channel_id, bot_id):
         """Connect to a Beam chat through a websocket."""
@@ -106,21 +120,27 @@ class User:
         if isinstance(arguments, str):
             arguments = (arguments,)
 
-        msg_packet = {
+        message_packet = {
             "type": "method",
             "method": method,
             "arguments": arguments,
             "id": self.message_id
         }
 
-        yield from self.websocket.send(dumps(msg_packet))
+        if method == "msg":
+            self.logger.info("$[CactusBot] {message}".format(
+                message=arguments[0]))
+
+        yield from self.websocket.send(dumps(message_packet))
         self.message_id += 1
 
-        return (yield from self.websocket.recv())
+        if method in ("msg", "auth"):
+            return (yield from self.websocket.recv())
+        return True
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
-        return self.request("DELETE", "/chats/{id}/message/{message}".format(
+        return self._request("DELETE", "/chats/{id}/message/{message}".format(
             id=channel_id, message=message_id))
 
     def read_chat(self, handle=None):

@@ -1,16 +1,18 @@
 # CactusBot!
 
 from messages import MessageHandler
-from user import User
+from beam import Beam
 
 from os.path import exists
-from time import sleep
-from json import load
+from sys import exit
+from json import load, dump
 from shutil import copyfile
+from functools import reduce
 
 from asyncio import get_event_loop, gather, async
 
 from traceback import format_exc
+from time import sleep
 
 from models import Base, engine
 
@@ -38,7 +40,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, User):
+class Cactus(MessageHandler, Beam):
     started = False
     connected = False
     message_id = 0
@@ -48,12 +50,13 @@ class Cactus(MessageHandler, User):
         self.debug = kwargs.get("DEBUG", False)
         self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
+        self.stats_file = kwargs.get("stats_file", "data/stats.json")
         self.database = kwargs.get("database", "data/data.db")
 
-    def check_db(self):
+    def _init_database(self, database):
         """Ensure the database exists."""
 
-        if exists(self.database):
+        if exists(database):
             self.logger.info("Found database.")
         else:
             self.logger.info("Database wasn't found.")
@@ -67,22 +70,54 @@ class Cactus(MessageHandler, User):
         """Load configuration."""
 
         if exists(filename):
-            self.logger.info("Config file was found. Loading...")
+            self.logger.info("Configuration file was found. Loading...")
+            self.config_file = filename
             with open(filename) as config:
                 self.config = load(config)
-                return True
+                return self.config
         else:
-            self.logger.warn("Config file was not found. Creating...")
+            self.logger.warn("Configuration file was not found. Creating...")
             copyfile("data/config-template.json", filename)
             self.logger.error(
-                "Config created. Please enter information, and restart.")
-            raise FileNotFoundError("Config not found.")
+                "Configuration file created. Please enter values and restart.")
+            raise FileNotFoundError("Configuration not found.")
+            exit()
+
+    def load_stats(self, filename):
+        if exists(filename):
+            self.stats_file = filename
+            self.logger.info("Statistics file was found. Loading...")
+            with open(filename) as stats:
+                self.stats = load(stats)
+                return self.stats
+        else:
+            self.logger.warn("Statistics file was not found. Creating...")
+            copyfile("data/stats-template.json", "data/stats.json")
+            self.logger.info("Statistics file created.")
+
+    def update_config(self, keys, value):
+        with open(self.config_file, 'r') as config:
+            config_data = load(config)
+            reduce(lambda d, k: d[k], keys.split('.')[:-1], config_data)[
+                keys.split('.')[-1]] = value
+        with open(self.config_file, 'w+') as config:
+            dump(config_data, config, indent=4, sort_keys=True)
+        self.config = config_data
+
+    def update_stats(self, keys, value):
+        with open(self.stats_file, 'r') as stats:
+            stats_data = load(stats)
+            reduce(lambda d, k: d[k], keys.split('.')[:-1], stats_data)[
+                keys.split('.')[-1]] = value
+        with open(self.config_file, 'w+') as config:
+            dump(stats_data, config, indent=4, sort_keys=True)
+        self.config = stats_data
 
     def run(self, *args, **kwargs):
         """Run bot."""
 
         self.logger.info(cactus_art)
-        self.check_db()
+        self._init_database(self.database)
 
         while self.autorestart or not self.started:
             try:
@@ -91,11 +126,11 @@ class Cactus(MessageHandler, User):
                 loop = get_event_loop()
 
                 self.connected = bool(loop.run_until_complete(
-                    self.connect(self.channel_data['id'], self.bot_data['id'])
+                    self.connect(self.channel_data["id"], self.bot_data["id"])
                 ))
 
                 self.logger.info("{}uccessfully connected to chat {}.".format(
-                    ['Uns', 'S'][self.connected], self.channel_data["token"]
+                    ["Uns", "S"][self.connected], self.channel_data["token"]
                 ))
 
                 if self.connected:
@@ -137,8 +172,8 @@ class Cactus(MessageHandler, User):
         """Bot execution code."""
 
         if self.load_config(filename=self.config_file):
-            auth = {n: self.config[n] for n in ("username", "password")}
-            self.bot_data = self.login(**auth)
+            self.load_stats(filename=self.stats_file)
+            self.bot_data = self.login(**self.config["auth"])
             self.username = self.bot_data["username"]
             self.bot_id = self.bot_data["id"]
             self.logger.info("Authenticated as: {}.".format(self.username))
@@ -153,7 +188,9 @@ class Cactus(MessageHandler, User):
             status=["offline", "online"][self.channel_data["online"]]
         ))
 
+        self._init_commands()
+
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="info", autorestart=False)
+    cactus = Cactus(debug="debug", autorestart=False, log_to_file=True)
     cactus.run()
