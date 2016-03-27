@@ -1,7 +1,6 @@
 # CactusBot!
 
 from messages import MessageHandler
-from liveloading import Liveloading
 from beam import Beam
 
 from os.path import exists
@@ -9,7 +8,8 @@ from json import load, dump
 from shutil import copyfile
 from functools import reduce
 
-from asyncio import get_event_loop, gather
+from asyncio import get_event_loop, gather  # , async, coroutine
+# from threading import Thread
 
 from traceback import format_exc
 from time import sleep
@@ -40,7 +40,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """
 
 
-class Cactus(MessageHandler, Beam, Liveloading):
+class Cactus(MessageHandler, Beam):
     started = False
     message_id = 0
 
@@ -78,7 +78,7 @@ class Cactus(MessageHandler, Beam, Liveloading):
             copyfile("data/config-template.json", filename)
             self.logger.error(
                 "Config file created. Please enter values and restart.")
-            raise FileNotFoundError("Config not found.")
+            raise FileNotFoundError("Config file not found.")
         self.config_file = filename
 
     def load_stats(self, filename):
@@ -104,6 +104,15 @@ class Cactus(MessageHandler, Beam, Liveloading):
             dump(config_data, config, indent=4, sort_keys=True)
         self.config = config_data
 
+    def update_stats(self, keys, value):
+        with open(self.stats_file, "r") as stats:
+            stats_data = load(stats)
+            reduce(lambda d, k: d[k], keys.split(".")[:-1], stats_data)[
+                keys.split(".")[-1]] = value
+        with open(self.stats_file, "w+") as stats:
+            dump(stats_data, stats, indent=4, sort_keys=True)
+        self.stats = stats_data
+
     def run(self, *args, **kwargs):
         """Run bot."""
 
@@ -114,34 +123,59 @@ class Cactus(MessageHandler, Beam, Liveloading):
             try:
                 self._run(args, kwargs)
 
-                loop = get_event_loop()
+                self.loop = get_event_loop()
 
-                self.connected = bool(loop.run_until_complete(
-                    self.connect(self.channel_data["id"], self.bot_data["id"])
-                ))
+                self.connected = bool(
+                    self.loop.run_until_complete(
+                        self.connect(
+                            self.channel_data["id"],
+                            self.bot_data["id"]
+                        )
+                    )
+                ) and bool(
+                    self.loop.run_until_complete(
+                        self.subscribe_to_liveloading(
+                            self.channel_data["id"],
+                            self.channel_data["userId"]
+                        )
+                    )
+                )
 
                 self.logger.info("{}uccessfully connected to chat {}.".format(
                     ["Uns", "S"][self.connected], self.channel_data["token"]
                 ))
 
                 if self.connected:
+                    # tasks = [
+                    #     self.keep_liveloading_alive,
+                    #     self.watch_liveloading
+                    # ]
+                    #
+                    # # for task in tasks:
+                    # #     loop = new_event_loop()
+                    # #     return loop.run_until_complete(task())
+                    #
+                    # for task in tasks:
+                    #     self.loop.call_soon(task)
+                    #
+                    # self.loop.run_forever()
+                    # self.loop.run_until_complete(tasks)
+                    # self.loop.run_until_complete(run())
+
                     tasks = gather(
                         self.send_message(
-                            "@{}: CactusBot activated. Enjoy! :cactus".format(
-                              self.channel_data["token"]
-                            )
+                            "CactusBot activated. Enjoy! :cactus"
                         ),
-                        self.read_chat(self.handle),
-                        self.live_connect("innectic")
+                        self.read_chat(self.handle)
                     )
 
-                    loop.run_until_complete(tasks)
+                    self.loop.run_until_complete(tasks)
                 else:
                     raise ConnectionError
             except KeyboardInterrupt:
                 self.logger.info("Removing thorns... done.")
                 if self.connected:
-                    loop.run_until_complete(
+                    self.loop.run_until_complete(
                         self.send_message("CactusBot deactivated! :cactus")
                     )
                     pass
@@ -167,9 +201,8 @@ class Cactus(MessageHandler, Beam, Liveloading):
 
         if self.load_config(filename=self.config_file):
             self.bot_data = self.login(**self.config["auth"])
-            self.username = self.bot_data["username"]
-            self.bot_id = self.bot_data["id"]
-            self.logger.info("Authenticated as: {}.".format(self.username))
+            self.logger.info("Authenticated as {}.".format(
+                self.bot_data["username"]))
 
         self.started = True
 
@@ -181,7 +214,6 @@ class Cactus(MessageHandler, Beam, Liveloading):
             status=["offline", "online"][self.channel_data["online"]]
         ))
 
-        # print(self.channel)
 
 if __name__ == "__main__":
     cactus = Cactus(debug="debug", autorestart=False, log_to_file=True)

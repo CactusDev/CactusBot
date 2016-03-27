@@ -4,6 +4,9 @@ from requests import Session
 from json import dumps, loads
 from websockets import connect
 
+from time import time
+from re import match
+
 
 class Beam:
     path = "https://beam.pro/api/v1"
@@ -146,5 +149,87 @@ class Beam:
             response = loads((yield from self.websocket.recv()))
             self.logger.debug(response)
 
-            if handle:
+            if callable(handle):
                 handle(response)
+
+    def subscribe_to_liveloading(self, channel_id, user_id):
+        self.liveloading_websocket = yield from connect(
+            "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
+
+        response = yield from self.liveloading_websocket.recv()
+
+        self.interval = loads(
+            match('\d+(.+)?', response).group(1)
+        )["pingInterval"] / 1000
+        self.last_ping = time()
+        self.logger.info("Successfully connected to liveloading websocket.")
+
+        packet_template = [
+            "put",
+            {
+                "method": "put",
+                "headers": {},
+                "data": {
+                    "slug": [
+                        ""
+                    ]
+                },
+                "url": "/api/v1/live"
+            }
+        ]
+
+        assert response.startswith("0")
+
+        events = (
+            "channel:{channel_id}:update",
+            "channel:{channel_id}:followed",
+            "channel:{channel_id}:subscribed",
+            "channel:{channel_id}:resubscribed",
+            "user:{user_id}:update"
+        )
+
+        for event in events:
+            packet = packet_template.copy()
+            packet[1]["data"]["slug"][0] = event.format(
+                channel_id=channel_id, user_id=user_id)
+            yield from self.liveloading_websocket.send("420" + dumps(packet))
+
+        response = yield from self.liveloading_websocket.recv()
+        assert response.startswith("40")
+        yield from self.liveloading_websocket.send("2")
+        response = yield from self.liveloading_websocket.recv()
+
+        assert response.startswith("42")
+
+        yield from self.liveloading_websocket.send("42")
+
+        return True
+
+    def keep_liveloading_alive(self):
+        while True:
+            if time() - self.last_ping > self.interval:
+                self.last_ping = time()
+                yield from self.liveloading_websocket.send("2")
+                self.logger.debug("PING!")
+
+    def watch_liveloading(self):
+        while True:
+            response = yield from self.liveloading_websocket.recv()
+            packet = match('\d+(.+)?', response)
+            print(packet)
+            if packet:
+                if packet.group(1):
+                    packet = loads(packet.group(1))
+                    if isinstance(packet[0], str):
+                        if packet[1].get("following"):
+                            self.logger.info("- {} followed.".format(
+                                packet[1]["user"]["username"]))
+                            yield from self.send_message(
+                                "Thanks for the follow, @{}!".format(
+                                    packet[1]["user"]["username"]))
+                        elif packet[1].get("subscribed"):
+                            self.logger.info("- {} subscribed.".format(
+                                packet[1]["user"]["username"]))
+                            yield from self.send_message(
+                                "Thanks for the subscription, @{}! <3".format(
+                                    packet[1]["user"]["username"]))

@@ -5,27 +5,17 @@ from models import (Command, User, session, CommandCommand, QuoteCommand,
                     SubCommand)
 from asyncio import async, coroutine
 from functools import partial
-from json import load, dump, dumps
 
 from re import findall
 
-from liveloading import Liveloading
-
 
 class MessageHandler(Beam):
-
-    deleted_messages = 0
-    views = 0
-    commands = 0
-    messages = 0
-
     def __init__(self, *args, **kwargs):
         super(MessageHandler, self).__init__(*args, **kwargs)
         self.events = {
             "ChatMessage": self.message_handler,
             "UserJoin": self.join_handler,
-            "UserLeave": self.leave_handler,
-            "DeletedMessage": self.deleted_message_handler
+            "UserLeave": self.leave_handler
         }
 
         self.commands = {
@@ -57,9 +47,6 @@ class MessageHandler(Beam):
                 ))
 
     def message_handler(self, data):
-        Liveloading.add_message()
-        message = data["message"]["message"]
-
         parsed = str()
         for chunk in data["message"]["message"]:
             if chunk["type"] == "text":
@@ -128,7 +115,6 @@ class MessageHandler(Beam):
                     "whisper"))
 
         if parsed[0].startswith("!") and len(parsed) > 1:
-            Liveloading.add_run_command()
             args = parsed.split()
 
             if args[0][1:] in self.commands:
@@ -155,8 +141,6 @@ class MessageHandler(Beam):
                 return (yield from self.send_message("Command not found."))
 
     def join_handler(self, data):
-        Liveloading.add_view()
-
         self.logger.info("[[{channel}]] {user} joined".format(
             channel=self.channel_data["token"], user=data["username"]))
 
@@ -172,6 +156,3 @@ class MessageHandler(Beam):
             if self.config.get("announce_leave", False):
                 yield from self.send_message("See you, @{username}!".format(
                     username=data["username"]))
-
-    def deleted_message_handler(self, data):
-        Liveloading.add_deleted()
