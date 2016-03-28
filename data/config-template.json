@@ -1,5 +1,6 @@
 {
   "channel": "CHANNEL",
+  "autorestart": true,
   "auth": {
     "username": "USERNAME",
     "password": "PASSWORD"
