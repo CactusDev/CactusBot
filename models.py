@@ -129,8 +129,8 @@ class CommandCommand(Command):
         elif args[1] == "remove":
             if len(args) > 2:
                 command = session.query(Command).filter_by(
-                    command=args[2]).first()
-                if command:
+                    command=args[2])
+                if command.first():
                     command.delete()
                     session.commit()
                     return "Removed command !{}.".format(args[2])
@@ -177,7 +177,7 @@ class QuoteCommand(Command):
                         session.commit()
                         return "Removed quote with ID {}.".format(args[2])
                     return "Quote {} does not exist!".format(args[2])
-                return "Invalid argument: '{}'".format(args[1])
+                return "Invalid argument: '{}'.".format(args[1])
             return "Not enough arguments."
         else:
             if not session.query(Quote).count():
@@ -289,24 +289,40 @@ class SpamProtCommand(Command):
     def __call__(self, args, data=None):
         if len(args) >= 3:
             if args[1] == "length":
-                self.update_config("spam_protection.maximum_message_length",
-                                   int(args[2]))
-                return "Maximum message length set to {}.".format(args[2])
+                if args[2].isdigit():
+                    self.update_config(
+                        "spam_protection.maximum_message_length",
+                        int(args[2]))
+                    return "Maximum message length set to {}.".format(
+                        args[2])
+                return "Invalid number: '{}'.".format(args[2])
             elif args[1] == "caps":
-                self.update_config("spam_protection.maximum_message_capitals",
-                                   int(args[2]))
-                return "Maximum capitals per message set to {}.".format(
-                    args[2])
+                if args[2].isdigit():
+                    self.update_config(
+                        "spam_protection.maximum_message_capitals",
+                        int(args[2]))
+                    return "Maximum capitals per message set to {}.".format(
+                        args[2])
+                return "Invalid number: '{}'.".format(args[2])
             elif args[1] == "emotes":
-                self.update_config("spam_protection.maximum_message_emotes",
-                                   int(args[2]))
-                return "Maximum emotes per message set to {}.".format(args[2])
-            elif args[1] == "link":
-                self.update_config("spam_protection.allow_links",
-                                   bool(args[2]))
-                return "Links are now {}allowed.".format("dis"*bool(args[2]))
-        else:
-            return "Not enough arguments"
+                if args[2].isdigit():
+                    self.update_config(
+                        "spam_protection.maximum_message_emotes",
+                        int(args[2]))
+                    return "Maximum emotes per message set to {}.".format(
+                        args[2])
+                return "Invalid number: '{}'.".format(args[2])
+            elif args[1] == "links":
+                if args[2].lower() in ("true", "false"):
+                    links_allowed = args[2].lower() == "true"
+                    self.update_config(
+                        "spam_protection.allow_links",
+                        links_allowed)
+                    return "Links are now {dis}allowed.".format(
+                        dis="dis"*(not links_allowed))
+                return "Invalid true/false: '{}'.".format(args[2])
+            return "Invalid argument: '{}'.".format(args[1])
+        return "Not enough arguments."
 
 
 class ProCommand(Command):

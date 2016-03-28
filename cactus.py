@@ -48,7 +48,6 @@ class Cactus(MessageHandler, Beam):
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
         self.debug = kwargs.get("DEBUG", False)
-        self.autorestart = autorestart
         self.config_file = kwargs.get("config_file", "data/config.json")
         self.stats_file = kwargs.get("stats_file", "data/stats.json")
         self.database = kwargs.get("database", "data/data.db")
@@ -84,6 +83,9 @@ class Cactus(MessageHandler, Beam):
             exit()
 
     def load_stats(self, filename):
+        self.logger.warning("Statistics are not yet implemented.")
+        return dict()
+
         if exists(filename):
             self.stats_file = filename
             self.logger.info("Statistics file was found. Loading...")
@@ -101,27 +103,43 @@ class Cactus(MessageHandler, Beam):
             reduce(lambda d, k: d[k], keys.split('.')[:-1], config_data)[
                 keys.split('.')[-1]] = value
         with open(self.config_file, 'w+') as config:
-            dump(config_data, config, indent=4, sort_keys=True)
+            dump(config_data, config, indent=2, sort_keys=True)
         self.config = config_data
+        return self.config
 
     def update_stats(self, keys, value):
+        self.logger.warning("Statistics are not yet implemented.")
+        return
+
         with open(self.stats_file, 'r') as stats:
             stats_data = load(stats)
             reduce(lambda d, k: d[k], keys.split('.')[:-1], stats_data)[
                 keys.split('.')[-1]] = value
-        with open(self.config_file, 'w+') as config:
-            dump(stats_data, config, indent=4, sort_keys=True)
-        self.config = stats_data
+        with open(self.stats_file, 'w+') as stats:
+            dump(stats_data, stats, indent=2, sort_keys=True)
+        self.stats = stats_data
+        return self.stats
 
     def run(self, *args, **kwargs):
         """Run bot."""
 
         self.logger.info(cactus_art)
         self._init_database(self.database)
+        self.load_config(filename=self.config_file)
+        self.load_stats(filename=self.stats_file)
 
-        while self.autorestart or not self.started:
+        while self.config.get("autorestart") or not self.started:
             try:
-                self._run(args, kwargs)
+                self.bot_data = self.login(**self.config["auth"])
+                self.logger.info("Authenticated as: {}.".format(
+                    self.bot_data["username"]))
+
+                self.started = True
+
+                self.channel = self.config["channel"]
+                self.channel_data = self.get_channel(self.channel)
+
+                self._init_commands()
 
                 loop = get_event_loop()
 
@@ -150,14 +168,18 @@ class Cactus(MessageHandler, Beam):
                     loop.run_until_complete(
                         self.send_message("CactusBot deactivated! :cactus")
                     )
-                    pass
                 self.logger.info("CactusBot deactivated.")
                 exit()
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
+                try:
+                    loop.run_until_complete(gather(
+                        self.send_message("Oh no, I crashed! :127")))
+                except Exception:
+                    pass
                 self.logger.error("\n\n" + format_exc())
 
-                if self.autorestart:
+                if self.config.get("autorestart"):
                     self.logger.info("Restarting in 10 seconds...")
                     try:
                         sleep(10)
@@ -168,29 +190,7 @@ class Cactus(MessageHandler, Beam):
                     self.logger.info("CactusBot deactivated.")
                     exit()
 
-    def _run(self, *args, **kwargs):
-        """Bot execution code."""
-
-        if self.load_config(filename=self.config_file):
-            self.load_stats(filename=self.stats_file)
-            self.bot_data = self.login(**self.config["auth"])
-            self.username = self.bot_data["username"]
-            self.bot_id = self.bot_data["id"]
-            self.logger.info("Authenticated as: {}.".format(self.username))
-
-        self.started = True
-
-        self.channel = self.config["channel"]
-        self.channel_data = self.get_channel(self.channel)
-
-        self.logger.info("Channel {ch} (id {id}) is {status}.".format(
-            ch=self.channel_data["token"], id=self.channel_data["id"],
-            status=["offline", "online"][self.channel_data["online"]]
-        ))
-
-        self._init_commands()
-
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="debug", autorestart=False, log_to_file=True)
+    cactus = Cactus(debug="info")
     cactus.run()

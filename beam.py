@@ -11,10 +11,10 @@ class Beam:
     message_id = 0
 
     def __init__(self, debug="WARNING", **kwargs):
-        self._init_logger(debug, kwargs.get("log_to_file", False))
+        self._init_logger(debug, kwargs.get("log_to_file", True))
         self.http_session = Session()
 
-    def _init_logger(self, level, log_to_file=False):
+    def _init_logger(self, level, log_to_file=True):
         """Initialize logger."""
 
         self.logger = get_logger("CactusBot")
@@ -35,7 +35,8 @@ class Beam:
         if level in levels:
             level_num = __import__("logging").__getattribute__(level)
             self.logger.setLevel(level_num)
-            get_logger("urllib3").setLevel(WARNING)
+            get_logger("asyncio").setLevel(WARNING)
+            get_logger("requests").setLevel(WARNING)
             get_logger("websockets").setLevel(WARNING)
             self.logger.info("Logger level set to: {}".format(level))
 
@@ -128,7 +129,7 @@ class Beam:
         }
 
         if method == "msg":
-            self.logger.info("$[CactusBot] {message}".format(
+            self.logger.info("$ [CactusBot] {message}".format(
                 message=arguments[0]))
 
         yield from self.websocket.send(dumps(message_packet))
@@ -144,9 +145,10 @@ class Beam:
             id=channel_id, message=message_id))
 
     def read_chat(self, handle=None):
+        """Receive chat messages from Beam."""
         while True:
             response = loads((yield from self.websocket.recv()))
             self.logger.debug(response)
 
-            if handle:
+            if callable(handle):
                 handle(response)
