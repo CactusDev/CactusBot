@@ -121,9 +121,9 @@ class MessageHandler(Beam):
             if args[0][1:] in self.commands:
                 response = self.commands[args[0][1:]]
                 if isinstance(response, str):
-                    yield from self.send_message(response)
+                    message = response
                 else:
-                    yield from self.send_message(response(args, data))
+                    message = response(args, data)
             else:
                 options = [
                     ('-'.join(args[:2])[1:], ['-'.join(args[:2])] + args[2:]),
@@ -134,12 +134,19 @@ class MessageHandler(Beam):
                     command = session.query(
                         Command).filter_by(command=parse_method[0]).first()
                     if command:
-                        response = command(
+                        message = command(
                             parse_method[1], data,
                             channel_name=self.channel_data["token"]
                         )
-                        return (yield from self.send_message(response))
-                return (yield from self.send_message("Command not found."))
+                        break
+                else:
+                    message = "Command not found."
+
+            if data["message"]["meta"].get("whisper", False):
+                return (yield from self.send_message((
+                    data["user_name"], message), "whisper"))
+            else:
+                return (yield from self.send_message(message))
 
     def join_handler(self, data):
         user = session.query(User).filter_by(id=data["id"]).first()
