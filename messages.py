@@ -57,7 +57,11 @@ class MessageHandler(Beam):
 
         self.logger.info("{me}[{user}] {message}".format(
             me='*' if data["message"]["meta"].get("me") else '',
-            user=data["user_name"],
+            user=(
+                data["user_name"] + " > CactusBot"
+                if data["message"]["meta"].get("whisper")
+                else data["user_name"]
+            ),
             message=parsed)
         )
 

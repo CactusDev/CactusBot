@@ -131,6 +131,9 @@ class Beam:
         if method == "msg":
             self.logger.info("$ [CactusBot] {message}".format(
                 message=arguments[0]))
+        elif method == "whisper":
+            self.logger.info("$ [CactusBot > {user}] {message}".format(
+                user=arguments[0], message=arguments[1]))
 
         yield from self.websocket.send(dumps(message_packet))
         self.message_id += 1
