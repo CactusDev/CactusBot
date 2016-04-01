@@ -3,8 +3,7 @@ from models import (Command, User, session, CommandCommand, QuoteCommand,
                     CubeCommand, SocialCommand, UptimeCommand, PointsCommand,
                     TemmieCommand, FriendCommand, SpamProtCommand, ProCommand,
                     SubCommand)
-from asyncio import async, coroutine
-from functools import partial
+
 from re import findall
 
 
@@ -37,15 +36,14 @@ class MessageHandler(Beam):
 
     def handle(self, response):
         if "event" in response:
-
             if response["event"] in self.events:
-                async(coroutine(
-                    partial(self.events[response["event"]], response["data"])
-                )())
+                self.events[response["event"]](response["data"])
             else:
                 self.logger.debug("No handler found for event {}.".format(
                     response["event"]
                 ))
+        elif response.get("id") == 0:
+            self.send_message("CactusBot activated. Enjoy! :cactus")
 
     def message_handler(self, data):
         parsed = str()
@@ -55,13 +53,13 @@ class MessageHandler(Beam):
             else:
                 parsed += chunk["text"]
 
-        self.logger.info("{me}[{user}] {message}".format(
+        self.logger.info("{bot}{me}[{user}] {message}".format(
+            bot='$ ' if data["user_name"] == self.config["auth"]["username"]
+                else '',
             me='*' if data["message"]["meta"].get("me") else '',
-            user=(
-                data["user_name"] + " > CactusBot"
+            user=data["user_name"] + " > " + self.config["auth"]["username"]
                 if data["message"]["meta"].get("whisper")
-                else data["user_name"]
-            ),
+                else data["user_name"],
             message=parsed)
         )
 
@@ -81,7 +79,7 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (yield from self.send_message(
+                return (self.send_message(
                     (data["user_name"],
                      "Please stop spamming."),
                     "whisper"))
@@ -91,7 +89,7 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (yield from self.send_message(
+                return (self.send_message(
                     (data["user_name"],
                      "Please stop speaking in all caps."),
                     "whisper"))
@@ -102,7 +100,7 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (yield from self.send_message(
+                return (self.send_message(
                     (data["user_name"],
                      "Please stop spamming emoticons."),
                     "whisper"))
@@ -114,7 +112,7 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (yield from self.send_message(
+                return (self.send_message(
                     (data["user_name"],
                      "Please stop posting links."),
                     "whisper"))
@@ -147,10 +145,10 @@ class MessageHandler(Beam):
                     message = "Command not found."
 
             if data["message"]["meta"].get("whisper", False):
-                return (yield from self.send_message((
+                return (self.send_message((
                     data["user_name"], message), "whisper"))
             else:
-                return (yield from self.send_message(message))
+                return (self.send_message(message))
 
     def join_handler(self, data):
         user = session.query(User).filter_by(id=data["id"]).first()
@@ -161,18 +159,18 @@ class MessageHandler(Beam):
             user.joins += 1
         session.commit()
 
-        self.logger.info("[[{channel}]] {user} joined".format(
-            channel=self.channel_data["token"], user=data["username"]))
+        self.logger.info("*{user} joined".format(
+            user=data["username"]))
 
         if self.config.get("announce_enter", False):
-            yield from self.send_message("Welcome, @{username}!".format(
+            self.send_message("Welcome, @{username}!".format(
                 username=data["username"]))
 
     def leave_handler(self, data):
         if data["username"] is not None:
-            self.logger.info("[[{channel}]] {user} left".format(
-                channel=self.channel_data["token"], user=data["username"]))
+            self.logger.info("*{user} left".format(
+                user=data["username"]))
 
             if self.config.get("announce_leave", False):
-                yield from self.send_message("See you, @{username}!".format(
+                self.send_message("See you, @{username}!".format(
                     username=data["username"]))

@@ -1,8 +1,13 @@
+from tornado.websocket import websocket_connect
+from tornado.gen import coroutine
+
+from requests import Session
+
 from logging import getLogger as get_logger
 from logging import INFO, WARNING, FileHandler
-from requests import Session
+
+from functools import partial
 from json import dumps, loads
-from websockets import connect
 
 
 class Beam:
@@ -35,9 +40,7 @@ class Beam:
         if level in levels:
             level_num = __import__("logging").__getattribute__(level)
             self.logger.setLevel(level_num)
-            get_logger("asyncio").setLevel(WARNING)
             get_logger("requests").setLevel(WARNING)
-            get_logger("websockets").setLevel(WARNING)
             self.logger.info("Logger level set to: {}".format(level))
 
             try:
@@ -102,18 +105,21 @@ class Beam:
 
         self.logger.debug("Connecting to: {server}".format(server=server))
 
-        self.websocket = yield from connect(server)
+        websocket_connection = websocket_connect(server)
+        websocket_connection.add_done_callback(
+            partial(self.authenticate, channel_id, bot_id, authkey))
 
-        response = yield from self.send_message(
-            (channel_id, bot_id, authkey), method="auth"
-        )
+    def authenticate(self, channel_id, bot_id, authkey, future):
+        if future.exception() is None:
+            self.websocket = future.result()
+            self.logger.info("Successfully connected to chat {}.".format(
+                self.channel_data["token"]))
 
-        response = loads(response)
+            self.send_message((channel_id, bot_id, authkey), method="auth")
 
-        if response["data"]["authenticated"]:
-            self.logger.debug(response)
-            return self.websocket
-        return False
+            self.read_chat(self.handle)
+        else:
+            raise ConnectionError(future.exception())
 
     def send_message(self, arguments, method="msg"):
         """Send a message to a Beam chat through a websocket."""
@@ -128,18 +134,15 @@ class Beam:
             "id": self.message_id
         }
 
-        if method == "msg":
-            self.logger.info("$ [CactusBot] {message}".format(
-                message=arguments[0]))
-        elif method == "whisper":
-            self.logger.info("$ [CactusBot > {user}] {message}".format(
-                user=arguments[0], message=arguments[1]))
+        if method == "whisper":
+            self.logger.info("$ [{bot_name} > {user}] {message}".format(
+                bot_name=self.config["auth"]["username"],
+                user=arguments[0],
+                message=arguments[1]))
 
-        yield from self.websocket.send(dumps(message_packet))
+        self.websocket.write_message(dumps(message_packet))
         self.message_id += 1
 
-        if method in ("msg", "auth"):
-            return (yield from self.websocket.recv())
         return True
 
     def remove_message(self, channel_id, message_id):
@@ -147,11 +150,18 @@ class Beam:
         return self._request("DELETE", "/chats/{id}/message/{message}".format(
             id=channel_id, message=message_id))
 
-    def read_chat(self, handle=None):
-        """Receive chat messages from Beam."""
+    @coroutine
+    def read_chat(self, handler=None):
         while True:
-            response = loads((yield from self.websocket.recv()))
+            message = yield self.websocket.read_message()
+
+            if message is None:
+                self._on_connection_close()
+                break
+            else:
+                response = loads(message)
+
             self.logger.debug(response)
 
-            if callable(handle):
-                handle(response)
+            if callable(handler):
+                handler(response)

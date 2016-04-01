@@ -9,7 +9,7 @@ from json import load, dump
 from shutil import copyfile
 from functools import reduce
 
-from asyncio import get_event_loop, gather, async
+from tornado.ioloop import IOLoop
 
 from traceback import format_exc
 from time import sleep
@@ -43,7 +43,6 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 class Cactus(MessageHandler, Beam):
     started = False
     connected = False
-    message_id = 0
 
     def __init__(self, autorestart=True, **kwargs):
         super(Cactus, self).__init__(**kwargs)
@@ -141,40 +140,21 @@ class Cactus(MessageHandler, Beam):
 
                 self._init_commands()
 
-                loop = get_event_loop()
+                self.connect(self.channel_data["id"], self.bot_data["id"])
 
-                self.connected = bool(loop.run_until_complete(
-                    self.connect(self.channel_data["id"], self.bot_data["id"])
-                ))
-
-                self.logger.info("{}uccessfully connected to chat {}.".format(
-                    ["Uns", "S"][self.connected], self.channel_data["token"]
-                ))
-
-                if self.connected:
-                    tasks = gather(
-                        async(self.send_message(
-                            "CactusBot activated. Enjoy! :cactus")
-                        ),
-                        async(self.read_chat(self.handle))
-                    )
-
-                    loop.run_until_complete(tasks)
-                else:
-                    raise ConnectionError
+                IOLoop.instance().start()
             except KeyboardInterrupt:
                 self.logger.info("Removing thorns... done.")
-                if self.connected:
-                    loop.run_until_complete(
-                        self.send_message("CactusBot deactivated! :cactus")
-                    )
+                try:
+                    self.send_message("CactusBot deactivated! :cactus")
+                except Exception:
+                    pass
                 self.logger.info("CactusBot deactivated.")
                 exit()
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
                 try:
-                    loop.run_until_complete(gather(
-                        self.send_message("Oh no, I crashed! :127")))
+                    self.send_message("Oh no, I crashed! :127")
                 except Exception:
                     pass
                 self.logger.error("\n\n" + format_exc())
@@ -192,5 +172,5 @@ class Cactus(MessageHandler, Beam):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="info")
+    cactus = Cactus(debug="debug")
     cactus.run()
