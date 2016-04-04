@@ -10,8 +10,6 @@ from datetime import datetime
 from re import sub, findall
 from random import randrange, choice
 
-from beam import Beam
-
 basedir = abspath(dirname(__file__))
 engine = create_engine("sqlite:///" + join(basedir, "data/data.db"))
 Base = declarative_base()
@@ -75,8 +73,6 @@ class User(Base):
 
 
 class Command(StoredCommand):
-    user = Beam()
-
     def __call__(self, args, data, channel_name=None):
         response = self.response
 
@@ -187,8 +183,12 @@ class QuoteCommand(Command):
 
 
 class SocialCommand(Command):
+    def __init__(self, get_channel):
+        super(SocialCommand, self).__init__()
+        self.get_channel = get_channel
+
     def __call__(self, args, data=None):
-        s = self.user.get_channel(data["channel"])["user"]["social"]
+        s = self.get_channel(data["channel"])["user"]["social"]
         a = [arg.lower() for arg in args[1:]]
         if s:
             if not a:
@@ -205,19 +205,24 @@ class CubeCommand(Command):
         if args[1] == '2' and len(args) == 2:
             return "8! Whoa, that's 2Cubed!"
 
-        numbers = findall("\d+", ' '.join(args[1:]))
+        numbers = findall(
+            "( [0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
+            ' ' + ' '.join(args[1:]) + ' '
+        )
 
         if len(numbers) == 0:
-            return "({})³".format(' '.join(args[1:]))
+            return "{w[0]}{response}{w[1]}³".format(
+                response=' '.join(args[1:]),
+                w='  ' if findall(":\w+$", ' '.join(args[1:])) else '()'
+            )
         elif len(numbers) > 8:
             return "Whoa! That's 2 many cubes!"
 
-        nums = sub(
-            "([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
-            lambda match: "{:g}".format(float(match.groups()[0]) ** 3),
-            ' '.join(args[1:])
+        return sub(
+            "( [0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
+            lambda match: " {:g} ".format(float(match.groups()[0]) ** 3),
+            ' ' + ' '.join(args[1:]) + ' '
         )
-        return nums
 
 
 class ScheduleCommand(Command):
@@ -262,10 +267,14 @@ class TemmieCommand(Command):
 
 
 class FriendCommand(Command):
+    def __init__(self, get_channel):
+        super(FriendCommand, self).__init__()
+        self.get_channel = get_channel
+
     @mod_only
     def __call__(self, args, data):
         if len(args) == 2:
-            id = self.user.get_channel(args[1])["user"]["id"]
+            id = self.get_channel(args[1])["user"]["id"]
             query = session.query(User).filter_by(id=id).first()
             if query:
                 query.friend = not query.friend

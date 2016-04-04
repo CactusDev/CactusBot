@@ -144,6 +144,7 @@ class Cactus(MessageHandler, Beam):
 
                 IOLoop.instance().start()
             except KeyboardInterrupt:
+                print()
                 self.logger.info("Removing thorns... done.")
                 try:
                     self.send_message("CactusBot deactivated! :cactus")
@@ -172,5 +173,5 @@ class Cactus(MessageHandler, Beam):
 
 
 if __name__ == "__main__":
-    cactus = Cactus(debug="debug")
+    cactus = Cactus()
     cactus.run()
