@@ -1,5 +1,6 @@
 from tornado.websocket import websocket_connect
 from tornado.gen import coroutine
+from tornado.ioloop import PeriodicCallback
 
 from requests import Session
 from requests.compat import urljoin
@@ -8,10 +9,10 @@ from logging import getLogger as get_logger
 from logging import getLevelName as get_level_name
 from logging import StreamHandler, FileHandler, Formatter
 
-from time import gmtime
-
 from functools import partial
 from json import dumps, loads
+
+from re import match
 
 
 class Beam:
@@ -44,13 +45,12 @@ class Beam:
         )
 
         formatter = Formatter(format, datefmt='%Y-%m-%d %H:%M:%S')
-        formatter.convert = gmtime
 
         try:
             from coloredlogs import ColoredFormatter
             colored_formatter = ColoredFormatter(format)
         except ImportError:
-            colored_formatter = Formatter(format, datefmt='%Y-%m-%d %H:%M:%S')
+            colored_formatter = formatter
             self.logger.warning(
                 "Module 'coloredlogs' unavailable; using ugly logging.")
 
@@ -98,7 +98,7 @@ class Beam:
         server = chat["endpoints"][0]
         authkey = chat["authkey"]
 
-        self.logger.debug("Connecting to: {server}".format(server=server))
+        self.logger.debug("Connecting to: {server}.".format(server=server))
 
         websocket_connection = websocket_connect(server)
         websocket_connection.add_done_callback(
@@ -116,29 +116,28 @@ class Beam:
         else:
             raise ConnectionError(future.exception())
 
-    def send_message(self, arguments, method="msg"):
+    def send_message(self, *messages, method="msg"):
         """Send a message to a Beam chat through a websocket."""
 
-        if isinstance(arguments, str):
-            arguments = (arguments,)
+        for message in messages:
+            if isinstance(message, str):
+                message = (message,)
 
-        message_packet = {
-            "type": "method",
-            "method": method,
-            "arguments": arguments,
-            "id": self.message_id
-        }
+            message_packet = {
+                "type": "method",
+                "method": method,
+                "arguments": message,
+                "id": self.message_id
+            }
 
-        if method == "whisper":
-            self.logger.info("$ [{bot_name} > {user}] {message}".format(
-                bot_name=self.config["auth"]["username"],
-                user=arguments[0],
-                message=arguments[1]))
+            if method == "whisper":
+                self.logger.info("$ [{bot_name} > {user}] {message}".format(
+                    bot_name=self.config["auth"]["username"],
+                    user=message[0],
+                    message=message[1]))
 
-        self.websocket.write_message(dumps(message_packet))
-        self.message_id += 1
-
-        return True
+            self.websocket.write_message(dumps(message_packet))
+            self.message_id += 1
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
@@ -151,12 +150,110 @@ class Beam:
             message = yield self.websocket.read_message()
 
             if message is None:
-                self._on_connection_close()
-                break
-            else:
-                response = loads(message)
+                raise ConnectionError
 
-            self.logger.debug(response)
+            response = loads(message)
+
+            self.logger.debug("CHAT: {}".format(response))
 
             if callable(handler):
                 handler(response)
+
+    def connect_to_liveloading(self, channel_id, user_id):
+        liveloading_websocket_connection = websocket_connect(
+            "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
+        liveloading_websocket_connection.add_done_callback(
+            partial(self.subscribe_to_liveloading, channel_id, user_id))
+
+    def subscribe_to_liveloading(self, channel_id, user_id, future):
+        if future.exception() is None:
+            self.liveloading_websocket = future.result()
+
+            self.logger.info(
+                "Successfully connected to liveloading websocket.")
+
+            interfaces = (
+                "channel:{channel_id}:update",
+                "channel:{channel_id}:followed",
+                "channel:{channel_id}:subscribed",
+                "channel:{channel_id}:resubscribed",
+                "user:{user_id}:update"
+            )
+            self.subscribe_to_interfaces(
+                *tuple(
+                    interface.format(channel_id=channel_id, user_id=user_id)
+                    for interface in interfaces
+                )
+            )
+
+            self.logger.info(
+                "Successfully subscribed to liveloading interfaces.")
+
+            self.watch_liveloading()
+        else:
+            raise ConnectionError(future.exception())
+
+    def subscribe_to_interfaces(self, *interfaces):
+        for interface in interfaces:
+            packet = [
+                "put",
+                {
+                    "method": "put",
+                    "headers": {},
+                    "data": {
+                        "slug": [
+                            interface
+                        ]
+                    },
+                    "url": "/api/v1/live"
+                }
+            ]
+            self.liveloading_websocket.write_message('420' + dumps(packet))
+
+    def parse_liveloading_message(self, message):
+        sections = match("(\d+)(.+)?$", message).groups()
+
+        return {
+            "code": sections[0],
+            "data": loads(sections[1]) if sections[1] is not None else None
+        }
+
+    @coroutine
+    def watch_liveloading(self, handler=None):
+
+        response = yield self.liveloading_websocket.read_message()
+        if response is None:
+            raise ConnectionError
+
+        packet = self.parse_liveloading_message(response)
+
+        PeriodicCallback(
+            partial(self.liveloading_websocket.write_message, '2'),
+            packet["data"]["pingInterval"]
+        ).start()
+
+        while True:
+            message = yield self.liveloading_websocket.read_message()
+
+            if message is None:
+                raise ConnectionError
+
+            packet = self.parse_liveloading_message(message)
+
+            if packet.get("data") is not None:
+                self.logger.debug("LIVE: {}".format(packet))
+
+            if isinstance(packet["data"], list):
+                if isinstance(packet["data"][0], str):
+                    if packet["data"][1].get("following"):
+                        self.logger.info("- {} followed.".format(
+                            packet["data"][1]["user"]["username"]))
+                        self.send_message(
+                            "Thanks for the follow, @{}!".format(
+                                packet["data"][1]["user"]["username"]))
+                    elif packet["data"][1].get("subscribed"):
+                        self.logger.info("- {} subscribed.".format(
+                            packet["data"][1]["user"]["username"]))
+                        self.send_message(
+                            "Thanks for the subscription, @{}! <3".format(
+                                packet["data"][1]["user"]["username"]))

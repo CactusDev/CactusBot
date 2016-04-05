@@ -140,9 +140,16 @@ class Cactus(MessageHandler, Beam):
 
                 self._init_commands()
 
-                self.connect(self.channel_data["id"], self.bot_data["id"])
+                self.connect(
+                    self.channel_data["id"],
+                    self.bot_data["id"])
+
+                self.connect_to_liveloading(
+                    self.channel_data["id"],
+                    self.channel_data["userId"])
 
                 IOLoop.instance().start()
+
             except KeyboardInterrupt:
                 print()
                 self.logger.info("Removing thorns... done.")
@@ -152,6 +159,7 @@ class Cactus(MessageHandler, Beam):
                     pass
                 self.logger.info("CactusBot deactivated.")
                 exit()
+
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
                 try:
@@ -170,7 +178,6 @@ class Cactus(MessageHandler, Beam):
                 else:
                     self.logger.info("CactusBot deactivated.")
                     exit()
-
 
 if __name__ == "__main__":
     cactus = Cactus()

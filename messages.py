@@ -79,20 +79,20 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (self.send_message(
+                return self.send_message(
                     (data["user_name"],
                      "Please stop spamming."),
-                    "whisper"))
+                    "whisper")
             elif (sum(char.isupper() for char in parsed) >
                     self.config["spam_protection"].get(
                         "maximum_message_capitals", 32)):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (self.send_message(
+                return self.send_message(
                     (data["user_name"],
                      "Please stop speaking in all caps."),
-                    "whisper"))
+                    "whisper")
             elif (sum(chunk["type"] == "emoticon"
                       for chunk in data["message"]["message"]) >
                     self.config["spam_protection"].get(
@@ -100,10 +100,10 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (self.send_message(
+                return self.send_message(
                     (data["user_name"],
                      "Please stop spamming emoticons."),
-                    "whisper"))
+                    "whisper")
             elif (findall(("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
                            "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
                           parsed) and not
@@ -112,10 +112,10 @@ class MessageHandler(Beam):
                 self.remove_message(data["channel"], data["id"])
                 user.offenses += 1
                 session.commit()
-                return (self.send_message(
+                return self.send_message(
                     (data["user_name"],
                      "Please stop posting links."),
-                    "whisper"))
+                    "whisper")
 
         if parsed[0].startswith("!") and len(parsed) > 1:
             args = parsed.split()
@@ -145,10 +145,10 @@ class MessageHandler(Beam):
                     message = "Command not found."
 
             if data["message"]["meta"].get("whisper", False):
-                return (self.send_message((
-                    data["user_name"], message), "whisper"))
+                return self.send_message((
+                    data["user_name"], message), "whisper")
             else:
-                return (self.send_message(message))
+                return self.send_message(message)
 
     def join_handler(self, data):
         user = session.query(User).filter_by(id=data["id"]).first()
@@ -159,7 +159,7 @@ class MessageHandler(Beam):
             user.joins += 1
         session.commit()
 
-        self.logger.info("*{user} joined".format(
+        self.logger.info("- {user} joined".format(
             user=data["username"]))
 
         if self.config.get("announce_enter", False):
@@ -168,7 +168,7 @@ class MessageHandler(Beam):
 
     def leave_handler(self, data):
         if data["username"] is not None:
-            self.logger.info("*{user} left".format(
+            self.logger.info("- {user} left".format(
                 user=data["username"]))
 
             if self.config.get("announce_leave", False):
