@@ -146,11 +146,12 @@ class MessageHandler(Beam):
                 else:
                     message = "Command not found."
 
-            if data["message"]["meta"].get("whisper", False):
-                return (yield from self.send_message((
-                    data["user_name"], message), "whisper"))
-            else:
-                return (yield from self.send_message(message))
+            if message != None:
+                if data["message"]["meta"].get("whisper", False):
+                    return (yield from self.send_message((
+                        data["user_name"], message), "whisper"))
+                else:
+                    return (yield from self.send_message(message))
 
     def join_handler(self, data):
         user = session.query(User).filter_by(id=data["id"]).first()

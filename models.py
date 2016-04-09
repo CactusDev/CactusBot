@@ -48,6 +48,9 @@ class StoredCommand(Base):
     creation = Column(DateTime)
     author = Column(Integer)
 
+    perms = Column(String)
+    allowed = Column(String)
+
 
 class Quote(Base):
     __tablename__ = "quotes"
@@ -80,6 +83,29 @@ class Command(StoredCommand):
     def __call__(self, args, data, channel_name=None):
         response = self.response
 
+        perms = [perm for perm in self.perms]
+        user_roles = data["user_roles"]
+        # If it's the channel owner, ignore all perm checking
+        if "Owner" not in user_roles:
+            for perm in perms:
+                # Mod-only command
+                if perm == "+":
+                    if "Mod" not in user_roles:
+                        # Mod-only, so don't return anything
+                        return None
+
+                # Owner-only command
+                elif perm == "~":
+                    if "Owner" not in user_roles:
+                        # Owner-only, so don't return anything
+                        return None
+
+                # Sub-only command
+                elif perm == "$":
+                    if "Subscriber" not in user_roles and "Mod" not in user_roles:
+                        # Subscriber-only, so don't return anything
+                        return None
+
         response = response.replace("%name%", data["user_name"])
 
         try:
@@ -103,6 +129,10 @@ class Command(StoredCommand):
             channel_name if channel_name else data["id"]
         )
 
+        # Check for kapooyah commands
+        if "-" in perms:
+            pass
+
         return response
 
 
@@ -111,20 +141,30 @@ class CommandCommand(Command):
     def __call__(self, args, data):
         if args[1] == "add":
             if len(args) > 3:
+                keys = ("+", "-", "~", "$")
+                perms = [perm for perm in list(args[2]) if perm in keys]
+                cmd = [char for char in list(args[2]) if char not in keys]
+
+                cmd = "".join(cmd)
+                perms = "".join(perms)
+
                 command = session.query(Command).filter_by(
-                    command=args[2]).first()
+                    command="".join(cmd)).first()
+
                 if command:
                     command.response = ' '.join(args[3:])
                 else:
                     command = Command(
-                        command=args[2],
+                        command=cmd,
                         response=' '.join(args[3:]),
                         creation=datetime.utcnow(),
-                        author=data["user_id"]
+                        author=data["user_id"],
+                        perms=perms
                     )
+
                     session.add(command)
                     session.commit()
-                return "Added command !{}.".format(args[2])
+                return "Added command !{}.".format("".join(cmd))
             return "Not enough arguments!"
         elif args[1] == "remove":
             if len(args) > 2:
