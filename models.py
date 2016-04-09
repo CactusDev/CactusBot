@@ -1,22 +1,20 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-from functools import wraps
+from functools import wraps, partial
 
 from os.path import abspath, dirname, join
 from datetime import datetime
-from time import time
+
 from re import sub, findall
 from random import randrange, choice
-from uuid import uuid1
-from asyncio import async
-from collections import OrderedDict
 
-from beam import Beam
+from tornado.ioloop import PeriodicCallback
 
 basedir = abspath(dirname(__file__))
-engine = create_engine('sqlite:///' + join(basedir, 'data/data.db'))
+engine = create_engine("sqlite:///" + join(basedir, "data/data.db"))
 Base = declarative_base()
 
 session = Session(engine)
@@ -38,7 +36,7 @@ def role_specific(*roles, reply=None):
 mod_only = role_specific("Founder", "Staff", "Global Mod", "Mod", reply="mod")
 
 
-class StoredCommand(Base):
+class Command(Base):
     __tablename__ = "commands"
 
     id = Column(Integer, unique=True, primary_key=True)
@@ -48,8 +46,51 @@ class StoredCommand(Base):
 
     calls = Column(Integer, default=0)
 
+    repeat = relationship("Repeat", backref="command")
+
     creation = Column(DateTime)
     author = Column(Integer)
+
+    def __call__(self, args, data, channel_name=None):
+        response = self.response
+
+        response = response.replace("%name%", data["user_name"])
+
+        try:
+            response = sub(
+                "%arg(\d+)%",
+                lambda match: args[int(match.group(1))],
+                response
+            )
+        except IndexError:
+            return "Not enough arguments!"
+
+        response = response.replace("%args%", ' '.join(args[1:]))
+
+        self.calls += 1
+        session.commit()
+
+        response = response.replace("%count%", str(self.calls))
+
+        response = response.replace(
+            "%channel%",
+            channel_name if channel_name else data["id"]
+        )
+
+        return response
+
+
+class Repeat(Base):
+    __tablename__ = "repeating"
+
+    id = Column(Integer, unique=True, primary_key=True)
+
+    command_object = relationship("Command", backref="command_object")
+    command_name = Column(String, ForeignKey("commands.command"))
+
+    arguments = Column(String)
+
+    interval = Column(Integer)
 
 
 class Quote(Base):
@@ -72,79 +113,51 @@ class User(Base):
 
     joins = Column(Integer, default=0)
     messages = Column(Integer, default=0)
-    strikes = Column(Integer, default=0)
+    offenses = Column(Integer, default=0)
 
     points = Column(Integer, default=0)
 
 
-class Command(StoredCommand):
-    user = Beam()
-
-    def __call__(self, user, *args, **kwargs):
-        response = self.response
-
-        response = response.replace("%name%", data["user_name"])
-
-        try:
-            response = sub(
-                "%arg(\d+)%",
-                lambda match: args[int(match.groups()[0])],
-                response
-            )
-        except IndexError:
-            return "Not enough arguments!"
-
-        response = response.replace("%args%", ' '.join(args[1:]))
-
-        self.calls += 1
-        session.commit()
-
-        response = response.replace("%count%", str(self.calls))
-
-        response = response.replace(
-            "%channel%",
-            channel_name if channel_name else data["id"]
-        )
-
-        return response
-
-
 class CommandCommand(Command):
+
     @mod_only
     def __call__(self, args, data):
         if args[1] == "add":
             if len(args) > 3:
-                q = session.query(Command).filter_by(command=args[2])
-                if q.first():
-                    q.first().response = ' '.join(args[3:])
+                command = session.query(Command).filter_by(
+                    command=args[2]).first()
+                if command:
+                    command.response = ' '.join(args[3:])
                 else:
-                    c = Command(
+                    command = Command(
                         command=args[2],
                         response=' '.join(args[3:]),
                         creation=datetime.utcnow(),
                         author=data["user_id"]
                     )
-                    session.add(c)
+                    session.add(command)
                     session.commit()
                 return "Added command !{}.".format(args[2])
             return "Not enough arguments!"
         elif args[1] == "remove":
             if len(args) > 2:
-                q = session.query(Command).filter_by(command=args[2])
-                if q.first():
-                    q.delete()
+                command = session.query(Command).filter_by(
+                    command=args[2])
+                if command.first():
+                    command.delete()
                     session.commit()
                     return "Removed command !{}.".format(args[2])
                 return "!{} does not exist!".format(args[2])
             return "Not enough arguments!"
         elif args[1] == "list":
-            q = session.query(Command).all()
+            commands = session.query(Command).all()
             return "Commands: {commands}".format(
-                commands=', '.join([c.command for c in q if c.command]))
+                commands=', '.join([c.command for c in commands if c.command]))
         return "Invalid argument: {}.".format(args[1])
 
 
 class QuoteCommand(Command):
+
     @mod_only
     def __call__(self, args, data):
         if len(args) > 1:
@@ -158,27 +171,27 @@ class QuoteCommand(Command):
 
             if len(args) > 2:
                 if args[1] == "add":
-                    q = Quote(
+                    quote = Quote(
                         quote=' '.join(args[2:]),
                         creation=datetime.utcnow(),
                         author=data["user_id"]
                     )
-                    session.add(q)
+                    session.add(quote)
                     session.flush()
                     session.commit()
-                    return "Added quote with ID {}.".format(q.id)
+                    return "Added quote with ID {}.".format(quote.id)
                 elif args[1] == "remove":
                     try:
                         id = int(args[2])
                     except ValueError:
                         return "Invalid quote ID '{}'.".format(args[2])
-                    q = session.query(Quote).filter_by(id=id)
-                    if q.first():
-                        q.delete()
+                    quote = session.query(Quote).filter_by(id=id)
+                    if quote.first():
+                        quote.delete()
                         session.commit()
                         return "Removed quote with ID {}.".format(args[2])
                     return "Quote {} does not exist!".format(args[2])
-                return "Invalid argument: '{}'".format(args[1])
+                return "Invalid argument: '{}'.".format(args[1])
             return "Not enough arguments."
         else:
             if not session.query(Quote).count():
@@ -188,8 +201,13 @@ class QuoteCommand(Command):
 
 
 class SocialCommand(Command):
+
+    def __init__(self, get_channel):
+        super(SocialCommand, self).__init__()
+        self.get_channel = get_channel
+
     def __call__(self, args, data=None):
-        s = self.user.get_channel(data["channel"])["user"]["social"]
+        s = self.get_channel(data["channel"])["user"]["social"]
         a = [arg.lower() for arg in args[1:]]
         if s:
             if not a:
@@ -197,238 +215,148 @@ class SocialCommand(Command):
             elif set(a).issubset(set(s)):
                 return ', '.join(': '.join((k.title(), s[k])) for k in a)
             return "Data not found for service{s}: {}.".format(
-                ', '.join(set(a)-set(s)), s='s'*(len(set(a)-set(s)) != 1))
+                ', '.join(set(a) - set(s)), s='s'*(len(set(a) - set(s)) != 1))
         return "No social services were found on the streamer's profile."
 
 
 class CubeCommand(Command):
+
     def __call__(self, args, data=None, **kwargs):
         if args[1] == '2' and len(args) == 2:
             return "8! Whoa, that's 2Cubed!"
 
-        numbers = findall("\d+", ' '.join(args[1:]))
+        numbers = findall(
+            "( [0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
+            ' ' + ' '.join(args[1:]) + ' '
+        )
 
         if len(numbers) == 0:
-            return "({})³".format(' '.join(args[1:]))
+            return "{w[0]}{response}{w[1]}³".format(
+                response=' '.join(args[1:]),
+                w='  ' if findall(":\w+$", ' '.join(args[1:])) else '()'
+            )
         elif len(numbers) > 8:
             return "Whoa! That's 2 many cubes!"
 
-        nums = sub(
-            "([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
-            lambda match: "{:g}".format(float(match.groups()[0]) ** 3),
-            ' '.join(args[1:])
+        return sub(
+            "( [0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)",
+            lambda match: " {:g} ".format(float(match.groups()[0]) ** 3),
+            ' ' + ' '.join(args[1:]) + ' '
         )
-        return nums
 
 
 class UptimeCommand(Command):
+
     def __call__(self, args, data=None):
         return "In development. :cactus"
 
 
 class PointsCommand(Command):
+
+    def __init__(self, points_name):
+        super(PointsCommand, self).__init__()
+        self.points_name = points_name
+
     def __call__(self, args, data):
-        q = session.query(User).filter_by(id=data["user_id"]).first()
-        if q:
-            q.points += 8
-            session.commit()
-            return str(q.points)
-        else:
-            u = User(id=data["user_id"])
-            session.add(u)
-            session.commit()
-            return '0'
+        if len(args) > 1:
+            return "Points update in development. :cactus"
+        user = session.query(User).filter_by(id=data["user_id"]).first()
+        return "@{user} has {amount} {name}.".format(
+            user=data["user_name"],
+            amount=user.points,
+            name=self.points_name + ('s' if user.points != 1 else ''))
 
 
-class ScheduleCommand(Command):
+class RepeatCommand(Command):
 
-    def __init__(self, loop):
-        super(ScheduleCommand, self).__init__()
-        self.loop = loop()
-        self.scheduled = {}
-        self.active_msgs = []
-        self.run_msgs = []
+    def __init__(self, send_message, bot_name, channel):
+        super(RepeatCommand, self).__init__()
+        self.send_message = send_message
+        self.data = {"user_name": bot_name}
+        self.channel = channel
 
-        scheduled_db = session.query(Schedule).all()
+        self.repeats = dict()
 
-        # Populate list of all scheduled commands at their proper times
-        for msg in scheduled_db:
-            # Check if the interval already exists in self.scheduled
-            if msg.interval in self.scheduled:
-                self.scheduled[msg.interval].append(msg)
-            else:
-                self.scheduled[msg.interval] = [msg]
-
-        self.scheduled = OrderedDict(sorted(self.scheduled.items()))
-        self.init_time = int(time())
-
-        for msg in self.scheduled.items():
-            callback_time = int(time() + msg[0])
-            self.loop.call_later(msg[0],
-                                 self.scheduled_handler,
-                                 msg[0],
-                                 callback_time,
-                                 msg[1][0].uid)
-            self.active_msgs.append(callback_time)
+        for repeat in session.query(Repeat).all():
+            periodic_callback = PeriodicCallback(
+                partial(self.send, repeat),
+                repeat.interval * 1000
+            )
+            self.repeats[repeat.command.command] = periodic_callback
+            periodic_callback.start()
 
     @mod_only
-    def __call__(self, args, data=None):
-        """The way the command should work is: !schedule <INTERVAL> [MSG/!CMD]"""
-        args.remove("!schedule")
-        # If # of args is less than 4 (required minimum) ...
-        if len(args) < 2:
-            # ... then don't continue, return an error message
-            # NOTE: Needs to return the proper usage
-            return "INCORRECT ARGUMENTS (not enough arguing going on up in here!)"
-
-        action = args[0]
-
-        print(args)
-
-        # Passed all of the parsing, begin the SQL stuffs
-        # Parse data for add & edit separate from remove
-        if action == "add" or action == "edit":
-            if len(args) >= 3:
-                if args[2].startswith("!"):
-                    type = "cmd"
-                else:
-                    type = "msg"
-
+    def __call__(self, args, data):
+        if args[1] == "add":
+            if len(args) > 3:
                 try:
-                    interval = int(args[1])
+                    interval = int(args[2])
                 except ValueError:
-                    return "INCORRECT ARGUMENTS (interval not int)"
+                    return "Invalid interval: '{}'.".format(args[2])
 
-                text = args[2]
-            else:
-                return "INCORRECT ARGUMENTS (not enough args)"
+                repeat = session.query(Repeat).filter_by(
+                    command_name=args[3]).first()
 
-        elif action == "remove":
-            try:
-                id = int(args[1])
-            # Okay, it's not actually an int
-            except ValueError:
-                return "INCORRECT ARGUMENTS (ID not int)"
+                if repeat:
+                    repeat.interval = interval
+                    repeat.arguments = ' '.join(args[3:])
+                    periodic_callback = self.repeats[repeat.command.command]
+                    periodic_callback.callback_time = interval * 1000
+                    periodic_callback.stop()
+                    periodic_callback.start()
+                    session.add(repeat)
+                    session.commit()
+                    return "Repeat updated."
 
-        else:
-            # It's an unknown action
-            # Return an error message
-            return "INCORRECT ARGUMENTS (unknown action)"
+                command = session.query(Command).filter_by(command=args[3])
+                if command.first():
+                    command = command.first()
+                    repeat = Repeat(
+                        command_object=command,
+                        interval=interval,
+                        arguments=' '.join(args[3:])
+                    )
 
-        # Adding a new scheduled message
-        if action == "add":
-            """Add a scheduled command to the DB
-            Expecting:
-                - Message's text
-                - Message's type (Bot Command/Text Message)
-                - Interval in full seconds (eg, no 1.5seconds)"""
+                    periodic_callback = PeriodicCallback(
+                        partial(self.send, repeat),
+                        interval * 1000
+                    )
+                    self.repeats[args[3]] = periodic_callback
+                    periodic_callback.start()
+                    session.add(repeat)
+                    session.commit()
+                    return "Repeating command '!{}' every {} seconds.".format(
+                        command.command, interval)
+                return "Undefined command '!{}'.".format(args[3])
+            return "Not enough arguments!"
+        elif args[1] == "remove":
+            if len(args) > 2:
+                repeat = session.query(Repeat).filter_by(command_name=args[2])
+                if repeat.first():
+                    self.repeats[args[2]].stop()
+                    del self.repeats[args[2]]
+                    repeat.delete()
+                    session.commit()
+                    return "Removed repeat for command !{}.".format(args[2])
+                return "Repeat for !{} does not exist!".format(args[2])
+            return "Not enough arguments!"
+        elif args[1] == "list":
+            repeats = session.query(Repeat).all()
+            return "Repeats: {repeats}".format(
+                repeats=', '.join(
+                    [r.command.command+' '+str(r.interval) for r in repeats]
+                )
+            )
+        return "Invalid argument: {}.".format(args[1])
 
-            c = Schedule(text=text, interval=interval, type=type, uid=uuid1().urn)
-
-            # Add the new scheduled sqlalchemy object to the list of cmds\
-            if interval in self.scheduled:
-                self.scheduled[interval].insert(1, c)
-            else:
-                self.scheduled[interval] = [c]
-
-            session.add(c)
-            session.flush()
-            session.commit()
-
-            return "Scheduled message [{id} - {msg}] will be run every {x} seconds!".format(id=c.id, msg=text, x=interval)
-
-        # Remove a scheduled message
-        elif action == "remove":
-            # !schedule remove <ID>
-            # Find the command that matches the ID
-            query = session.query(Schedule).filter_by(id=id).first()
-
-            # Did that query return any results for that ID?
-            if query:
-                interval = query.interval
-                session.delete(query)
-                print(query)
-                if query in self.scheduled[interval]:
-                    self.scheduled[interval].remove(query)
-
-                session.commit()
-
-            # There was no result, so return an error message
-            else:
-                return "Scheduled message {id} doesn't exist!".format(id=text[0])
-
-        # Edit a scheduled message
-        elif action == "edit":
-            """!schedule edit <ID> [INTERVAL] [MESSAGE/CMD]
-            Can be just changing the interval, or can be just changing msg/cmd,
-                or changing both
-            """
-            # Make sure it's long enough to have action, ID, and interval/msg
-            if len(args) < 3:
-                return "INCORRECT ARGUMENTS (not enough args)"
-
-            try:
-                id = int(args[1])
-            # Okay, it's not actually an int
-            except ValueError:
-                return "INCORRECT ARGUMENTS (ID not int)"
-
-            # Find the command that matches the ID
-            query = session.query(Schedule).filter_by(id=id).first()
-
-            # Did that query return any results for that ID?
-            if query:
-                try:
-                    interval = int(interval)
-                    # It converted, so update the query interval
-                    query.interval = interval
-                # It's not an interval, so just change the text
-                except ValueError:
-                    interval = query.interval
-                    if args[2].startswith("!"):
-                        query.type = "cmd"
-                    query.text = args[2:]
-                finally:
-                    session.commit(query)
-
-
-    def scheduled_handler(self, interval, prev_call, uid):
-        """This function is the scheduler call_later callback function
-        It handles sending the scheduled message & setting the next callback"""
-        # print("Callback")
-        next_call = int(time() + interval)
-
-        while True:
-            # Is there already another callback scheduled for that future time?
-            if range(next_call - 3, next_call + 3) in self.active_msgs:
-                # Yes, so add the interval to the call time again
-                next_call += interval
-                # Go to next iteration of the loop
-                continue
-            else:
-                scheduled_msg = session.query(Schedule).filter_by(uid=uid).one()
-                text = scheduled_msg.text
-
-                # Is it the output of a bot command?
-                if scheduled_msg.type == "cmd":
-                    async(self.send_message(get_message(scheduled_msg)))
-                else:
-                    async(self.send_message(scheduled_msg.text))
-
-                self.scheduled[interval].append(self.scheduled[interval].pop(0))
-
-                # Remove the previous callback timestamp
-                self.active_msgs.remove(prev_call)
-                # Add the next callback timestamp so we can compare @ callback
-                self.active_msgs.append(next_call)
-
-                # Schedule next call
-                self.loop.call_later(interval,
-                                     self.scheduled_handler,
-                                     interval,
-                                     next_call,
-                                     self.scheduled[interval][0].uid)
-                break
+    def send(self, repeat):
+        self.send_message(
+            repeat.command(
+                repeat.arguments.split(),
+                self.data,
+                channel_name=self.channel
+            )
+        )
 
 
 class TemmieCommand(Command):
@@ -448,15 +376,20 @@ class TemmieCommand(Command):
 
 
 class FriendCommand(Command):
+
+    def __init__(self, get_channel):
+        super(FriendCommand, self).__init__()
+        self.get_channel = get_channel
+
     @mod_only
     def __call__(self, args, data):
         if len(args) == 2:
-            id = self.user.get_channel(args[1])["user"]["id"]
+            id = self.get_channel(args[1])["user"]["id"]
             query = session.query(User).filter_by(id=id).first()
             if query:
                 query.friend = not query.friend
                 session.commit()
-                return "{}ed {} as a friend.".format(
+                return "{}ed @{} as a friend.".format(
                     ["Remov", "Add"][query.friend], args[1])
             else:
                 return "User has not entered this channel."
@@ -475,6 +408,7 @@ class FriendCommand(Command):
 
 
 class SpamProtCommand(Command):
+
     def __init__(self, update_config):
         super(SpamProtCommand, self).__init__()
         self.update_config = update_config
@@ -483,44 +417,51 @@ class SpamProtCommand(Command):
     def __call__(self, args, data=None):
         if len(args) >= 3:
             if args[1] == "length":
-                self.update_config("spam_protection.maximum_message_length",
-                                   int(args[2]))
-                return "Maximum message length set to {}.".format(args[2])
+                if args[2].isdigit():
+                    self.update_config(
+                        "spam_protection.maximum_message_length",
+                        int(args[2]))
+                    return "Maximum message length set to {}.".format(
+                        args[2])
+                return "Invalid number: '{}'.".format(args[2])
             elif args[1] == "caps":
-                self.update_config("spam_protection.maximum_message_capitals",
-                                   int(args[2]))
-                return "Maximum capitals per message set to {}.".format(
-                    args[2])
+                if args[2].isdigit():
+                    self.update_config(
+                        "spam_protection.maximum_message_capitals",
+                        int(args[2]))
+                    return "Maximum capitals per message set to {}.".format(
+                        args[2])
+                return "Invalid number: '{}'.".format(args[2])
             elif args[1] == "emotes":
-                self.update_config("spam_protection.maximum_message_emotes",
-                                   int(args[2]))
-                return "Maximum emotes per message set to {}.".format(args[2])
-            elif args[1] == "link":
-                self.update_config("spam_protection.allow_links",
-                                   bool(args[2]))
-                return "Links are now {}allowed.".format("dis"*bool(args[2]))
-        else:
-            return "Not enough arguments"
+                if args[2].isdigit():
+                    self.update_config(
+                        "spam_protection.maximum_message_emotes",
+                        int(args[2]))
+                    return "Maximum emotes per message set to {}.".format(
+                        args[2])
+                return "Invalid number: '{}'.".format(args[2])
+            elif args[1] == "links":
+                if args[2].lower() in ("true", "false"):
+                    links_allowed = args[2].lower() == "true"
+                    self.update_config(
+                        "spam_protection.allow_links",
+                        links_allowed)
+                    return "Links are now {dis}allowed.".format(
+                        dis="dis" * (not links_allowed))
+                return "Invalid true/false: '{}'.".format(args[2])
+            return "Invalid argument: '{}'.".format(args[1])
+        return "Not enough arguments."
 
 
 class ProCommand(Command):
+
     @role_specific("Pro", reply="pro")
     def __call__(self, args=None, data=None):
         return "I'm such a Pro! B)"
 
 
-class Schedule(Base):
-    __tablename__ = "scheduled"
-
-    id = Column(Integer, unique=True, primary_key=True)
-    text = Column(String)
-    interval = Column(Integer)
-    last_ran = Column(Integer)
-    uid = Column(String)
-    type = Column(String)
-
-
 class SubCommand(Command):
+
     @role_specific("Subscriber", reply="sub")
     def __call__(self, args=None, data=None):
         return "I'm a subscriber! :salute"
