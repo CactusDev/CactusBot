@@ -71,8 +71,12 @@ class Beam:
 
     def _request(self, url, method="GET", **kwargs):
         """Send HTTP request to Beam."""
-        return self.http_session.request(
-            method, urljoin(self.path, url.lstrip('/')), **kwargs).json()
+        response = self.http_session.request(
+            method, urljoin(self.path, url.lstrip('/')), **kwargs)
+        try:
+            return response.json()
+        except Exception:
+            return response.text
 
     def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
