@@ -13,7 +13,7 @@ from shutil import copyfile
 from functools import reduce, partial
 
 from tornado.ioloop import IOLoop
-from tornado.autoreload import start, add_reload_hook
+from tornado.autoreload import add_reload_hook, watch, start
 
 from sys import exit
 from traceback import format_exc
@@ -164,6 +164,7 @@ class Cactus(MessageHandler, Beam):
                         self.send_message,
                         "Restarting, thanks to debug mode. :spaceship"
                     ))
+                    watch(self.config_file)
                     start(check_time=5000)
 
                 IOLoop.instance().start()
@@ -180,11 +181,13 @@ class Cactus(MessageHandler, Beam):
 
             except Exception:
                 self.logger.critical("Oh no, I crashed!")
+
                 try:
                     self.send_message("Oh no, I crashed! :127")
                 except Exception:
                     pass
-                self.logger.error("\n\n" + format_exc())
+
+                self.logger.error('\n\n' + format_exc())
 
                 if self.config.get("autorestart"):
                     self.logger.info("Restarting in 10 seconds...")
@@ -198,13 +201,16 @@ class Cactus(MessageHandler, Beam):
                     exit()
 
 if __name__ == "__main__":
+
     parser = ArgumentParser()
+
     parser.add_argument(
         "--silent",
         help="send no messages to chat",
         action="store_true",
         default=False
     )
+
     parser.add_argument(
         "--debug",
         help="set custom logger level",
