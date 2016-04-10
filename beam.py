@@ -1,6 +1,6 @@
 from tornado.websocket import websocket_connect
 from tornado.gen import coroutine
-from tornado.ioloop import PeriodicCallback
+from tornado.ioloop import IOLoop, PeriodicCallback
 
 from requests import Session
 from requests.compat import urljoin
@@ -98,17 +98,28 @@ class Beam:
     def connect(self, channel_id, bot_id, silent=False):
         """Connect to a Beam chat through a websocket."""
 
+        self.connection_information = {
+            "channel_id": channel_id,
+            "bot_id": bot_id,
+            "silent": silent
+        }
+
         chat = self.get_chat(channel_id)
-        server = chat["endpoints"][0]
+
+        self.servers = chat["endpoints"]
+        self.server_offset = 0
+
         authkey = chat["authkey"]
 
-        self.logger.debug("Connecting to: {server}.".format(server=server))
+        self.logger.debug("Connecting to: {server}.".format(
+            server=self.servers[self.server_offset]))
 
-        websocket_connection = websocket_connect(server)
+        websocket_connection = websocket_connect(
+            self.servers[self.server_offset])
 
         if silent:
             websocket_connection.add_done_callback(
-                partial(self.authenticate, channel_id, None, None))
+                partial(self.authenticate, channel_id))
         else:
             websocket_connection.add_done_callback(
                 partial(self.authenticate, channel_id, bot_id, authkey))
@@ -171,7 +182,35 @@ class Beam:
             message = yield self.websocket.read_message()
 
             if message is None:
-                raise ConnectionError
+                self.logger.warning(
+                    "Connection to chat server lost. Attempting to reconnect.")
+                self.server_offset += 1
+                self.server_offset %= len(self.servers)
+                self.logger.debug("Connecting to: {server}.".format(
+                    server=self.servers[self.server_offset]))
+
+                websocket_connection = websocket_connect(
+                    self.servers[self.server_offset])
+
+                authkey = self.get_chat(
+                    self.connection_information["channel_id"])["authkey"]
+
+                if self.connection_information["silent"]:
+                    websocket_connection.add_done_callback(
+                        partial(
+                            self.authenticate,
+                            self.connection_information["channel_id"]
+                        )
+                    )
+                else:
+                    websocket_connection.add_done_callback(
+                        partial(
+                            self.authenticate,
+                            self.connection_information["channel_id"],
+                            self.connection_information["bot_id"],
+                            authkey
+                        )
+                    )
 
             response = loads(message)
 

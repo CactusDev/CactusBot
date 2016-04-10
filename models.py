@@ -26,10 +26,14 @@ def role_specific(*roles, reply=None):
     def role_specific_decorator(function):
         @wraps(function)
         def wrapper(self, args, data, **kwargs):
-            if any(filter(lambda r: r in data["user_roles"], roles)):
+            if any(filter(lambda role: role in data["user_roles"], roles)):
                 return function(self, args, data, **kwargs)
-            r = reply if reply else roles[0].lower() if roles else "permission"
-            return "This command is {}-only!".format(r)
+            representation = (
+                reply if reply
+                else roles[0].lower().replace(' ', '-') if roles
+                else "permission"
+            )
+            return "This command is {}-only!".format(representation)
         return wrapper
     return role_specific_decorator
 
