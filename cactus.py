@@ -159,12 +159,12 @@ class Cactus(MessageHandler, Beam):
                     self.channel_data["id"],
                     self.channel_data["userId"])
 
-                if self.debug:
+                if str(self.debug).lower() in ("true", "debug"):
                     add_reload_hook(partial(
                         self.send_message,
                         "Restarting, thanks to debug mode. :spaceship"
                     ))
-                    start(check_time=10000)
+                    start(check_time=5000)
 
                 IOLoop.instance().start()
 
