@@ -1,6 +1,6 @@
 from tornado.websocket import websocket_connect
 from tornado.gen import coroutine
-from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.ioloop import PeriodicCallback
 
 from requests import Session
 from requests.compat import urljoin
