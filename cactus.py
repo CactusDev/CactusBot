@@ -75,10 +75,10 @@ class Cactus(MessageHandler, Beam):
             self.logger.info("Done!")
 
     def load_config(self, filename):
-        """Load configuration."""
+        """Load configuration file."""
 
         if exists(filename):
-            self.logger.info("Configuration file was found. Loading...")
+            self.logger.info("Configuration file found. Loading...")
             self.config_file = filename
             with open(filename) as config:
                 self.config = load(config)
@@ -88,25 +88,29 @@ class Cactus(MessageHandler, Beam):
             copyfile("data/config-template.json", filename)
             self.logger.error(
                 "Configuration file created. Please enter values and restart.")
-            raise FileNotFoundError("Configuration not found.")
+            raise FileNotFoundError("Configuration file not found.")
             exit()
 
     def load_stats(self, filename):
+        """Load statistics file."""
+
         self.logger.warning("Statistics are not yet implemented.")
         return dict()
 
         if exists(filename):
             self.stats_file = filename
-            self.logger.info("Statistics file was found. Loading...")
+            self.logger.info("Statistics file found. Loading...")
             with open(filename) as stats:
                 self.stats = load(stats)
                 return self.stats
         else:
-            self.logger.warn("Statistics file was not found. Creating...")
+            self.logger.warn("Statistics file not found. Creating...")
             copyfile("data/stats-template.json", "data/stats.json")
             self.logger.info("Statistics file created.")
 
     def update_config(self, keys, value):
+        """Update configuration file value."""
+
         with open(self.config_file, 'r') as config:
             config_data = load(config)
             reduce(lambda d, k: d[k], keys.split('.')[:-1], config_data)[
@@ -117,6 +121,8 @@ class Cactus(MessageHandler, Beam):
         return self.config
 
     def update_stats(self, keys, value):
+        """Update statistics file value."""
+
         self.logger.warning("Statistics are not yet implemented.")
         return
 

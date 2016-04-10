@@ -17,6 +17,8 @@ class MessageHandler(Beam):
         }
 
     def _init_commands(self):
+        """Initialize built-in commands."""
+
         self.commands = {
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
@@ -39,23 +41,27 @@ class MessageHandler(Beam):
         }
 
     def handle(self, response):
+        """Handle responses from a Beam websocket."""
+
+        data = response["data"]
+
         if "event" in response:
             if response["event"] in self.events:
-                self.events[response["event"]](response["data"])
+                self.events[response["event"]](data)
             else:
                 self.logger.debug("No handler found for event {}.".format(
                     response["event"]
                 ))
-        elif response.get("id") == 0:
+        elif isinstance(data, dict) and data.get("authenticated"):
             self.send_message("CactusBot activated. Enjoy! :cactus")
 
     def message_handler(self, data):
-        parsed = str()
-        for chunk in data["message"]["message"]:
-            if chunk["type"] == "text":
-                parsed += chunk["data"]
-            else:
-                parsed += chunk["text"]
+        """Handle chat message packets from Beam."""
+
+        parsed = ''.join([
+            chunk["data"] if chunk["type"] == "text" else chunk["text"]
+            for chunk in data["message"]["message"]
+        ])
 
         self.logger.info("{bot}{me}[{user}] {message}".format(
             bot='$ ' if data["user_name"] == self.config["auth"]["username"]
@@ -151,7 +157,10 @@ class MessageHandler(Beam):
                 return self.send_message(message)
 
     def join_handler(self, data):
+        """Handle user join packets from Beam."""
+
         user = session.query(User).filter_by(id=data["id"]).first()
+
         if not user:
             user = User(id=data["id"], joins=1)
         else:
@@ -167,6 +176,8 @@ class MessageHandler(Beam):
                 username=data["username"]))
 
     def leave_handler(self, data):
+        """Handle user leave packets from Beam."""
+
         if data["username"] is not None:
             self.logger.info("- {user} left".format(
                 user=data["username"]))
