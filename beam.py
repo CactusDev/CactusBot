@@ -166,8 +166,8 @@ class Beam:
             if method == "whisper":
                 self.logger.info("$ [{bot_name} > {user}] {message}".format(
                     bot_name=self.config["auth"]["username"],
-                    user=message[0],
-                    message=message[1]))
+                    user=args[0],
+                    message=args[1]))
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
