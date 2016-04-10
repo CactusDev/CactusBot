@@ -28,7 +28,7 @@ class MessageHandler(Beam):
                 self.channel_data["token"]),
             "quote": QuoteCommand(),
             "social": SocialCommand(self.get_channel),
-            "uptime": UptimeCommand(),
+            "uptime": UptimeCommand(self._request),
             "friend": FriendCommand(self.get_channel),
             "points": PointsCommand(self.config["points"]["name"]),
             "spamprot": SpamProtCommand(self.update_config),

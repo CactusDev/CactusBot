@@ -142,55 +142,59 @@ class CommandCommand(Command):
 
     @mod_only
     def __call__(self, args, data):
-        if args[1] == "add":
-            if len(args) > 3:
-                symbols_to_permissions = {
-                    '+': "Mod",
-                    '$': "Subscriber"
-                }
+        if len(args) > 1:
+            if args[1] == "add":
+                if len(args) > 3:
+                    symbols_to_permissions = {
+                        '+': "Mod",
+                        '$': "Subscriber"
+                    }
 
-                symbols, name = match(
-                    "^([{}]*)(.+)$".format(''.join(symbols_to_permissions)),
-                    args[2]
-                ).groups()
+                    symbols, name = match(
+                        "^([{}]*)(.+)$".format(
+                            ''.join(symbols_to_permissions)),
+                        args[2]
+                    ).groups()
 
-                permissions = ','.join(
-                    {symbols_to_permissions[symbol] for symbol in symbols})
+                    permissions = ','.join(
+                        {symbols_to_permissions[symbol] for symbol in symbols})
 
-                command = session.query(Command).filter_by(
-                    command=name).first()
+                    command = session.query(Command).filter_by(
+                        command=name).first()
 
-                if command:
-                    command.permissions = permissions
-                    command.response = ' '.join(args[3:])
-                else:
-                    command = Command(
-                        command=name,
-                        permissions=permissions,
-                        response=' '.join(args[3:]),
-                        creation=datetime.utcnow(),
-                        author=data["user_id"]
-                    )
+                    if command:
+                        command.permissions = permissions
+                        command.response = ' '.join(args[3:])
+                    else:
+                        command = Command(
+                            command=name,
+                            permissions=permissions,
+                            response=' '.join(args[3:]),
+                            creation=datetime.utcnow(),
+                            author=data["user_id"]
+                        )
 
-                session.add(command)
-                session.commit()
-                return "Added command !{}.".format(name)
-            return "Not enough arguments!"
-        elif args[1] == "remove":
-            if len(args) > 2:
-                command = session.query(Command).filter_by(
-                    command=args[2])
-                if command.first():
-                    command.delete()
+                    session.add(command)
                     session.commit()
-                    return "Removed command !{}.".format(args[2])
-                return "!{} does not exist!".format(args[2])
-            return "Not enough arguments!"
-        elif args[1] == "list":
-            commands = session.query(Command).all()
-            return "Commands: {commands}".format(
-                commands=', '.join([c.command for c in commands if c.command]))
-        return "Invalid argument: {}.".format(args[1])
+                    return "Added command !{}.".format(name)
+                return "Not enough arguments!"
+            elif args[1] == "remove":
+                if len(args) > 2:
+                    command = session.query(Command).filter_by(
+                        command=args[2])
+                    if command.first():
+                        command.delete()
+                        session.commit()
+                        return "Removed command !{}.".format(args[2])
+                    return "!{} does not exist!".format(args[2])
+                return "Not enough arguments!"
+            elif args[1] == "list":
+                commands = session.query(Command).all()
+                return "Commands: {commands}".format(
+                    commands=', '.join(
+                        [c.command for c in commands if c.command]))
+            return "Invalid argument: {}.".format(args[1])
+        return "Not enough arguments!"
 
 
 class QuoteCommand(Command):
@@ -284,8 +288,21 @@ class CubeCommand(Command):
 
 class UptimeCommand(Command):
 
-    def __call__(self, args, data=None):
-        return "In development. :cactus"
+    def __init__(self, request):
+        super(UptimeCommand, self).__init__()
+        self.request = request
+
+    def __call__(self, args, data):
+        response = self.request(
+            "/channels/{id}/manifest.light".format(id=data["channel"]))
+        if response.get("since") is not None:
+            return "Channel has been live for {}.".format(
+                match(
+                    "(.+)\.\d{6}",
+                    str(datetime.utcnow() - datetime.strptime(
+                        response["since"][:-5], "%Y-%m-%dT%H:%M:%S")
+                        )).group(1))
+        return "Channel is offline."
 
 
 class PointsCommand(Command):
