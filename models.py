@@ -151,7 +151,7 @@ class CommandCommand(Command):
                     }
 
                     symbols, name = match(
-                        "^([{}]*)(.+)$".format(
+                        "^([{}]?)(.+)$".format(
                             ''.join(symbols_to_permissions)),
                         args[2]
                     ).groups()
