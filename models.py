@@ -59,7 +59,6 @@ class Command(Base):
     author = Column(Integer)
 
     permissions = Column(String)
-    allowed = Column(String)
 
     repeat = relationship("Repeat", backref="command")
 
