@@ -123,6 +123,11 @@ class MessageHandler(Beam):
                     data["user_name"], "Please stop posting links.",
                     method="whisper")
 
+        if parsed == "/cry":
+            self.remove_message(data["channel"], data["id"])
+            return self.send_message("/me cries with {} :'(".format(
+                data["user_name"]))
+
         if len(parsed) > 1 and parsed[0].startswith("!"):
             args = parsed.split()
 
