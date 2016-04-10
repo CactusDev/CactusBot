@@ -85,7 +85,7 @@ class Beam:
             "password": password,
             "code": code
         }
-        return self._request("/users/login", "POST", data=packet)
+        return self._request("/users/login", method="POST", data=packet)
 
     def get_channel(self, id, **params):
         """Get channel data by username."""
@@ -171,8 +171,8 @@ class Beam:
 
     def remove_message(self, channel_id, message_id):
         """Remove a message from chat."""
-        return self._request("DELETE", "/chats/{id}/message/{message}".format(
-            id=channel_id, message=message_id))
+        return self._request("/chats/{id}/message/{message}".format(
+            id=channel_id, message=message_id), method="DELETE")
 
     @coroutine
     def read_chat(self, handler=None):
