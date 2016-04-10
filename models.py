@@ -181,18 +181,21 @@ class CommandCommand(Command):
             elif args[1] == "remove":
                 if len(args) > 2:
                     command = session.query(Command).filter_by(
-                        command=args[2])
-                    if command.first():
-                        command.delete()
+                        command=args[2]).first()
+                    if command is not None:
+                        session.delete(command)
                         session.commit()
                         return "Removed command !{}.".format(args[2])
                     return "!{} does not exist!".format(args[2])
                 return "Not enough arguments!"
             elif args[1] == "list":
                 commands = session.query(Command).all()
-                return "Commands: {commands}".format(
-                    commands=', '.join(
-                        [c.command for c in commands if c.command]))
+                commands_list = ', '.join(
+                    [c.command for c in commands if c.command])
+                if commands_list:
+                    return "Commands: {commands}.".format(
+                        commands=commands_list)
+                return "No commands added."
             return "Invalid argument: {}.".format(args[1])
         return "Not enough arguments!"
 
@@ -226,9 +229,9 @@ class QuoteCommand(Command):
                         id = int(args[2])
                     except ValueError:
                         return "Invalid quote ID '{}'.".format(args[2])
-                    quote = session.query(Quote).filter_by(id=id)
-                    if quote.first():
-                        quote.delete()
+                    quote = session.query(Quote).filter_by(id=id).first()
+                    if quote is not None:
+                        session.delete(quote)
                         session.commit()
                         return "Removed quote with ID {}.".format(args[2])
                     return "Quote {} does not exist!".format(args[2])
@@ -326,7 +329,7 @@ class RepeatCommand(Command):
     def __init__(self, send_message, bot_name, channel):
         super(RepeatCommand, self).__init__()
         self.send_message = send_message
-        self.data = {"user_name": bot_name}
+        self.data = {"user_name": bot_name, "user_roles": all_roles}
         self.channel = channel
 
         self.repeats = dict()
@@ -385,11 +388,12 @@ class RepeatCommand(Command):
             return "Not enough arguments!"
         elif args[1] == "remove":
             if len(args) > 2:
-                repeat = session.query(Repeat).filter_by(command_name=args[2])
-                if repeat.first():
+                repeat = session.query(Repeat).filter_by(
+                    command_name=args[2]).first()
+                if repeat is not None:
                     self.repeats[args[2]].stop()
                     del self.repeats[args[2]]
-                    repeat.delete()
+                    session.delete(repeat)
                     session.commit()
                     return "Removed repeat for command !{}.".format(args[2])
                 return "Repeat for !{} does not exist!".format(args[2])
@@ -404,13 +408,20 @@ class RepeatCommand(Command):
         return "Invalid argument: {}.".format(args[1])
 
     def send(self, repeat):
-        self.send_message(
-            repeat.command(
-                repeat.arguments.split(),
-                self.data,
-                channel_name=self.channel
+        try:
+            self.send_message(
+                repeat.command(
+                    repeat.arguments.split(),
+                    self.data,
+                    channel_name=self.channel
+                )
             )
-        )
+        except TypeError:
+            command_name = repeat.command_name
+            self.repeats[command_name].stop()
+            del self.repeats[command_name]
+            session.delete(repeat)
+            session.commit()
 
 
 class TemmieCommand(Command):
