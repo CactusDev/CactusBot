@@ -436,14 +436,6 @@ class FriendCommand(Command):
         else:
             return "Not enough arguments."
 
-    def remove_points(self, username, amount):
-        query = session.query(Base).filter_by(username=username).first()
-
-        if query:
-            session.delete(query)
-            return True
-        return False
-
 
 class SpamProtCommand(Command):
 
