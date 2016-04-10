@@ -2,6 +2,10 @@ language: python
 python:
   - "3.4"
   - "3.5"
+branches:
+  only:
+    - master
+    - develop
 install:
   - pip install flake8
 before_script:
