@@ -8,7 +8,7 @@ from functools import wraps, partial
 from os.path import abspath, dirname, join
 from datetime import datetime
 
-from re import sub, findall
+from re import sub, findall, match
 from random import randrange, choice
 
 from tornado.ioloop import PeriodicCallback
@@ -25,15 +25,20 @@ def role_specific(*roles, reply=None):
 
     def role_specific_decorator(function):
         @wraps(function)
-        def wrapper(self, args, data):
+        def wrapper(self, args, data, **kwargs):
             if any(filter(lambda r: r in data["user_roles"], roles)):
-                return function(self, args, data)
+                return function(self, args, data, **kwargs)
             r = reply if reply else roles[0].lower() if roles else "permission"
             return "This command is {}-only!".format(r)
         return wrapper
     return role_specific_decorator
 
-mod_only = role_specific("Founder", "Staff", "Global Mod", "Mod", reply="mod")
+all_roles = (
+    "Founder", "Staff", "Global Mod", "Mod", "Subscriber", "Pro", "User"
+)
+
+mod_roles = ("Founder", "Staff", "Global Mod", "Mod")
+mod_only = role_specific(*mod_roles, reply="mod")
 
 
 class Command(Base):
@@ -49,65 +54,47 @@ class Command(Base):
     creation = Column(DateTime)
     author = Column(Integer)
 
-    perms = Column(String)
+    permissions = Column(String)
     allowed = Column(String)
 
     repeat = relationship("Repeat", backref="command")
 
-    def __call__(self, args, data, channel_name=None):
-        response = self.response
+    def __call__(self, args, data, **kwargs):
+        if self.permissions:
+            roles = str(self.permissions).split(',') + list(mod_roles)
+        else:
+            roles = all_roles
 
-        perms = [perm for perm in self.perms]
-        user_roles = data["user_roles"]
-        # If it's the channel owner, ignore all perm checking
-        if "Owner" not in user_roles:
-            for perm in perms:
-                # Mod-only command
-                if perm == "+":
-                    if "Mod" not in user_roles:
-                        # Mod-only, so don't return anything
-                        return None
+        @role_specific(*roles)
+        def run_command(self, args, data, channel_name=None):
+            response = self.response
 
-                # Owner-only command
-                elif perm == "~":
-                    if "Owner" not in user_roles:
-                        # Owner-only, so don't return anything
-                        return None
+            response = response.replace("%name%", data["user_name"])
 
-                # Sub-only command
-                elif perm == "$":
-                    if "Subscriber" not in user_roles and "Mod" not in user_roles:
-                        # Subscriber-only, so don't return anything
-                        return None
+            try:
+                response = sub(
+                    "%arg(\d+)%",
+                    lambda match: args[int(match.group(1))],
+                    response
+                )
+            except IndexError:
+                return "Not enough arguments!"
 
-        response = response.replace("%name%", data["user_name"])
+            response = response.replace("%args%", ' '.join(args[1:]))
 
-        try:
-            response = sub(
-                "%arg(\d+)%",
-                lambda match: args[int(match.group(1))],
-                response
+            self.calls += 1
+            session.commit()
+
+            response = response.replace("%count%", str(self.calls))
+
+            response = response.replace(
+                "%channel%",
+                channel_name if channel_name else data["id"]
             )
-        except IndexError:
-            return "Not enough arguments!"
 
-        response = response.replace("%args%", ' '.join(args[1:]))
+            return response
 
-        self.calls += 1
-        session.commit()
-
-        response = response.replace("%count%", str(self.calls))
-
-        response = response.replace(
-            "%channel%",
-            channel_name if channel_name else data["id"]
-        )
-
-        # Check for kapooyah commands
-        if "-" in perms:
-            pass
-
-        return response
+        return run_command(self, args, data, **kwargs)
 
 
 class Repeat(Base):
@@ -154,30 +141,37 @@ class CommandCommand(Command):
     def __call__(self, args, data):
         if args[1] == "add":
             if len(args) > 3:
-                keys = ("+", "-", "~", "$")
-                perms = [perm for perm in list(args[2]) if perm in keys]
-                cmd = [char for char in list(args[2]) if char not in keys]
+                symbols_to_permissions = {
+                    '+': "Mod",
+                    '$': "Subscriber"
+                }
 
-                cmd = "".join(cmd)
-                perms = "".join(perms)
+                symbols, name = match(
+                    "^([{}]*)(.+)$".format(''.join(symbols_to_permissions)),
+                    args[2]
+                ).groups()
+
+                permissions = ','.join(
+                    {symbols_to_permissions[symbol] for symbol in symbols})
 
                 command = session.query(Command).filter_by(
-                    command="".join(cmd)).first()
+                    command=name).first()
 
                 if command:
+                    command.permissions = permissions
                     command.response = ' '.join(args[3:])
                 else:
                     command = Command(
-                        command=cmd,
+                        command=name,
+                        permissions=permissions,
                         response=' '.join(args[3:]),
                         creation=datetime.utcnow(),
-                        author=data["user_id"],
-                        perms=perms
+                        author=data["user_id"]
                     )
 
-                    session.add(command)
-                    session.commit()
-                return "Added command !{}.".format("".join(cmd))
+                session.add(command)
+                session.commit()
+                return "Added command !{}.".format(name)
             return "Not enough arguments!"
         elif args[1] == "remove":
             if len(args) > 2:
