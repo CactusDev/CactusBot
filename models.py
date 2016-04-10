@@ -251,12 +251,15 @@ class SocialCommand(Command):
         self.get_channel = get_channel
 
     def __call__(self, args, data=None):
-        s = self.get_channel(data["channel"])["user"]["social"]
+        channel_data = self.get_channel(data["channel"])
+        name = channel_data["token"]
+        s = channel_data["user"]["social"]
         a = [arg.lower() for arg in args[1:]]
         if s:
             if not a:
                 return ', '.join(': '.join((k.title(), s[k])) for k in s)
-            elif set(a).issubset(set(s)):
+            elif set(a).issubset(set(s).union({"beam"})):
+                s.update({"beam": "https://beam.pro/{}".format(name)})
                 return ', '.join(': '.join((k.title(), s[k])) for k in a)
             return "Data not found for service{s}: {}.".format(
                 ', '.join(set(a) - set(s)), s='s'*(len(set(a) - set(s)) != 1))
