@@ -95,7 +95,7 @@ class Command(Base):
                 channel_name if channel_name else data["id"]
             )
 
-            return response
+            return response.split('\\n', 2)
 
         return run_command(self, args, data, **kwargs)
 

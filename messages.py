@@ -123,15 +123,15 @@ class MessageHandler(Beam):
                     data["user_name"], "Please stop posting links.",
                     method="whisper")
 
-        if parsed[0].startswith("!") and len(parsed) > 1:
+        if len(parsed) > 1 and parsed[0].startswith("!"):
             args = parsed.split()
 
             if args[0][1:] in self.commands:
                 response = self.commands[args[0][1:]]
                 if isinstance(response, str):
-                    message = response
+                    messages = response
                 else:
-                    message = response(args, data)
+                    messages = response(args, data)
             else:
                 options = [
                     ('-'.join(args[:2])[1:], ['-'.join(args[:2])] + args[2:]),
@@ -142,19 +142,23 @@ class MessageHandler(Beam):
                     command = session.query(
                         Command).filter_by(command=parse_method[0]).first()
                     if command:
-                        message = command(
+                        messages = command(
                             parse_method[1], data,
                             channel_name=self.channel_data["token"]
                         )
                         break
                 else:
-                    message = "Command not found."
+                    messages = "Command not found."
+
+            if isinstance(messages, str):
+                messages = (messages,)
 
             if data["message"]["meta"].get("whisper", False):
-                return self.send_message(
-                    data["user_name"], message, method="whisper")
+                for message in messages:
+                    self.send_message(
+                        data["user_name"], message, method="whisper")
             else:
-                return self.send_message(message)
+                self.send_message(*messages)
 
     def join_handler(self, data):
         """Handle user join packets from Beam."""
