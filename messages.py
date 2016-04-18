@@ -45,15 +45,16 @@ class MessageHandler(Beam):
 
         data = response["data"]
 
-        if "event" in response:
-            if response["event"] in self.events:
-                self.events[response["event"]](data)
-            else:
-                self.logger.debug("No handler found for event {}.".format(
-                    response["event"]
-                ))
-        elif isinstance(data, dict) and data.get("authenticated"):
-            self.send_message("CactusBot activated. Enjoy! :cactus")
+        if isinstance(data, dict):
+            if "event" in response:
+                if response["event"] in self.events:
+                    self.events[response["event"]](data)
+                else:
+                    self.logger.debug("No handler found for event {}.".format(
+                        response["event"]
+                    ))
+            elif data.get("authenticated") and response["id"] == 0:
+                self.send_message("CactusBot activated. Enjoy! :cactus")
 
     def message_handler(self, data):
         """Handle chat message packets from Beam."""
