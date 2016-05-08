@@ -43,6 +43,8 @@ class MessageHandler(Beam):
     def handle(self, response):
         """Handle responses from a Beam websocket."""
 
+        self.logger.debug("Data: {}".format(response["data"]))
+
         data = response["data"]
 
         if isinstance(data, dict):
