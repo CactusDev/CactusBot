@@ -43,7 +43,10 @@ class MessageHandler(Beam):
     def handle(self, response):
         """Handle responses from a Beam websocket."""
 
-        self.logger.debug("Data: {}".format(response["data"]))
+        if data not in response:
+            self.logger.debug("Data key not in response!")
+            self.logger.debug("response:\n\t{}".format(response))
+            return None
 
         data = response["data"]
 
