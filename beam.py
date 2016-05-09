@@ -192,8 +192,19 @@ class Beam:
                 websocket_connection = websocket_connect(
                     self.servers[self.server_offset])
 
-                authkey = self.get_chat(
-                    self.connection_information["channel_id"])["authkey"]
+                # NOTE: We'll remove these try/excepts in the future
+                #   Current just for debugging, we need to see the returned
+                #   values from self.get_chat()
+                try:
+                    authkey = self.get_chat(
+                        self.connection_information["channel_id"])["authkey"]
+                except TypeError as e:
+                    self.logger.warning("Caught crash-worthy error!")
+                    self.logger.warning(self.get_chat(
+                                    self.connection_information["channel_id"]))
+
+                    # Skip this loop
+                    continue
 
                 if self.connection_information["silent"]:
                     return websocket_connection.add_done_callback(
