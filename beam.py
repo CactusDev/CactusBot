@@ -184,33 +184,63 @@ class Beam:
             if message is None:
                 self.logger.warning(
                     "Connection to chat server lost. Attempting to reconnect.")
-                self.server_offset += 1
-                self.server_offset %= len(self.servers)
-                self.logger.debug("Connecting to: {server}.".format(
-                    server=self.servers[self.server_offset]))
 
-                websocket_connection = websocket_connect(
-                    self.servers[self.server_offset])
+                # def connect(self, channel_id, bot_id, silent=False):
+                if self.server_offset == 2:
+                    self.server_offset = 0
 
-                authkey = self.get_chat(
-                    self.connection_information["channel_id"])["authkey"]
+                    self.logger.debug("Getting new server list and connecting")
 
-                if self.connection_information["silent"]:
-                    return websocket_connection.add_done_callback(
-                        partial(
-                            self.authenticate,
-                            self.connection_information["channel_id"]
+                    websocket_connection = websocket_connect(
+                        self.servers[self.server_offset])
+
+                    authkey = self.get_chat(
+                        self.connection_information["channel_id"])["authkey"]
+
+                    if self.connection_information["silent"]:
+                        return websocket_connection.add_done_callback(
+                            partial(
+                                self.authenticate,
+                                self.connection_information["channel_id"]
+                            )
                         )
-                    )
+                    else:
+                        return websocket_connection.add_done_callback(
+                            partial(
+                                self.authenticate,
+                                self.connection_information["channel_id"],
+                                self.connection_information["bot_id"],
+                                authkey
+                            )
+                        )
                 else:
-                    return websocket_connection.add_done_callback(
-                        partial(
-                            self.authenticate,
-                            self.connection_information["channel_id"],
-                            self.connection_information["bot_id"],
-                            authkey
+                    self.server_offset += 1
+                    self.server_offset %= len(self.servers)
+                    self.logger.debug("Connecting to: {server}.".format(
+                        server=self.servers[self.server_offset]))
+
+                    websocket_connection = websocket_connect(
+                        self.servers[self.server_offset])
+
+                    authkey = self.get_chat(
+                        self.connection_information["channel_id"])["authkey"]
+
+                    if self.connection_information["silent"]:
+                        return websocket_connection.add_done_callback(
+                            partial(
+                                self.authenticate,
+                                self.connection_information["channel_id"]
+                            )
                         )
-                    )
+                    else:
+                        return websocket_connection.add_done_callback(
+                            partial(
+                                self.authenticate,
+                                self.connection_information["channel_id"],
+                                self.connection_information["bot_id"],
+                                authkey
+                            )
+                        )
 
             else:
                 response = loads(message)
