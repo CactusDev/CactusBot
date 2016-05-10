@@ -204,7 +204,7 @@ class Beam:
                         self.connection_information["channel_id"])["authkey"]
                 except TypeError as e:
                     self.logger.warning("Caught crash-worthy error!")
-                    self.logger.error(str(e))
+                    self.logger.warning(repr(e))
                     self.logger.warning(self.get_chat(
                                     self.connection_information["channel_id"]))
 
