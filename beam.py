@@ -127,17 +127,35 @@ class Beam:
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
 
-        future = args[-1]
-        if future.exception() is None:
-            self.websocket = future.result()
-            self.logger.info("Successfully connected to chat {}.".format(
-                self.channel_data["token"]))
+        # HACK
 
-            self.send_message(*args[:-1], method="auth")
+        try:
+            future = args[-1]
+            if future.exception() is None:
+                self.websocket = future.result()
+                self.logger.info("Successfully connected to chat {}.".format(
+                    self.channel_data["token"]))
 
-            self.read_chat(self.handle)
-        else:
-            raise ConnectionError(future.exception())
+                self.send_message(*args[:-1], method="auth")
+
+                self.read_chat(self.handle)
+            else:
+                raise ConnectionError(future.exception())
+        except:
+            self.logger.error("There was an issue connection. Trying again.")
+
+            try:
+                future = args[-1]
+                if future.exception() is None:
+                    self.websocket = future.result()
+                    self.logger.info("Successfully connected to chat {}.".format(
+                        self.channel_data["token"]))
+
+                    self.send_message(*args[:-1], method="auth")
+
+                    self.read_chat(self.handle)
+                else:
+                    raise ConnectionError(future.exception())
 
     def send_message(self, *args, method="msg"):
         """Send a message to a Beam chat through a websocket."""
