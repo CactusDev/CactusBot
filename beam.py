@@ -184,7 +184,11 @@ class Beam:
             if message is None:
                 self.logger.warning(
                     "Connection to chat server lost. Attempting to reconnect.")
-                self.server_offset += 1
+                if self.server_offset == 1:
+                    self.server_offset == 0
+                else:
+                    self.server_offset += 1
+
                 self.server_offset %= len(self.servers)
                 self.logger.debug("Connecting to: {server}.".format(
                     server=self.servers[self.server_offset]))
@@ -200,6 +204,7 @@ class Beam:
                         self.connection_information["channel_id"])["authkey"]
                 except TypeError as e:
                     self.logger.warning("Caught crash-worthy error!")
+                    self.logger.error(str(e))
                     self.logger.warning(self.get_chat(
                                     self.connection_information["channel_id"]))
 
