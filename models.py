@@ -347,6 +347,9 @@ class RepeatCommand(Command):
 
     @mod_only
     def __call__(self, args, data):
+        if args is None:
+            return 'Please enter an argument. add/remove/list'
+
         if args[1] == "add":
             if len(args) > 3:
                 try:
