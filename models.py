@@ -137,6 +137,17 @@ class User(Base):
 
     points = Column(Integer, default=0)
 
+    has_followed = Column(Boolean, default=False)
+
+    def has_followed(id):
+        user = session.query(User).filter_by(
+            id=id).first()
+
+        if user.has_followed:
+            return True
+        else:
+            return False
+
 
 class CommandCommand(Command):
 

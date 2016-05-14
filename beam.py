@@ -14,6 +14,8 @@ from json import dumps, loads
 
 from re import match
 
+from models import User
+
 
 class Beam:
     path = "https://beam.pro/api/v1/"
@@ -358,9 +360,11 @@ class Beam:
                     if packet["data"][1].get("following"):
                         self.logger.info("- {} followed.".format(
                             packet["data"][1]["user"]["username"]))
-                        self.send_message(
-                            "Thanks for the follow, @{}!".format(
-                                packet["data"][1]["user"]["username"]))
+
+                        if not User.has_followed(packet["data"][1]["user"]["id"]):
+                            self.send_message(
+                                "Thanks for the follow, @{}!".format(
+                                    packet["data"][1]["user"]["username"]))
                     elif packet["data"][1].get("subscribed"):
                         self.logger.info("- {} subscribed.".format(
                             packet["data"][1]["user"]["username"]))
