@@ -137,13 +137,13 @@ class User(Base):
 
     points = Column(Integer, default=0)
 
-    has_followed = Column(Boolean, default=False)
+    has_followed = Column(Integer, default=0)
 
     def has_followed(id):
         user = session.query(User).filter_by(
             id=id).first()
 
-        if user.has_followed:
+        if user.has_followed == 1:
             return True
         else:
             return False
