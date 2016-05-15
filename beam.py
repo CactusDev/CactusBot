@@ -132,19 +132,20 @@ class Beam:
                 partial(self.authenticate, channel_id, bot_id, authkey))
 
     def _init_users(self):
-        self.logger.info("Checking if the current users are in the database")
+        viewers = set(
+            user["userId"] for user in
+            self.get_chat_users( self.channel_data["id"]))
 
-        viewers = set(user["userId"] for user in self.get_chat_users(
-                           self.channel_data["id"]))
-        stored_users = set(user[0] for user in session.query(User).
-                           with_entities(User.id))
+        stored_users = set(
+            user[0] for user in session.query(User).with_entities(User.id))
 
         for user in viewers - stored_users:
             user = User(id=user, joins=1)
-
             session.add(user)
 
         session.commit()
+
+        self.logger.info("Successfully added new users to database.")
 
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
