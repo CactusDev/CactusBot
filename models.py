@@ -233,7 +233,7 @@ class QuoteCommand(Command):
                         params=dict(
                             method="getQuote", lang="en", format="json")
                     ).json()
-                    return "{quote} -{author}".format(
+                    return "\"{quote}\" -{author}".format(
                         quote=data["quoteText"].strip(),
                         author=data["quoteAuthor"].strip()
                     )
