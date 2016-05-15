@@ -136,16 +136,26 @@ class User(Base):
     offenses = Column(Integer, default=0)
 
     points = Column(Integer, default=0)
-    followed = Column(Integer, default=0)
+    followed = Column(Boolean, default=False)
 
     def has_followed(id):
         user = session.query(User).filter_by(
             id=id).first()
 
-        if user.followed == 1:
-            return True
-        else:
-            return False
+        if user:
+            if user.followed == 1:
+                return True
+            else:
+                user.followed = 1
+                session.add(user)
+                session.commit()
+
+                return False
+        user.followed = 1
+        session.add(user)
+        session.commit()
+
+        return False
 
 
 class CommandCommand(Command):
