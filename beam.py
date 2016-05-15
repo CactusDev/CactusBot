@@ -136,14 +136,11 @@ class Beam:
 
         all_users = self.get_chat_users(self.channel_data['id'])
 
-        index = 0
         for user in all_users:
-            if not User.exists(all_users[index]['userId']):
-                user = User(id=all_users[index]["userId"], joins=1)
+            if not User.exists(user['userId']):
+                user = User(id=user["userId"], joins=1)
 
                 session.add(user)
-
-            index += 1
 
         session.commit()
 
