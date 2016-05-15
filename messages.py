@@ -193,7 +193,7 @@ class MessageHandler(Beam):
 
             session.add(new_user)
         else:
-            user.joins = user.joins + 1
+            user.joins += 1
             session.add(user)
 
         session.commit()
