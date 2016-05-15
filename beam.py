@@ -135,7 +135,7 @@ class Beam:
     def _init_users(self):
         viewers = set(
             user["userId"] for user in
-            self.get_chat_users( self.channel_data["id"]))
+            self.get_chat_users(self.channel_data["id"]))
 
         stored_users = set(
             user[0] for user in session.query(User).with_entities(User.id))
