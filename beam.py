@@ -82,8 +82,6 @@ class Beam:
         stored_users = set(
             user[0] for user in session.query(User).with_entities(User.id))
 
-        print(viewers - stored_users)
-
         for user in viewers - stored_users:
             user = User(id=user, joins=1)
             session.add(user)
