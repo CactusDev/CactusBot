@@ -161,9 +161,14 @@ class Cactus(MessageHandler, Beam):
                     self.bot_data["id"],
                     silent=self.silent)
 
-                self.connect_to_liveloading(
-                    self.channel_data["id"],
-                    self.channel_data["userId"])
+                try:
+                    self.connect_to_liveloading(
+                        self.channel_data["id"],
+                        self.channel_data["userId"])
+                except ConnectionError as e:
+                    self.logger.warning("Caught ConnectionError!")
+                    self.logger.warning("Reconnecting to liveloading")
+                    self.logger.warning(e)
 
                 if str(self.debug).lower() in ("true", "debug"):
                     add_reload_hook(partial(

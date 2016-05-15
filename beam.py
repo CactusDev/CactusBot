@@ -221,7 +221,6 @@ class Beam:
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
-
         liveloading_websocket_connection = websocket_connect(
             "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
         liveloading_websocket_connection.add_done_callback(
@@ -259,7 +258,6 @@ class Beam:
 
     def subscribe_to_interfaces(self, *interfaces):
         """Subscribe to a Beam liveloading interface."""
-
         for interface in interfaces:
             packet = [
                 "put",
