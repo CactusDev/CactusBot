@@ -1,3 +1,5 @@
+""" This file is all the Beam related stuff """
+
 from tornado.websocket import websocket_connect
 from tornado.gen import coroutine
 from tornado.ioloop import PeriodicCallback
@@ -14,7 +16,7 @@ from json import dumps, loads
 
 from re import match
 
-from models import User
+from models import User, session
 
 
 class Beam:
@@ -97,6 +99,9 @@ class Beam:
         """Get chat server data."""
         return self._request("/chats/{id}".format(id=id))
 
+    def get_chat_users(self, id):
+        return self._request("chats/{id}/users".format(id=id))
+
     def connect(self, channel_id, bot_id, silent=False):
         """Connect to a Beam chat through a websocket."""
 
@@ -126,6 +131,22 @@ class Beam:
             websocket_connection.add_done_callback(
                 partial(self.authenticate, channel_id, bot_id, authkey))
 
+    def _init_users(self):
+        viewers = set(
+            user["userId"] for user in
+            self.get_chat_users( self.channel_data["id"]))
+
+        stored_users = set(
+            user[0] for user in session.query(User).with_entities(User.id))
+
+        for user in viewers - stored_users:
+            user = User(id=user, joins=1)
+            session.add(user)
+
+        session.commit()
+
+        self.logger.info("Successfully added new users to database.")
+
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
 
@@ -144,7 +165,7 @@ class Beam:
             else:
                 raise ConnectionError(future.exception())
         except:
-            self.logger.error("There was an issue connection. Trying again.")
+            self.logger.error("There was an issue connecting. Trying again.")
             future = args[-1]
             if future.exception() is None:
                 self.websocket = future.result()
@@ -224,7 +245,7 @@ class Beam:
                     self.logger.warning("Caught crash-worthy error!")
                     self.logger.warning(repr(e))
                     self.logger.warning(self.get_chat(
-                                    self.connection_information["channel_id"]))
+                        self.connection_information["channel_id"]))
 
                     # Skip this loop
                     continue
@@ -365,9 +386,15 @@ class Beam:
                             self.send_message(
                                 "Thanks for the follow, @{}!".format(
                                     packet["data"][1]["user"]["username"]))
+                            self.send_message(
+                                self.alert_user, packet["data"][1]["user"]["username"] + "Just followed the channel",
+                                method="whisper")
                     elif packet["data"][1].get("subscribed"):
                         self.logger.info("- {} subscribed.".format(
                             packet["data"][1]["user"]["username"]))
                         self.send_message(
                             "Thanks for the subscription, @{}! <3".format(
                                 packet["data"][1]["user"]["username"]))
+                        self.send_message(
+                            self.alert_user, packet["data"][1]["user"]["username"] + "Just subscribed to the channel",
+                            method="whisper")

@@ -181,10 +181,21 @@ class MessageHandler(Beam):
         user = session.query(User).filter_by(id=data["id"]).first()
 
         if not user:
-            user = User(id=data["id"], joins=1)
+            new_user = User(
+                id=data["id"],
+                friend=False,
+                joins=1,
+                messages=0,
+                offenses=0,
+                points=0,
+                followed=0
+            )
+
+            session.add(new_user)
         else:
-            session.add(user)
             user.joins += 1
+            session.add(user)
+
         session.commit()
 
         self.logger.info("- {user} joined".format(
