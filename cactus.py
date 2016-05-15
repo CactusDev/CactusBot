@@ -59,6 +59,7 @@ class Cactus(MessageHandler, Beam):
         self.database = kwargs.get("database", "data/data.db")
 
         self.silent = kwargs.get("silent", False)
+        self.alert_user = kwargs.get("user", None)
         self.no_messages = kwargs.get("no_messages", False)
 
     def _init_database(self, database):
@@ -219,8 +220,16 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--user",
+        help="Specify the user to alert when something happens",
+        nargs='?',
+        const=True,
+        default=""
+    )
+
+    parser.add_argument(
         "--debug",
-        help="set custom logger level",
+        help="Enable debug mode",
         nargs='?',
         const=True,
         default="info"
