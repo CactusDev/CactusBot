@@ -151,8 +151,6 @@ class Beam:
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
 
-        # HACK
-
         try:
             future = args[-1]
             if future.exception() is None:
@@ -245,11 +243,7 @@ class Beam:
             if message is None:
                 self.logger.warning(
                     "Connection to chat server lost. Attempting to reconnect.")
-                if self.server_offset == 1:
-                    self.server_offset == 0
-                else:
-                    self.server_offset += 1
-
+                self.server_offset += 1
                 self.server_offset %= len(self.servers)
                 self.logger.debug("Connecting to: {server}.".format(
                     server=self.servers[self.server_offset]))
@@ -280,7 +274,7 @@ class Beam:
                         )
                     )
                 else:
-                    return websocket_connection.add_done_callback(
+                    websocket_connection.add_done_callback(
                         partial(
                             self.authenticate,
                             self.connection_information["channel_id"],
@@ -299,12 +293,6 @@ class Beam:
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
-
-        self.liveloading_connection_information = {
-            "channel_id": channel_id,
-            "user_id": user_id
-        }
-
         liveloading_websocket_connection = websocket_connect(
             "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
         liveloading_websocket_connection.add_done_callback(
@@ -342,7 +330,6 @@ class Beam:
 
     def subscribe_to_interfaces(self, *interfaces):
         """Subscribe to a Beam liveloading interface."""
-
         for interface in interfaces:
             packet = [
                 "put",
@@ -388,10 +375,11 @@ class Beam:
             message = yield self.liveloading_websocket.read_message()
 
             if message is None:
-                self.logger.warning("Connection to liveloading server lost. "
-                                    "Attempting to reconnect.")
-                return self.connect_to_liveloading(
-                    **self.liveloading_connection_information)
+                self.logger.info("There was an error connecting.")
+                raise ConnectionError
+
+                self.logger.info("Attempting to reconnect.")
+                self.watch_liveloading()
 
             packet = self.parse_liveloading_message(message)
 
