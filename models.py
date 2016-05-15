@@ -211,6 +211,10 @@ class CommandCommand(Command):
 
 class QuoteCommand(Command):
 
+    def __init__(self, http_session):
+        super(QuoteCommand, self).__init__()
+        self.http_session = http_session
+
     @mod_only
     def __call__(self, args, data):
         if len(args) > 1:
@@ -221,6 +225,21 @@ class QuoteCommand(Command):
                 pass
             except AttributeError:
                 return "Undefined quote with ID {}.".format(id)
+
+            if args[1] == "inspirational":
+                try:
+                    data = self.http_session.get(
+                        "http://api.forismatic.com/api/1.0/",
+                        params=dict(
+                            method="getQuote", lang="en", format="json")
+                    ).json()
+                    return "{quote} -{author}".format(
+                        quote=data["quoteText"].strip(),
+                        author=data["quoteAuthor"].strip()
+                    )
+                except Exception:
+                    return ("Unable to get inspirational quote. "
+                            "To be fair, the service is run by :sloth s.")
 
             if len(args) > 2:
                 if args[1] == "add":

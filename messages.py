@@ -28,7 +28,7 @@ class MessageHandler(Beam):
                 self.send_message,
                 self.bot_data["username"],
                 self.channel_data["token"]),
-            "quote": QuoteCommand(),
+            "quote": QuoteCommand(self.http_session),
             "social": SocialCommand(self.get_channel),
             "uptime": UptimeCommand(self._request),
             "friend": FriendCommand(self.get_channel),
