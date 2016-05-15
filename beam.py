@@ -365,6 +365,9 @@ class Beam:
                             self.send_message(
                                 "Thanks for the follow, @{}!".format(
                                     packet["data"][1]["user"]["username"]))
+                            self.send_message(
+                                self.alert_user, packet["data"][1]["user"]["username"] + "Just followed the channel",
+                                method="whisper")
                     elif packet["data"][1].get("subscribed"):
                         self.logger.info("- {} subscribed.".format(
                             packet["data"][1]["user"]["username"]))
