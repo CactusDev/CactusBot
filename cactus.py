@@ -142,14 +142,13 @@ class Cactus(MessageHandler, Beam):
         self._init_database(self.database)
         self.load_config(filename=self.config_file)
         self.load_stats(filename=self.stats_file)
+        self.started = True
 
         while self.config.get("autorestart") or not self.started:
             try:
                 self.bot_data = self.login(**self.config["auth"])
                 self.logger.info("Authenticated as: {}.".format(
                     self.bot_data["username"]))
-
-                self.started = True
 
                 self.channel = self.config["channel"]
                 self.channel_data = self.get_channel(self.channel)

@@ -192,8 +192,20 @@ class Beam:
                 websocket_connection = websocket_connect(
                     self.servers[self.server_offset])
 
-                authkey = self.get_chat(
-                    self.connection_information["channel_id"])["authkey"]
+                # NOTE: We'll remove these try/excepts in the future
+                #   Current just for debugging, we need to see the returned
+                #   values from self.get_chat()
+                try:
+                    authkey = self.get_chat(
+                        self.connection_information["channel_id"])["authkey"]
+                except TypeError as e:
+                    self.logger.warning("Caught crash-worthy error!")
+                    self.logger.warning(repr(e))
+                    self.logger.warning(self.get_chat(
+                                    self.connection_information["channel_id"]))
+
+                    # Skip this loop
+                    continue
 
                 if self.connection_information["silent"]:
                     websocket_connection.add_done_callback(
@@ -212,12 +224,13 @@ class Beam:
                         )
                     )
 
-            response = loads(message)
+            else:
+                response = loads(message)
 
-            self.logger.debug("CHAT: {}".format(response))
+                self.logger.debug("CHAT: {}".format(response))
 
-            if callable(handler):
-                handler(response)
+                if callable(handler):
+                    handler(response)
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
