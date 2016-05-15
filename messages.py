@@ -121,8 +121,8 @@ class MessageHandler(Beam):
                 return self.send_message(
                     data["user_name"], "Please stop spamming emoticons.",
                     method="whisper")
-            elif (findall(("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
-                           "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
+            elif (findall((r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
+                          "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
                           parsed) and not
                     self.config["spam_protection"].get(
                         "allow_links", False)):
@@ -181,17 +181,11 @@ class MessageHandler(Beam):
         user = session.query(User).filter_by(id=data["id"]).first()
 
         if not user:
-            new_user = User(
+            user = User(
                 id=data["id"],
-                friend=False,
-                joins=1,
-                messages=0,
-                offenses=0,
-                points=0,
-                followed=0
+                joins=1
             )
-
-            session.add(new_user)
+            session.add(user)
         else:
             user.joins += 1
             session.add(user)

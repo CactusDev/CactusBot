@@ -14,7 +14,8 @@ from json import dumps, loads
 
 from re import match
 
-from models import User
+from models import User, session
+from datetime import datetime
 
 
 class Beam:
@@ -97,13 +98,13 @@ class Beam:
         """Get chat server data."""
         return self._request("/chats/{id}".format(id=id))
 
-    def connect(self, channel_id, bot_id, silent=False):
+    def connect(self, channel_id, bot_id, quiet=False):
         """Connect to a Beam chat through a websocket."""
 
         self.connection_information = {
             "channel_id": channel_id,
             "bot_id": bot_id,
-            "silent": silent
+            "quiet": quiet
         }
 
         chat = self.get_chat(channel_id)
@@ -119,7 +120,7 @@ class Beam:
         websocket_connection = websocket_connect(
             self.servers[self.server_offset])
 
-        if silent:
+        if quiet is True:
             websocket_connection.add_done_callback(
                 partial(self.authenticate, channel_id))
         else:
@@ -140,6 +141,9 @@ class Beam:
 
                 self.send_message(*args[:-1], method="auth")
 
+                if self.quiet:
+                    self.http_session = Session()
+
                 self.read_chat(self.handle)
             else:
                 raise ConnectionError(future.exception())
@@ -153,12 +157,30 @@ class Beam:
 
                 self.send_message(*args[:-1], method="auth")
 
+                if self.quiet:
+                    self.http_session = Session()
+
                 self.read_chat(self.handle)
             else:
                 raise ConnectionError(future.exception())
 
     def send_message(self, *args, method="msg"):
         """Send a message to a Beam chat through a websocket."""
+
+        if self.quiet and method != "auth":
+            if self.quiet is True:
+                return
+
+            if method == "msg":
+                args = (self.quiet, r'\n'.join(args))
+            elif method == "whisper":
+                args = (
+                    self.quiet,
+                    "> {args[0]} | {args[1]}".format(
+                        args=args,
+                    )
+                )
+            method = "whisper"
 
         if method == "msg":
             for message in args:
@@ -229,7 +251,7 @@ class Beam:
                     # Skip this loop
                     continue
 
-                if self.connection_information["silent"]:
+                if self.connection_information["quiet"]:
                     return websocket_connection.add_done_callback(
                         partial(
                             self.authenticate,
@@ -361,19 +383,18 @@ class Beam:
                         self.logger.info("- {} followed.".format(
                             packet["data"][1]["user"]["username"]))
 
-                        if not User.has_followed(packet["data"][1]["user"]["id"]):
+                        user = session.query(User).filter_by(
+                            id=packet["data"][1]["user"]["id"]).first()
+                        if user and (datetime.now() - user.follow_date).days:
                             self.send_message(
                                 "Thanks for the follow, @{}!".format(
                                     packet["data"][1]["user"]["username"]))
-                            self.send_message(
-                                self.alert_user, packet["data"][1]["user"]["username"] + "Just followed the channel",
-                                method="whisper")
+                            user.follow_date = datetime.now()
+                            session.add(user)
+                            session.commit()
                     elif packet["data"][1].get("subscribed"):
                         self.logger.info("- {} subscribed.".format(
                             packet["data"][1]["user"]["username"]))
                         self.send_message(
                             "Thanks for the subscription, @{}! <3".format(
                                 packet["data"][1]["user"]["username"]))
-                        self.send_message(
-                            self.alert_user, packet["data"][1]["user"]["username"] + "Just subscribed to the channel",
-                            method="whisper")

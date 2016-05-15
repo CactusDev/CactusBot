@@ -136,26 +136,7 @@ class User(Base):
     offenses = Column(Integer, default=0)
 
     points = Column(Integer, default=0)
-    followed = Column(Boolean, default=False)
-
-    def has_followed(id):
-        user = session.query(User).filter_by(
-            id=id).first()
-
-        if user:
-            if user.followed == 1:
-                return True
-            else:
-                user.followed = 1
-                session.add(user)
-                session.commit()
-
-                return False
-        user.followed = 1
-        session.add(user)
-        session.commit()
-
-        return False
+    follow_date = Column(DateTime, default=datetime.fromtimestamp(0))
 
 
 class CommandCommand(Command):
@@ -367,9 +348,7 @@ class RepeatCommand(Command):
 
     @mod_only
     def __call__(self, args, data):
-        if args is None or args is "" or args == "":
-            return 'Please enter an argument. add/remove/list'
-        else:
+        if len(args) > 1:
             if args[1] == "add":
                 if len(args) > 3:
                     try:
@@ -383,10 +362,10 @@ class RepeatCommand(Command):
                     if repeat:
                         repeat.interval = interval
                         repeat.arguments = ' '.join(args[3:])
-                        periodic_callback = self.repeats[repeat.command.command]
-                        periodic_callback.callback_time = interval * 1000
-                        periodic_callback.stop()
-                        periodic_callback.start()
+                        callback = self.repeats[repeat.command.command]
+                        callback.callback_time = interval * 1000
+                        callback.stop()
+                        callback.start()
                         session.add(repeat)
                         session.commit()
                         return "Repeat updated."
@@ -408,7 +387,7 @@ class RepeatCommand(Command):
                         periodic_callback.start()
                         session.add(repeat)
                         session.commit()
-                        return "Repeating command '!{}' every {} seconds.".format(
+                        return "Repeating '!{}' every {} seconds.".format(
                             command.command, interval)
                     return "Undefined command '!{}'.".format(args[3])
                 return "Not enough arguments!"
@@ -421,17 +400,18 @@ class RepeatCommand(Command):
                         del self.repeats[args[2]]
                         session.delete(repeat)
                         session.commit()
-                        return "Removed repeat for command !{}.".format(args[2])
+                        return "Removed repeat for !{}.".format(args[2])
                     return "Repeat for !{} does not exist!".format(args[2])
                 return "Not enough arguments!"
             elif args[1] == "list":
                 repeats = session.query(Repeat).all()
                 return "Repeats: {repeats}".format(
-                    repeats=', '.join(
-                        [r.command.command+' '+str(r.interval) for r in repeats]
-                    )
+                    repeats=', '.join(tuple(
+                        r.command.command+' '+str(r.interval) for r in repeats
+                    ))
                 )
             return "Invalid argument: {}.".format(args[1])
+        return "Not enough arguments!"
 
     def send(self, repeat):
         try:

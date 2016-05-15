@@ -72,7 +72,7 @@ target/
 config.json
 stats.json
 data/*.db
-data/data.db.*
+data/*.sqlite
 
 # Virtualenv
 venv/
