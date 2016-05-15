@@ -148,6 +148,14 @@ class User(Base):
         else:
             return False
 
+    def exists(id):
+        user = session.query(User).filter_by(id=id).first()
+
+        if user:
+            return True
+        else:
+            return False
+
 
 class CommandCommand(Command):
 

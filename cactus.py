@@ -154,6 +154,8 @@ class Cactus(MessageHandler, Beam):
                 self.channel_data = self.get_channel(self.channel)
 
                 self._init_commands()
+                self._init_users()
+
 
                 self.connect(
                     self.channel_data["id"],
