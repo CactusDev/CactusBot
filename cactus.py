@@ -155,7 +155,6 @@ class Cactus(MessageHandler, Beam):
                 self._init_commands()
                 self._init_users()
 
-
                 self.connect(
                     self.channel_data["id"],
                     self.bot_data["id"],
