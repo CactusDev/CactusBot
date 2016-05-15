@@ -74,6 +74,24 @@ class Beam:
 
         self.logger.info("Logger initialized with level '{}'.".format(level))
 
+    def _init_users(self):
+        viewers = set(
+            user["userId"] for user in
+            self.get_chat_users(self.channel_data["id"]))
+
+        stored_users = set(
+            user[0] for user in session.query(User).with_entities(User.id))
+
+        print(viewers - stored_users)
+
+        for user in viewers - stored_users:
+            user = User(id=user, joins=1)
+            session.add(user)
+
+        session.commit()
+
+        self.logger.info("Successfully added new users to database.")
+
     def _request(self, url, method="GET", **kwargs):
         """Send HTTP request to Beam."""
         response = self.http_session.request(
@@ -131,22 +149,6 @@ class Beam:
         else:
             websocket_connection.add_done_callback(
                 partial(self.authenticate, channel_id, bot_id, authkey))
-
-    def _init_users(self):
-        viewers = set(
-            user["userId"] for user in
-            self.get_chat_users(self.channel_data["id"]))
-
-        stored_users = set(
-            user[0] for user in session.query(User).with_entities(User.id))
-
-        for user in viewers - stored_users:
-            user = User(id=user, joins=1)
-            session.add(user)
-
-        session.commit()
-
-        self.logger.info("Successfully added new users to database.")
 
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
