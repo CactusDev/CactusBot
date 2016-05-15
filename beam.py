@@ -142,9 +142,10 @@ class Beam:
                 user = User(id=all_users[index]["userId"], joins=1)
 
                 session.add(user)
-                session.commit()
 
             index += 1
+
+        session.commit()
 
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
