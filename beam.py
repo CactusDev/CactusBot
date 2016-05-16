@@ -376,7 +376,6 @@ class Beam:
 
             if message is None:
                 self.logger.info("There was an error connecting.")
-                raise ConnectionError
 
                 self.logger.info("Attempting to reconnect.")
                 self.watch_liveloading()
