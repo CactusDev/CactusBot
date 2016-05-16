@@ -1,25 +1,39 @@
-from beam import Beam
-from models import (Command, User, session, CommandCommand, QuoteCommand,
-                    CubeCommand, SocialCommand, UptimeCommand, PointsCommand,
-                    TemmieCommand, FriendCommand, SpamProtCommand, ProCommand,
-                    SubCommand, RepeatCommand)
+from logging import getLogger as get_logger
+from .commands import (CommandCommand, QuoteCommand, CubeCommand,
+                       SocialCommand, UptimeCommand, PointsCommand,
+                       TemmieCommand, FriendCommand, SpamProtCommand,
+                       ProCommand, SubCommand, RepeatCommand)
+from .models import session, User, Command
 
 from re import findall
 
 
-class MessageHandler(Beam):
+class Handler:
+
     def __init__(self, *args, **kwargs):
-        super(MessageHandler, self).__init__(*args, **kwargs)
-        self.events = {
+        super(Handler, self).__init__(*args, **kwargs)
+        self.logger = kwargs.get("logger") or get_logger(__name__)
+        self.events = {  # TODO: Move to Beam
             "ChatMessage": self.message_handler,
             "UserJoin": self.join_handler,
             "UserLeave": self.leave_handler
         }
+        self.bot_data = {"username": "Potato"}  # TODO: Fix
+        self.channel_data = {"token": "Salad"}  # TODO: Fix
+        self.config = {
+            "points": {"name": "Bowls"},
+            "auth": {"username": "Potato"}
+        }  # TODO: Fix
+        self.update_config = lambda *args: None  # TODO: Fix
+        self.send_message = lambda *args: print("SENDING", args)  # TODO Fix
+        self.get_channel = lambda *args: {{"user": {"social": {}}}}.update(
+            self.channel_data)  # TODO: Fix
+        self._request = lambda *args: {}
 
     def _init_commands(self):
         """Initialize built-in commands."""
 
-        self.commands = {
+        self.commands = {  # TODO: dynamic-ify
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
             "help": "Check out my documentation at cactusbot.readthedocs.org.",
@@ -40,7 +54,7 @@ class MessageHandler(Beam):
             "temmie": TemmieCommand()
         }
 
-    def handle(self, response):
+    def handle(self, response):  # TODO: remove
         """Handle responses from a Beam websocket."""
 
         data = response["data"]
@@ -55,7 +69,7 @@ class MessageHandler(Beam):
         elif isinstance(data, dict) and data.get("authenticated"):
             self.send_message("CactusBot activated. Enjoy! :cactus")
 
-    def message_handler(self, data):
+    def message_handler(self, data):  # TODO: move parts to Beam, generalize
         """Handle chat message packets from Beam."""
 
         parsed = ''.join([
@@ -83,7 +97,7 @@ class MessageHandler(Beam):
             session.commit()
 
         mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-        if not (data["user_roles"][0] in mod_roles or user.friend):
+        if not (data["user_roles"][0] in mod_roles or user.friend):  # TODO: move
             if (len(parsed) > self.config["spam_protection"].get(
                     "maximum_message_length", 256)):
                 self.remove_message(data["channel"], data["id"])
@@ -165,7 +179,7 @@ class MessageHandler(Beam):
             else:
                 self.send_message(*messages)
 
-    def join_handler(self, data):
+    def join_handler(self, data):  # TODO: generalize
         """Handle user join packets from Beam."""
 
         user = session.query(User).filter_by(id=data["id"]).first()
@@ -184,7 +198,7 @@ class MessageHandler(Beam):
             self.send_message("Welcome, @{username}!".format(
                 username=data["username"]))
 
-    def leave_handler(self, data):
+    def leave_handler(self, data):  # TODO: generalize
         """Handle user leave packets from Beam."""
 
         if data["username"] is not None:
