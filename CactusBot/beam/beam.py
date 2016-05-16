@@ -12,16 +12,19 @@ from json import dumps, loads
 
 from re import match
 
+from .handler import BeamHandler
 
-class Beam:
+
+class Beam(BeamHandler):
     path = "https://beam.pro/api/v1/"
 
     message_id = 0
 
     def __init__(self, handle=None, **kwargs):
+        super(Beam, self).__init__(**kwargs)
         self.logger = kwargs.get("logger") or get_logger(__name__)
         self.channel_data = {"token": "Salad"}  # TODO: Fix
-        self.handle = handle
+        # self.handle = handle
         self.http_session = Session()
 
     def _request(self, url, method="GET", **kwargs):

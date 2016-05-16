@@ -1,23 +1,26 @@
 from logging import getLogger as get_logger
-from .commands import (CommandCommand, QuoteCommand, CubeCommand,
-                       SocialCommand, UptimeCommand, PointsCommand,
-                       TemmieCommand, FriendCommand, SpamProtCommand,
-                       ProCommand, SubCommand, RepeatCommand)
-from .models import session, User, Command
+# from ..commands import (CommandCommand, QuoteCommand, CubeCommand,
+#                         SocialCommand, UptimeCommand, PointsCommand,
+#                         TemmieCommand, FriendCommand, SpamProtCommand,
+#                         ProCommand, SubCommand, RepeatCommand)
+from ..models import session, User, Command
 
 from re import findall
 
+from ..handler import Handler
 
-class Handler:
+
+class BeamHandler(Handler):
 
     def __init__(self, *args, **kwargs):
-        super(Handler, self).__init__(*args, **kwargs)
+        super(BeamHandler, self).__init__(*args, **kwargs)
         self.logger = kwargs.get("logger") or get_logger(__name__)
         self.events = {  # TODO: Move to Beam
             "ChatMessage": self.message_handler,
             "UserJoin": self.join_handler,
             "UserLeave": self.leave_handler
         }
+        self._init_commands()
         self.bot_data = {"username": "Potato"}  # TODO: Fix
         self.channel_data = {"token": "Salad"}  # TODO: Fix
         self.config = {
@@ -25,10 +28,10 @@ class Handler:
             "auth": {"username": "Potato"}
         }  # TODO: Fix
         self.update_config = lambda *args: None  # TODO: Fix
-        self.send_message = lambda *args: print("SENDING", args)  # TODO Fix
-        self.get_channel = lambda *args: {{"user": {"social": {}}}}.update(
-            self.channel_data)  # TODO: Fix
-        self._request = lambda *args: {}
+        # self.send_message = lambda *args: print("SENDING", args)  # TODO Fix
+        # self.get_channel = lambda *args: {{"user": {"social": {}}}}.update(
+        #     self.channel_data)  # TODO: Fix
+        # self._request = lambda *args: {}
 
     def _init_commands(self):
         """Initialize built-in commands."""
@@ -37,28 +40,28 @@ class Handler:
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
             "help": "Check out my documentation at cactusbot.readthedocs.org.",
-            "command": CommandCommand(),
-            "repeat": RepeatCommand(
-                self.send_message,
-                self.bot_data["username"],
-                self.channel_data["token"]),
-            "quote": QuoteCommand(),
-            "social": SocialCommand(self.get_channel),
-            "uptime": UptimeCommand(self._request),
-            "friend": FriendCommand(self.get_channel),
-            "points": PointsCommand(self.config["points"]["name"]),
-            "spamprot": SpamProtCommand(self.update_config),
-            "pro": ProCommand(),
-            "sub": SubCommand(),
-            "cube": CubeCommand(),
-            "temmie": TemmieCommand()
+            # "command": CommandCommand(),
+            # "repeat": RepeatCommand(
+            #     self.send_message,
+            #     self.bot_data["username"],
+            #     self.channel_data["token"]),
+            # "quote": QuoteCommand(),
+            # "social": SocialCommand(self.get_channel),
+            # "uptime": UptimeCommand(self._request),
+            # "friend": FriendCommand(self.get_channel),
+            # "points": PointsCommand(self.config["points"]["name"]),
+            # "spamprot": SpamProtCommand(self.update_config),
+            # "pro": ProCommand(),
+            # "sub": SubCommand(),
+            # "cube": CubeCommand(),
+            # "temmie": TemmieCommand()
         }
 
     def handle(self, response):  # TODO: remove
         """Handle responses from a Beam websocket."""
 
         data = response["data"]
-
+        
         if "event" in response:
             if response["event"] in self.events:
                 self.events[response["event"]](data)
@@ -96,46 +99,46 @@ class Handler:
             session.add(user)
             session.commit()
 
-        mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-        if not (data["user_roles"][0] in mod_roles or user.friend):  # TODO: move
-            if (len(parsed) > self.config["spam_protection"].get(
-                    "maximum_message_length", 256)):
-                self.remove_message(data["channel"], data["id"])
-                user.offenses += 1
-                session.commit()
-                return self.send_message(
-                    data["user_name"], "Please stop spamming.",
-                    method="whisper")
-            elif (sum(char.isupper() for char in parsed) >
-                    self.config["spam_protection"].get(
-                        "maximum_message_capitals", 32)):
-                self.remove_message(data["channel"], data["id"])
-                user.offenses += 1
-                session.commit()
-                return self.send_message(
-                    data["user_name"], "Please stop speaking in all caps.",
-                    method="whisper")
-            elif (sum(chunk["type"] == "emoticon"
-                      for chunk in data["message"]["message"]) >
-                    self.config["spam_protection"].get(
-                    "maximum_message_emotes", 8)):
-                self.remove_message(data["channel"], data["id"])
-                user.offenses += 1
-                session.commit()
-                return self.send_message(
-                    data["user_name"], "Please stop spamming emoticons.",
-                    method="whisper")
-            elif (findall(("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
-                           "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
-                          parsed) and not
-                    self.config["spam_protection"].get(
-                        "allow_links", False)):
-                self.remove_message(data["channel"], data["id"])
-                user.offenses += 1
-                session.commit()
-                return self.send_message(
-                    data["user_name"], "Please stop posting links.",
-                    method="whisper")
+        # mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
+        # if not (data["user_roles"][0] in mod_roles or user.friend):  # TODO: move
+        #     if (len(parsed) > self.config["spam_protection"].get(
+        #             "maximum_message_length", 256)):
+        #         self.remove_message(data["channel"], data["id"])
+        #         user.offenses += 1
+        #         session.commit()
+        #         return self.send_message(
+        #             data["user_name"], "Please stop spamming.",
+        #             method="whisper")
+        #     elif (sum(char.isupper() for char in parsed) >
+        #             self.config["spam_protection"].get(
+        #                 "maximum_message_capitals", 32)):
+        #         self.remove_message(data["channel"], data["id"])
+        #         user.offenses += 1
+        #         session.commit()
+        #         return self.send_message(
+        #             data["user_name"], "Please stop speaking in all caps.",
+        #             method="whisper")
+        #     elif (sum(chunk["type"] == "emoticon"
+        #               for chunk in data["message"]["message"]) >
+        #             self.config["spam_protection"].get(
+        #             "maximum_message_emotes", 8)):
+        #         self.remove_message(data["channel"], data["id"])
+        #         user.offenses += 1
+        #         session.commit()
+        #         return self.send_message(
+        #             data["user_name"], "Please stop spamming emoticons.",
+        #             method="whisper")
+        #     elif (findall(("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
+        #                    "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
+        #                   parsed) and not
+        #             self.config["spam_protection"].get(
+        #                 "allow_links", False)):
+        #         self.remove_message(data["channel"], data["id"])
+        #         user.offenses += 1
+        #         session.commit()
+        #         return self.send_message(
+        #             data["user_name"], "Please stop posting links.",
+        #             method="whisper")
 
         if parsed == "/cry":
             self.remove_message(data["channel"], data["id"])
