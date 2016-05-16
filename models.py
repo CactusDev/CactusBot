@@ -233,13 +233,13 @@ class QuoteCommand(Command):
                         params=dict(
                             method="getQuote", lang="en", format="json")
                     ).json()
-                    return "{quote} -{author}".format(
+                    return "\"{quote}\" -{author}".format(
                         quote=data["quoteText"].strip(),
                         author=data["quoteAuthor"].strip()
                     )
                 except Exception:
                     return ("Unable to get inspirational quote. "
-                            "To be fair, the service is run by :sloth s.")
+                            "Have a :hamster instead.")
 
             if len(args) > 2:
                 if args[1] == "add":
