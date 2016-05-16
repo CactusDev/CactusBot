@@ -151,14 +151,14 @@ class Beam:
                     self.connection_information["channel_id"])["authkey"]
 
                 if self.connection_information["silent"]:
-                    websocket_connection.add_done_callback(
+                    return websocket_connection.add_done_callback(
                         partial(
                             self.authenticate,
                             self.connection_information["channel_id"]
                         )
                     )
                 else:
-                    websocket_connection.add_done_callback(
+                    return websocket_connection.add_done_callback(
                         partial(
                             self.authenticate,
                             self.connection_information["channel_id"],
@@ -167,15 +167,21 @@ class Beam:
                         )
                     )
 
-            response = loads(message)
+            else:
+                response = loads(message)
 
-            self.logger.debug("CHAT: {}".format(response))
+                self.logger.debug("CHAT: {}".format(response))
 
-            if callable(handler):
-                handler(response)
+                if callable(handler):
+                    handler(response)
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
+
+        self.liveloading_connection_information = {
+            "channel_id": channel_id,
+            "user_id": user_id
+        }
 
         liveloading_websocket_connection = websocket_connect(
             "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
@@ -260,7 +266,10 @@ class Beam:
             message = yield self.liveloading_websocket.read_message()
 
             if message is None:
-                raise ConnectionError
+                self.logger.warning("Connection to liveloading server lost. "
+                                    "Attempting to reconnect.")
+                return self.connect_to_liveloading(
+                    **self.liveloading_connection_information)
 
             packet = self.parse_liveloading_message(message)
 
