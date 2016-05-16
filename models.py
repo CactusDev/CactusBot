@@ -239,7 +239,7 @@ class QuoteCommand(Command):
                     )
                 except Exception:
                     return ("Unable to get inspirational quote. "
-                            "To be fair, the service is run by :sloth s.")
+                            "Have a :hamster instead.")
 
             if len(args) > 2:
                 if args[1] == "add":
