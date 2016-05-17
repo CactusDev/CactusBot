@@ -384,10 +384,11 @@ class Beam:
             message = yield self.liveloading_websocket.read_message()
 
             if message is None:
-                self.logger.info("There was an error connecting.")
-
+                self.logger.info("Connection to Liveloading lost.")
                 self.logger.info("Attempting to reconnect.")
-                self.watch_liveloading()
+
+                return self.connect_to_liveloading(
+                    **self.liveloading_connection_information)
 
             packet = self.parse_liveloading_message(message)
 
