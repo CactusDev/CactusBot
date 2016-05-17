@@ -279,6 +279,7 @@ class Beam(BeamHandler):
             if packet.get("data") is not None:
                 self.logger.debug("LIVE: {}".format(packet))
 
+            # TODO: move to handler
             if isinstance(packet["data"], list):
                 if isinstance(packet["data"][0], str):
                     if packet["data"][1].get("following"):

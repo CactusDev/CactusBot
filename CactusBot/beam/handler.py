@@ -5,7 +5,7 @@ from logging import getLogger as get_logger
 #                         ProCommand, SubCommand, RepeatCommand)
 from ..models import session, User, Command
 
-from re import findall
+# from re import findall
 
 from ..handler import Handler
 
@@ -15,10 +15,10 @@ class BeamHandler(Handler):
     def __init__(self, *args, **kwargs):
         super(BeamHandler, self).__init__(*args, **kwargs)
         self.logger = kwargs.get("logger") or get_logger(__name__)
-        self.events = {  # TODO: Move to Beam
-            "ChatMessage": self.message_handler,
-            "UserJoin": self.join_handler,
-            "UserLeave": self.leave_handler
+        self.events = {
+            "ChatMessage": self.on_message,
+            "UserJoin": self.on_join,
+            "UserLeave": self.on_leave
         }
         self._init_commands()
         self.bot_data = {"username": "Potato"}  # TODO: Fix
@@ -61,7 +61,7 @@ class BeamHandler(Handler):
         """Handle responses from a Beam websocket."""
 
         data = response["data"]
-        
+
         if "event" in response:
             if response["event"] in self.events:
                 self.events[response["event"]](data)
@@ -72,7 +72,7 @@ class BeamHandler(Handler):
         elif isinstance(data, dict) and data.get("authenticated"):
             self.send_message("CactusBot activated. Enjoy! :cactus")
 
-    def message_handler(self, data):  # TODO: move parts to Beam, generalize
+    def on_message(self, data):  # TODO: move parts to Beam, generalize
         """Handle chat message packets from Beam."""
 
         parsed = ''.join([
@@ -99,8 +99,9 @@ class BeamHandler(Handler):
             session.add(user)
             session.commit()
 
+        # TODO: move spamprot o handler
         # mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-        # if not (data["user_roles"][0] in mod_roles or user.friend):  # TODO: move
+        # if not (data["user_roles"][0] in mod_roles or user.friend):
         #     if (len(parsed) > self.config["spam_protection"].get(
         #             "maximum_message_length", 256)):
         #         self.remove_message(data["channel"], data["id"])
@@ -140,11 +141,13 @@ class BeamHandler(Handler):
         #             data["user_name"], "Please stop posting links.",
         #             method="whisper")
 
+        # TODO: move to handler
         if parsed == "/cry":
             self.remove_message(data["channel"], data["id"])
             return self.send_message("/me cries with {} :'(".format(
                 data["user_name"]))
 
+        # TODO: move to handler
         if len(parsed) > 1 and parsed[0].startswith("!"):
             args = parsed.split()
 
@@ -182,7 +185,7 @@ class BeamHandler(Handler):
             else:
                 self.send_message(*messages)
 
-    def join_handler(self, data):  # TODO: generalize
+    def on_join(self, data):  # TODO: generalize
         """Handle user join packets from Beam."""
 
         user = session.query(User).filter_by(id=data["id"]).first()
@@ -194,20 +197,13 @@ class BeamHandler(Handler):
             user.joins += 1
         session.commit()
 
-        self.logger.info("- {user} joined".format(
-            user=data["username"]))
+        self.send_message(
+            super(BeamHandler, self).on_join(data["username"])
+        )
 
-        if self.config.get("announce_enter", False):
-            self.send_message("Welcome, @{username}!".format(
-                username=data["username"]))
-
-    def leave_handler(self, data):  # TODO: generalize
+    def on_leave(self, data):  # TODO: generalize
         """Handle user leave packets from Beam."""
 
-        if data["username"] is not None:
-            self.logger.info("- {user} left".format(
-                user=data["username"]))
-
-            if self.config.get("announce_leave", False):
-                self.send_message("See you, @{username}!".format(
-                    username=data["username"]))
+        self.send_message(
+            super(BeamHandler, self).on_leave(data["username"])
+        )

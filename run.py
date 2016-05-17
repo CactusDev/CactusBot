@@ -1,3 +1,3 @@
-from cactusbot import Cactus
+from CactusBot import Cactus
 
 Cactus().run()
