@@ -203,7 +203,6 @@ class Beam:
 
         if method == "msg":
             for message in args:
-                chunk = message
                 for chunk in findall(r'.{1,250}', message):
                     message_packet = {
                         "type": "method",
