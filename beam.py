@@ -14,7 +14,7 @@ from logging import StreamHandler, FileHandler, Formatter
 from functools import partial
 from json import dumps, loads
 
-from re import match
+from re import match, findall
 
 from models import User, session
 from datetime import datetime
@@ -203,14 +203,16 @@ class Beam:
 
         if method == "msg":
             for message in args:
-                message_packet = {
-                    "type": "method",
-                    "method": "msg",
-                    "arguments": (message,),
-                    "id": self.message_id
-                }
-                self.websocket.write_message(dumps(message_packet))
-                self.message_id += 1
+                chunk = message
+                for chunk in findall(r'.{1,250}', message):
+                    message_packet = {
+                        "type": "method",
+                        "method": "msg",
+                        "arguments": (chunk,),
+                        "id": self.message_id
+                    }
+                    self.websocket.write_message(dumps(message_packet))
+                    self.message_id += 1
 
         else:
             message_packet = {
@@ -223,8 +225,8 @@ class Beam:
             self.message_id += 1
 
             if method == "whisper":
-                self.logger.info("$ [{bot_name} > {user}] {message}".format(
-                    bot_name=self.config["auth"]["username"],
+                self.logger.info("$ [{bot} > {user}] {message}".format(
+                    bot=self.config["auth"]["username"],
                     user=args[0],
                     message=args[1]))
 
