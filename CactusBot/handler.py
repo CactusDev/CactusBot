@@ -3,6 +3,9 @@
 
 class Handler:
 
+    def __init__(self, *args, **kwargs):
+        pass
+
     @staticmethod
     def on_message(message):
         return "Echo! {}".format(message)

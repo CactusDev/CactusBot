@@ -1,10 +1,8 @@
-# CactusBot!
+"""CactusBot!"""
 
-from logging import getLogger as get_logger
-from logging import getLevelName as get_level_name
-from logging import StreamHandler, FileHandler, Formatter
+from .beam import Beam
 
-from .models import Base, engine
+# from models import Base, engine
 
 from json import load, dump
 
@@ -13,14 +11,16 @@ from shutil import copyfile
 
 from functools import reduce, partial
 
+from tornado.ioloop import IOLoop
 from tornado.autoreload import add_reload_hook, watch, start
 
-from sys import exit
 from traceback import format_exc
 from time import sleep
 
+from argparse import ArgumentParser
 
-cactus_art = """CactusBot initialized!
+
+cactus_art = r"""CactusBot initialized!
 
       ,`""',
       ;' ` ;
@@ -30,7 +30,7 @@ cactus_art = """CactusBot initialized!
 ;,` ; ;' ` ;   ,',        / ____|         | |
 ;`,'; ;`,',;  ;,' ;      | |     __ _  ___| |_ _   _ ___
 ;',`; ;` ' ; ;`'`';      | |    / _` |/ __| __| | | / __|
-;` '',''` `,',`',;       | |___| (_| | (__| |_| |_| \__ \\
+;` '',''` `,',`',;       | |___| (_| | (__| |_| |_| \__ \
  `''`'; ', ;`'`'          \_____\__,_|\___|\__|\__,_|___/
       ;' `';
       ;` ' ;
@@ -47,10 +47,8 @@ class Cactus:
     started = False
     connected = False
 
-    def __init__(self, service, handler, **kwargs):
-
-        self.handler = handler
-        self.service = service
+    def __init__(self, **kwargs):
+        super(Cactus, self).__init__(**kwargs)
 
         self.debug = kwargs.get("debug", False)
 
@@ -58,63 +56,14 @@ class Cactus:
         self.stats_file = kwargs.get("stats_file", "data/stats.json")
         self.database = kwargs.get("database", "data/data.db")
 
-        self.silent = kwargs.get("silent", False)
-        self.no_messages = kwargs.get("no_messages", False)
+        self.quiet = kwargs.get("quiet", False)
 
-        self.logger = kwargs.get("logger") or self._init_logger(
-            self.debug, kwargs.get("log_to_file", True))
-
-        self._init_database(self.database)
-
-    def _init_logger(self, level="INFO", file_logging=True, **kwargs):
-        """Initialize logger."""
-
-        self.logger = get_logger(__name__)
-        self.logger.propagate = False
-
-        self.logger.setLevel("DEBUG")
-
-        if str(level).lower() == "true":
-            level = "DEBUG"
-        elif str(level).lower() == "false":
-            level = "WARNING"
-        elif hasattr(level, "upper"):
-            level = level.upper()
-
-        format = kwargs.get(
-            "format",
-            "%(asctime)s %(name)s %(levelname)-8s %(message)s"
-        )
-
-        formatter = Formatter(format, datefmt='%Y-%m-%d %H:%M:%S')
-
-        try:
-            from coloredlogs import ColoredFormatter
-            colored_formatter = ColoredFormatter(format)
-        except ImportError:
-            colored_formatter = formatter
-            self.logger.warning(
-                "Module 'coloredlogs' unavailable; using ugly logging.")
-
-        stream_handler = StreamHandler()
-        stream_handler.setLevel(level)
-        stream_handler.setFormatter(colored_formatter)
-        self.logger.addHandler(stream_handler)
-
-        if file_logging:  # TODO: Reimplement
-            file_handler = FileHandler("latest.log")
-            file_handler.setLevel("DEBUG")
-            file_handler.setFormatter(formatter)
-            self.logger.addHandler(file_handler)
-
-        get_logger("requests").setLevel(get_level_name("WARNING"))
-
-        self.logger.info("Logger initialized with level '{}'.".format(level))
-
-        return self.logger
+        self.beam = Beam()
 
     def _init_database(self, database):
         """Ensure the database exists."""
+
+        return  # TODO: fix
 
         if exists(database):
             self.logger.info("Found database.")
@@ -191,28 +140,29 @@ class Cactus:
         """Run bot."""
 
         self.logger.info(cactus_art)
+        self._init_database(self.database)
         self.load_config(filename=self.config_file)
         self.load_stats(filename=self.stats_file)
+        self.started = True
 
         while self.config.get("autorestart") or not self.started:
             try:
-                self.bot_data = self.service.login(**self.config["auth"])
+                self.bot_data = self.login(**self.config["auth"])
                 self.logger.info("Authenticated as: {}.".format(
                     self.bot_data["username"]))
 
-                self.started = True
-
                 self.channel = self.config["channel"]
-                self.channel_data = self.service.get_channel(self.channel)
+                self.channel_data = self.get_channel(self.channel)
 
-                self.handler._init_commands()
+                self._init_commands()
+                self._init_users()
 
-                self.service.connect(
+                self.connect(
                     self.channel_data["id"],
                     self.bot_data["id"],
-                    silent=self.silent)
+                    quiet=self.quiet)
 
-                self.service.connect_to_liveloading(
+                self.connect_to_liveloading(
                     self.channel_data["id"],
                     self.channel_data["userId"])
 
@@ -224,7 +174,6 @@ class Cactus:
                     watch(self.config_file)
                     start(check_time=5000)
 
-                from tornado.ioloop import IOLoop  # TODO: Fix
                 IOLoop.instance().start()
 
             except KeyboardInterrupt:
@@ -257,3 +206,30 @@ class Cactus:
                 else:
                     self.logger.info("CactusBot deactivated.")
                     exit()
+
+if __name__ == "__main__":
+
+    parser = ArgumentParser()
+
+    parser.add_argument(
+        "--quiet",
+        help="send no messages to public chat",
+        metavar="USER",
+        nargs='?',
+        const=True,
+        default=False
+    )
+
+    parser.add_argument(
+        "--debug",
+        help="set custom logger level",
+        metavar="LEVEL",
+        nargs='?',
+        const=True,
+        default="info"
+    )
+
+    parsed = parser.parse_args()
+
+    cactus = Cactus(**parsed.__dict__)
+    cactus.run()

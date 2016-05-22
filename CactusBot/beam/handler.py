@@ -57,22 +57,24 @@ class BeamHandler(Handler):
             # "temmie": TemmieCommand()
         }
 
-    def handle(self, response):  # TODO: remove
+    async def handle(self, response):  # TODO: remove
         """Handle responses from a Beam websocket."""
+
+        print("RESPONSE", response)
 
         data = response["data"]
 
         if "event" in response:
             if response["event"] in self.events:
-                self.events[response["event"]](data)
+                await self.events[response["event"]](data)
             else:
                 self.logger.debug("No handler found for event {}.".format(
                     response["event"]
                 ))
         elif isinstance(data, dict) and data.get("authenticated"):
-            self.send_message("CactusBot activated. Enjoy! :cactus")
+            await self.send("CactusBot activated. Enjoy! :cactus")
 
-    def on_message(self, data):  # TODO: move parts to Beam, generalize
+    async def on_message(self, data):  # TODO: move parts to Beam, generalize
         """Handle chat message packets from Beam."""
 
         parsed = ''.join([
@@ -180,13 +182,14 @@ class BeamHandler(Handler):
 
             if data["message"]["meta"].get("whisper", False):
                 for message in messages:
-                    self.send_message(
+                    await self.send(
                         data["user_name"], message, method="whisper")
             else:
-                self.send_message(*messages)
+                await self.send(*messages)
 
-    def on_join(self, data):  # TODO: generalize
+    async def on_join(self, data):  # TODO: generalize
         """Handle user join packets from Beam."""
+        # return "NO DELURKING PEOPLE! ._."  # TODO: fix
 
         user = session.query(User).filter_by(id=data["id"]).first()
 
@@ -197,13 +200,14 @@ class BeamHandler(Handler):
             user.joins += 1
         session.commit()
 
-        self.send_message(
+        await self.send(
             super(BeamHandler, self).on_join(data["username"])
         )
 
-    def on_leave(self, data):  # TODO: generalize
+    async def on_leave(self, data):  # TODO: generalize
         """Handle user leave packets from Beam."""
+        # return "NO DELURKING PEOPLE! ._."  # TODO: fix
 
-        self.send_message(
+        await self.send(
             super(BeamHandler, self).on_leave(data["username"])
         )
