@@ -1,20 +1,19 @@
-from logging import getLogger as get_logger
-# from ..commands import (CommandCommand, QuoteCommand, CubeCommand,
-#                         SocialCommand, UptimeCommand, PointsCommand,
-#                         TemmieCommand, FriendCommand, SpamProtCommand,
-#                         ProCommand, SubCommand, RepeatCommand)
-from ..models import session, User, Command
+from logging import getLogger
+# from ..models import session, User, Command
+from asyncio import ensure_future
 
 # from re import findall
 
-from ..handler import Handler
+from ...handler import Handler
 
 
 class BeamHandler(Handler):
 
     def __init__(self, *args, **kwargs):
-        super(BeamHandler, self).__init__(*args, **kwargs)
-        self.logger = kwargs.get("logger") or get_logger(__name__)
+        super().__init__(*args, **kwargs)
+
+        self.logger = kwargs.get("logger") or getLogger(__name__)
+
         self.events = {
             "ChatMessage": self.on_message,
             "UserJoin": self.on_join,
@@ -36,37 +35,24 @@ class BeamHandler(Handler):
     def _init_commands(self):
         """Initialize built-in commands."""
 
-        self.commands = {  # TODO: dynamic-ify
+        self.commands = {  # TODO: move to Handler, dynamic-ify
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
-            "help": "Check out my documentation at cactusbot.readthedocs.org.",
-            # "command": CommandCommand(),
-            # "repeat": RepeatCommand(
-            #     self.send_message,
-            #     self.bot_data["username"],
-            #     self.channel_data["token"]),
-            # "quote": QuoteCommand(),
-            # "social": SocialCommand(self.get_channel),
-            # "uptime": UptimeCommand(self._request),
-            # "friend": FriendCommand(self.get_channel),
-            # "points": PointsCommand(self.config["points"]["name"]),
-            # "spamprot": SpamProtCommand(self.update_config),
-            # "pro": ProCommand(),
-            # "sub": SubCommand(),
-            # "cube": CubeCommand(),
-            # "temmie": TemmieCommand()
+            "help": "Check out my documentation at cactusbot.readthedocs.org."
         }
 
     async def handle(self, response):  # TODO: remove
         """Handle responses from a Beam websocket."""
 
-        print("RESPONSE", response)
+        self.logger.debug("")
 
-        data = response["data"]
+        data = response.get("data")
+        if data is None:
+            return
 
         if "event" in response:
             if response["event"] in self.events:
-                await self.events[response["event"]](data)
+                ensure_future(self.events[response["event"]](data))
             else:
                 self.logger.debug("No handler found for event {}.".format(
                     response["event"]
@@ -92,16 +78,17 @@ class BeamHandler(Handler):
             message=parsed)
         )
 
-        user = session.query(User).filter_by(id=data["user_id"]).first()
-        if user is not None:
-            user.messages += 1
-            session.commit()
-        else:
-            user = User(id=data["user_id"], joins=1, messages=1)
-            session.add(user)
-            session.commit()
+        # TODO: move to Handler
+        # user = session.query(User).filter_by(id=data["user_id"]).first()
+        # if user is not None:
+        #     user.messages += 1
+        #     session.commit()
+        # else:
+        #     user = User(id=data["user_id"], joins=1, messages=1)
+        #     session.add(user)
+        #     session.commit()
 
-        # TODO: move spamprot o handler
+        # TODO: move to Handler
         # mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
         # if not (data["user_roles"][0] in mod_roles or user.friend):
         #     if (len(parsed) > self.config["spam_protection"].get(
@@ -166,8 +153,8 @@ class BeamHandler(Handler):
                 ]
 
                 for parse_method in options:
-                    command = session.query(
-                        Command).filter_by(command=parse_method[0]).first()
+                    command = False  # session.query(
+                    # Command).filter_by(command=parse_method[0]).first()
                     if command:
                         messages = command(
                             parse_method[1], data,
@@ -191,23 +178,17 @@ class BeamHandler(Handler):
         """Handle user join packets from Beam."""
         # return "NO DELURKING PEOPLE! ._."  # TODO: fix
 
-        user = session.query(User).filter_by(id=data["id"]).first()
+        # user = session.query(User).filter_by(id=data["id"]).first()
+        #
+        # if not user:
+        #     user = User(id=data["id"], joins=1)
+        # else:
+        #     session.add(user)
+        #     user.joins += 1
+        # session.commit()
 
-        if not user:
-            user = User(id=data["id"], joins=1)
-        else:
-            session.add(user)
-            user.joins += 1
-        session.commit()
+        await super().on_join(data["username"])
 
-        await self.send(
-            super(BeamHandler, self).on_join(data["username"])
-        )
-
-    async def on_leave(self, data):  # TODO: generalize
+    async def on_leave(self, data):
         """Handle user leave packets from Beam."""
-        # return "NO DELURKING PEOPLE! ._."  # TODO: fix
-
-        await self.send(
-            super(BeamHandler, self).on_leave(data["username"])
-        )
+        await super().on_leave(data["username"])

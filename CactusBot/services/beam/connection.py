@@ -1,4 +1,4 @@
-from logging import getLogger as get_logger
+from logging import getLogger
 
 from websockets import connect
 
@@ -11,16 +11,18 @@ from itertools import count, cycle
 
 # from re import match
 
-from .handler import BeamHandler
+from .api import BeamAPI
+from .parser import BeamHandler
 
 
 class Beam(BeamHandler):
+
     path = "https://beam.pro/api/v1/"
 
     def __init__(self, username, password, channel, **kwargs):
-        super(Beam, self).__init__(**kwargs)
+        super().__init__(username, password, **kwargs)
 
-        self.logger = kwargs.get("logger") or get_logger(__name__)
+        self.logger = kwargs.get("logger") or getLogger(__name__)
 
         self.http_session = Session()
 
@@ -55,12 +57,26 @@ class Beam(BeamHandler):
             "id": kwargs.get("id") or self._packet_id
         }
         packet.update(kwargs)
-        print("SENDING", packet)
+        self.logger.debug(packet)
         await self.websocket.send(dumps(packet))
+
+    async def _authenticate(self):
+        await self.send(
+            self.channel_data["id"], self.data["id"], self.chat["authkey"],
+            method="auth", id="auth"
+        )
 
     async def read(self):
         while True:
-            await self.handle(loads(await self.websocket.recv()))
+
+            packet = loads(await self.websocket.recv())
+
+            if packet.get("error") is not None:
+                self.logger.error(packet)
+            else:
+                self.logger.debug(packet)
+
+            await self.handle(packet)
 
     @property
     def _packet_id(self):
@@ -88,34 +104,18 @@ class Beam(BeamHandler):
         }
         return self._request("/users/login", method="POST", data=packet)
 
-    def get_channel(self, id, **params):
+    def get_channel(self, id, **params):  # Add explosions
         """Get channel data by username."""
         return self._request("/channels/{id}".format(id=id), params=params)
 
-    def get_chat(self, id):
+    def get_chat(self, id):  # Add explosions
         """Get chat server data."""
         return self._request("/chats/{id}".format(id=id))
 
-#
-# def authenticate(self, *args):
-#     """Authenticate session to a Beam chat through a websocket."""
-#
-#     future = args[-1]
-#     if future.exception() is None:
-#         self.websocket = future.result()
-#         self.logger.info("Successfully connected to chat {}.".format(
-#             self.channel_data["token"]))
-#
-#         self.send_message(*args[:-1], method="auth")
-#
-#         self.read_chat(self.handle)
-#     else:
-#         raise ConnectionError(future.exception())
-#
-# def remove_message(self, channel_id, message_id):
-#     """Remove a message from chat."""
-#     return self._request("/chats/{id}/message/{message}".format(
-#         id=channel_id, message=message_id), method="DELETE")
+    def remove_message(self, channel_id, message_id):
+        """Remove a message from chat."""
+        return self._request("/chats/{id}/message/{message}".format(
+            id=channel_id, message=message_id), method="DELETE")
 #
 # @coroutine
 # def read_chat(self, handler=None):

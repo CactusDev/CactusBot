@@ -1,3 +1,3 @@
-from CactusBot import Cactus
+from CactusBot import Cactus, Beam
 
-Cactus().run()
+Cactus(Beam).run()
