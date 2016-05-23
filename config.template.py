@@ -1,6 +1,6 @@
 """CactusBot configuration."""
 
-from .CactusBot.beam import Beam
+from CactusBot.services import Beam
 
 USERNAME = "BotUsername"
 PASSWORD = "p455w0rd"
