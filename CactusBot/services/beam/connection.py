@@ -1,6 +1,8 @@
 from logging import getLogger
 
 from websockets import connect
+from websockets.exceptions import ConnectionClosed
+from asyncio import sleep
 
 from requests import Session
 from requests.compat import urljoin
@@ -22,12 +24,12 @@ class Beam(BeamHandler):
     def __init__(self, username, password, channel, **kwargs):
         super().__init__(username, password, **kwargs)
 
-        self.logger = kwargs.get("logger") or getLogger(__name__)
+        self.logger = getLogger(__name__)
 
         self.http_session = Session()
 
         self.channel = channel
-        self.channel_data = self.get_channel(channel)
+        self.channel_data = self.get_channel(self.channel)
 
         self.auth = {
             "username": username,
@@ -42,9 +44,21 @@ class Beam(BeamHandler):
         self._address_counter = cycle(self.chat["endpoints"])
 
     async def __aenter__(self):
-        self._conn = connect(self._chat_address)
-        self.websocket = await self._conn.__aenter__()
+        await self._connect()
         return self
+
+    async def _connect(self):
+        backoff = count()
+        while True:
+            try:
+                self._conn = connect(self._chat_address)
+                self.websocket = await self._conn.__aenter__()
+            except ConnectionRefusedError:
+                seconds = min(2**next(backoff), 60)
+                self.logger.info("Retrying in {} seconds...".format(seconds))
+                await sleep(seconds)
+            else:
+                break
 
     async def __aexit__(self, *args, **kwargs):
         await self._conn.__aexit__(*args, **kwargs)
@@ -69,7 +83,15 @@ class Beam(BeamHandler):
     async def read(self):
         while True:
 
-            packet = loads(await self.websocket.recv())
+            try:
+                response = await self.websocket.recv()
+            except ConnectionClosed:
+                self.logger.warning("Connection to chat server lost. "
+                                    "Attempting to reconnect.")
+                await self._connect()
+                await self._authenticate()
+            else:
+                packet = loads(response)
 
             if packet.get("error") is not None:
                 self.logger.error(packet)
