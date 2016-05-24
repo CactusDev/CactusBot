@@ -1,194 +1,303 @@
 from logging import getLogger
-# from ..models import session, User, Command
-from asyncio import ensure_future
 
-# from re import findall
+from websockets import connect
+from websockets.exceptions import ConnectionClosed
+from asyncio import sleep
 
-from ...handler import Handler
+from requests import Session
+from requests.compat import urljoin
+
+# from functools import partial
+from json import dumps, loads
+from itertools import count, cycle
+
+# from re import match
+
+from .api import BeamAPI
+from .parser import BeamHandler
 
 
-class BeamHandler(Handler):
+class Beam(BeamHandler):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    path = "https://beam.pro/api/v1/"
 
-        self.logger = kwargs.get("logger") or getLogger(__name__)
+    def __init__(self, username, password, channel, **kwargs):
+        super().__init__(username, password, **kwargs)
 
-        self.events = {
-            "ChatMessage": self.on_message,
-            "UserJoin": self.on_join,
-            "UserLeave": self.on_leave
-        }
-        self._init_commands()
-        self.bot_data = {"username": "Potato"}  # TODO: Fix
-        self.channel_data = {"token": "Salad"}  # TODO: Fix
-        self.config = {
-            "points": {"name": "Bowls"},
-            "auth": {"username": "Potato"}
-        }  # TODO: Fix
-        self.update_config = lambda *args: None  # TODO: Fix
-        # self.send_message = lambda *args: print("SENDING", args)  # TODO Fix
-        # self.get_channel = lambda *args: {{"user": {"social": {}}}}.update(
-        #     self.channel_data)  # TODO: Fix
-        # self._request = lambda *args: {}
+        self.logger = getLogger(__name__)
 
-    def _init_commands(self):
-        """Initialize built-in commands."""
+        self.http_session = Session()
 
-        self.commands = {  # TODO: move to Handler, dynamic-ify
-            "cactus": "Ohai! I'm CactusBot. :cactus",
-            "test": "Test confirmed. :cactus",
-            "help": "Check out my documentation at cactusbot.readthedocs.org."
+        self.channel = channel
+        self.channel_data = self.get_channel(self.channel)
+
+        self.auth = {
+            "username": username,
+            "password": password,
+            "code": kwargs.get("code", '')
         }
 
-    async def handle(self, response):  # TODO: remove
-        """Handle responses from a Beam websocket."""
+        self.data = self._login(**self.auth)
+        self.chat = self.get_chat(self.channel_data["id"])
 
-        self.logger.debug("")
+        self._packet_counter = count()
+        self._address_counter = cycle(self.chat["endpoints"])
 
-        data = response.get("data")
-        if data is None:
-            return
+    async def __aenter__(self):
+        await self._connect()
+        return self
 
-        if "event" in response:
-            if response["event"] in self.events:
-                ensure_future(self.events[response["event"]](data))
+    async def _connect(self):
+        backoff = count()
+        while True:
+            try:
+                self._conn = connect(self._chat_address)
+                self.websocket = await self._conn.__aenter__()
+            except ConnectionRefusedError:
+                seconds = min(2**next(backoff), 60)
+                self.logger.info("Retrying in {} seconds...".format(seconds))
+                await sleep(seconds)
             else:
-                self.logger.debug("No handler found for event {}.".format(
-                    response["event"]
-                ))
-        elif isinstance(data, dict) and data.get("authenticated"):
-            await self.send("CactusBot activated. Enjoy! :cactus")
+                break
 
-    async def on_message(self, data):  # TODO: move parts to Beam, generalize
-        """Handle chat message packets from Beam."""
+    async def __aexit__(self, *args, **kwargs):
+        await self._conn.__aexit__(*args, **kwargs)
 
-        parsed = ''.join([
-            chunk["data"] if chunk["type"] == "text" else chunk["text"]
-            for chunk in data["message"]["message"]
-        ])
+    async def send(self, *args, **kwargs):
+        packet = {
+            "type": "method",
+            "method": "msg",
+            "arguments": args,
+            "id": kwargs.get("id") or self._packet_id
+        }
+        packet.update(kwargs)
+        self.logger.debug(packet)
+        await self.websocket.send(dumps(packet))
 
-        self.logger.info("{bot}{me}[{user}] {message}".format(
-            bot='$ ' if data["user_name"] == self.config["auth"]["username"]
-                else '',
-            me='*' if data["message"]["meta"].get("me") else '',
-            user=data["user_name"] + " > " + self.config["auth"]["username"]
-                if data["message"]["meta"].get("whisper")
-                else data["user_name"],
-            message=parsed)
+    async def _authenticate(self):
+        await self.send(
+            self.channel_data["id"], self.data["id"], self.chat["authkey"],
+            method="auth", id="auth"
         )
 
-        # TODO: move to Handler
-        # user = session.query(User).filter_by(id=data["user_id"]).first()
-        # if user is not None:
-        #     user.messages += 1
-        #     session.commit()
-        # else:
-        #     user = User(id=data["user_id"], joins=1, messages=1)
-        #     session.add(user)
-        #     session.commit()
+    async def read(self):
+        while True:
 
-        # TODO: move to Handler
-        # mod_roles = ("Owner", "Staff", "Founder", "Global Mod", "Mod")
-        # if not (data["user_roles"][0] in mod_roles or user.friend):
-        #     if (len(parsed) > self.config["spam_protection"].get(
-        #             "maximum_message_length", 256)):
-        #         self.remove_message(data["channel"], data["id"])
-        #         user.offenses += 1
-        #         session.commit()
-        #         return self.send_message(
-        #             data["user_name"], "Please stop spamming.",
-        #             method="whisper")
-        #     elif (sum(char.isupper() for char in parsed) >
-        #             self.config["spam_protection"].get(
-        #                 "maximum_message_capitals", 32)):
-        #         self.remove_message(data["channel"], data["id"])
-        #         user.offenses += 1
-        #         session.commit()
-        #         return self.send_message(
-        #             data["user_name"], "Please stop speaking in all caps.",
-        #             method="whisper")
-        #     elif (sum(chunk["type"] == "emoticon"
-        #               for chunk in data["message"]["message"]) >
-        #             self.config["spam_protection"].get(
-        #             "maximum_message_emotes", 8)):
-        #         self.remove_message(data["channel"], data["id"])
-        #         user.offenses += 1
-        #         session.commit()
-        #         return self.send_message(
-        #             data["user_name"], "Please stop spamming emoticons.",
-        #             method="whisper")
-        #     elif (findall(("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
-        #                    "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
-        #                   parsed) and not
-        #             self.config["spam_protection"].get(
-        #                 "allow_links", False)):
-        #         self.remove_message(data["channel"], data["id"])
-        #         user.offenses += 1
-        #         session.commit()
-        #         return self.send_message(
-        #             data["user_name"], "Please stop posting links.",
-        #             method="whisper")
-
-        # TODO: move to handler
-        if parsed == "/cry":
-            self.remove_message(data["channel"], data["id"])
-            return self.send_message("/me cries with {} :'(".format(
-                data["user_name"]))
-
-        # TODO: move to handler
-        if len(parsed) > 1 and parsed[0].startswith("!"):
-            args = parsed.split()
-
-            if args[0][1:] in self.commands:
-                response = self.commands[args[0][1:]]
-                if isinstance(response, str):
-                    messages = response
-                else:
-                    messages = response(args, data)
+            try:
+                response = await self.websocket.recv()
+            except ConnectionClosed:
+                self.logger.warning("Connection to chat server lost. "
+                                    "Attempting to reconnect.")
+                await self._connect()
+                await self._authenticate()
             else:
-                options = [
-                    ('-'.join(args[:2])[1:], ['-'.join(args[:2])] + args[2:]),
-                    (args[0][1:], args)
-                ]
+                packet = loads(response)
 
-                for parse_method in options:
-                    command = False  # session.query(
-                    # Command).filter_by(command=parse_method[0]).first()
-                    if command:
-                        messages = command(
-                            parse_method[1], data,
-                            channel_name=self.channel_data["token"]
-                        )
-                        break
-                else:
-                    messages = "Command not found."
-
-            if isinstance(messages, str):
-                messages = (messages,)
-
-            if data["message"]["meta"].get("whisper", False):
-                for message in messages:
-                    await self.send(
-                        data["user_name"], message, method="whisper")
+            if packet.get("error") is not None:
+                self.logger.error(packet)
             else:
-                await self.send(*messages)
+                self.logger.debug(packet)
 
-    async def on_join(self, data):  # TODO: generalize
-        """Handle user join packets from Beam."""
-        # return "NO DELURKING PEOPLE! ._."  # TODO: fix
+            await self.handle(packet)
 
-        # user = session.query(User).filter_by(id=data["id"]).first()
-        #
-        # if not user:
-        #     user = User(id=data["id"], joins=1)
-        # else:
-        #     session.add(user)
-        #     user.joins += 1
-        # session.commit()
+    @property
+    def _packet_id(self):
+        return next(self._packet_counter)
 
-        await super().on_join(data["username"])
+    @property
+    def _chat_address(self):
+        return next(self._address_counter)
 
-    async def on_leave(self, data):
-        """Handle user leave packets from Beam."""
-        await super().on_leave(data["username"])
+    def _request(self, url, method="GET", **kwargs):
+        """Send HTTP request to Beam."""
+        response = self.http_session.request(
+            method, urljoin(self.path, url.lstrip('/')), **kwargs)
+        try:
+            return response.json()
+        except Exception:
+            return response.text
+
+    def _login(self, username, password, code=''):
+        """Authenticate and login with Beam."""
+        packet = {
+            "username": username,
+            "password": password,
+            "code": code
+        }
+        return self._request("/users/login", method="POST", data=packet)
+
+    def get_channel(self, id, **params):  # Add explosions
+        """Get channel data by username."""
+        return self._request("/channels/{id}".format(id=id), params=params)
+
+    def get_chat(self, id):  # Add explosions
+        """Get chat server data."""
+        return self._request("/chats/{id}".format(id=id))
+
+    def remove_message(self, channel_id, message_id):
+        """Remove a message from chat."""
+        return self._request("/chats/{id}/message/{message}".format(
+            id=channel_id, message=message_id), method="DELETE")
+#
+# @coroutine
+# def read_chat(self, handler=None):
+#     """Read and handle messages from a Beam chat through a websocket."""
+#
+#     while True:
+#         message = yield self.websocket.read_message()
+#
+#         if message is None:
+#             self.logger.warning(
+#                 "Connection to chat server lost. Attempting to reconnect.")
+#             self.server_offset += 1
+#             self.server_offset %= len(self.servers)
+#             self.logger.debug("Connecting to: {server}.".format(
+#                 server=self.servers[self.server_offset]))
+#
+#             websocket_connection = websocket_connect(
+#                 self.servers[self.server_offset])
+#
+#             authkey = self.get_chat(
+#                 self.connection_information["channel_id"])["authkey"]
+#
+#             if self.connection_information["silent"]:
+#                 return websocket_connection.add_done_callback(
+#                     partial(
+#                         self.authenticate,
+#                         self.connection_information["channel_id"]
+#                     )
+#                 )
+#             else:
+#                 return websocket_connection.add_done_callback(
+#                     partial(
+#                         self.authenticate,
+#                         self.connection_information["channel_id"],
+#                         self.connection_information["bot_id"],
+#                         authkey
+#                     )
+#                 )
+#
+#         else:
+#             response = loads(message)
+#
+#             self.logger.debug("CHAT: {}".format(response))
+#
+#             if callable(handler):
+#                 handler(response)
+#
+# def connect_to_liveloading(self, channel_id, user_id):
+#     """Connect to Beam liveloading."""
+#
+#     self.liveloading_connection_information = {
+#         "channel_id": channel_id,
+#         "user_id": user_id
+#     }
+#
+#     liveloading_websocket_connection = websocket_connect(
+#         "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
+#     liveloading_websocket_connection.add_done_callback(
+#         partial(self.subscribe_to_liveloading, channel_id, user_id))
+#
+# def subscribe_to_liveloading(self, channel_id, user_id, future):
+#     """Subscribe to Beam liveloading."""
+#
+#     if future.exception() is None:
+#         self.liveloading_websocket = future.result()
+#
+#         self.logger.info(
+#             "Successfully connected to liveloading websocket.")
+#
+#         interfaces = (
+#             "channel:{channel_id}:update",
+#             "channel:{channel_id}:followed",
+#             "channel:{channel_id}:subscribed",
+#             "channel:{channel_id}:resubscribed",
+#             "user:{user_id}:update"
+#         )
+#         self.subscribe_to_interfaces(
+#             *tuple(
+#                 interface.format(channel_id=channel_id, user_id=user_id)
+#                 for interface in interfaces
+#             )
+#         )
+#
+#         self.logger.info(
+#             "Successfully subscribed to liveloading interfaces.")
+#
+#         self.watch_liveloading()
+#     else:
+#         raise ConnectionError(future.exception())
+#
+# def subscribe_to_interfaces(self, *interfaces):
+#     """Subscribe to a Beam liveloading interface."""
+#
+#     for interface in interfaces:
+#         packet = [
+#             "put",
+#             {
+#                 "method": "put",
+#                 "headers": {},
+#                 "data": {
+#                     "slug": [
+#                         interface
+#                     ]
+#                 },
+#                 "url": "/api/v1/live"
+#             }
+#         ]
+#         self.liveloading_websocket.write_message('420' + dumps(packet))
+#
+# def parse_liveloading_message(self, message):
+#     """Parse a message received from the Beam liveloading websocket."""
+#
+#     sections = match("(\d+)(.+)?$", message).groups()
+#
+#     return {
+#         "code": sections[0],
+#         "data": loads(sections[1]) if sections[1] is not None else None
+#     }
+#
+# # @coroutine
+# def watch_liveloading(self, handler=None):
+#     """Watch and handle packets from the Beam liveloading websocket."""
+#
+#     response = yield self.liveloading_websocket.read_message()
+#     if response is None:
+#         raise ConnectionError
+#
+#     packet = self.parse_liveloading_message(response)
+#
+#     PeriodicCallback(
+#         partial(self.liveloading_websocket.write_message, '2'),
+#         packet["data"]["pingInterval"]
+#     ).start()
+#
+#     while True:
+#         message = yield self.liveloading_websocket.read_message()
+#
+#         if message is None:
+#             self.logger.warning("Connection to liveloading server lost. "
+#                                 "Attempting to reconnect.")
+#             return self.connect_to_liveloading(
+#                 **self.liveloading_connection_information)
+#
+#         packet = self.parse_liveloading_message(message)
+#
+#         if packet.get("data") is not None:
+#             self.logger.debug("LIVE: {}".format(packet))
+#
+#         # TODO: move to handler
+#         if isinstance(packet["data"], list):
+#             if isinstance(packet["data"][0], str):
+#                 if packet["data"][1].get("following"):
+#                     self.logger.info("- {} followed.".format(
+#                         packet["data"][1]["user"]["username"]))
+#                     self.send_message(
+#                         "Thanks for the follow, @{}!".format(
+#                             packet["data"][1]["user"]["username"]))
+#                 elif packet["data"][1].get("subscribed"):
+#                     self.logger.info("- {} subscribed.".format(
+#                         packet["data"][1]["user"]["username"]))
+#                     self.send_message(
+#                         "Thanks for the subscription, @{}! <3".format(
+#                             packet["data"][1]["user"]["username"]))
