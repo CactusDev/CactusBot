@@ -1,1 +1,1 @@
-from .connection import Beam
+from .service import Beam

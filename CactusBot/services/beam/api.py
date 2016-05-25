@@ -1,20 +1,14 @@
 from logging import getLogger
 
 from aiohttp import ClientSession
-from requests.compat import urljoin
+from urllib.parse import urljoin
 
 
 class BeamAPI(object):
     path = "https://beam.pro/api/v1/"
 
-    def __init__(self, username, password, code='', **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        self.auth = {
-            "username": username,
-            "password": password,
-            "code": code
-        }
 
         self.logger = getLogger(__name__)
 
@@ -25,18 +19,18 @@ class BeamAPI(object):
         url = urljoin(self.path, endpoint.lstrip('/'))
         async with self.session.request(method, url, **kwargs) as response:
             try:
-                return response.json()
+                return await response.json()
             except ValueError:
-                return response.text
+                return await response.text()
 
-    async def _login(self, username, password, code=''):
+    async def login(self, username, password, code=''):
         """Authenticate and login with Beam."""
-        packet = {
+        data = {
             "username": username,
             "password": password,
             "code": code
         }
-        return await self._request("/users/login", method="POST", data=packet)
+        return await self._request("/users/login", method="POST", data=data)
 
     async def get_channel(self, id, **params):  # TODO: add explosions
         """Get channel data by username."""
@@ -46,3 +40,8 @@ class BeamAPI(object):
     async def get_chat(self, id):  # TODO: add explosions
         """Get chat server data."""
         return await self._request("/chats/{id}".format(id=id))
+
+    async def remove_message(self, channel_id, message_id):
+        """Remove a message from chat."""
+        return await self._request("/chats/{id}/message/{message}".format(
+            id=channel_id, message=message_id), method="DELETE")
