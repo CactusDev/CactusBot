@@ -6,12 +6,7 @@ from asyncio import get_event_loop
 
 async def run():
     async with SERVICE as beam:
-        # TODO: move to internals of BeamChat
-        login_data = await beam.login(USERNAME, PASSWORD)
-        beam.chat = await beam.get_chat(beam.channel_data["id"])
-        await beam._authenticate(
-            beam.channel_data["id"], login_data["id"], beam.chat["authkey"])
-        await beam.read()
+        await beam.run(USERNAME, PASSWORD)
 
 install(level="DEBUG")
 

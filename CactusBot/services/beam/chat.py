@@ -18,13 +18,16 @@ class BeamChat(BeamAPI):
         self.logger = getLogger(__name__)
 
         self.channel = channel
+        self.channel_data = dict()
 
         self._packet_counter = count()
 
     async def __aenter__(self):
+        # TODO: insta-efficiency. just add logic!
         self.channel_data = await self.get_channel(self.channel)
         self.chat = await self.get_chat(self.channel_data["id"])
         self._address_counter = cycle(self.chat["endpoints"])
+
         await self._connect()
         return self
 
@@ -55,8 +58,10 @@ class BeamChat(BeamAPI):
         self.logger.debug(packet)
         await self.websocket.send(dumps(packet))
 
-    async def _authenticate(self, channel, *auth):
-        await self.send(channel, *auth, method="auth", id="auth")
+    async def _authenticate(self, *auth):
+        await self.send(
+            self.channel_data["id"], *auth, method="auth", id="auth"
+        )
 
     async def read(self, handle=None):
         while True:
@@ -66,7 +71,7 @@ class BeamChat(BeamAPI):
                 self.logger.warning("Connection to chat server lost. "
                                     "Attempting to reconnect.")
                 await self._connect()
-                await self._authenticate()
+                await self._authenticate(self.channel)
             else:
                 packet = loads(response)
 
@@ -75,7 +80,8 @@ class BeamChat(BeamAPI):
                 else:
                     self.logger.debug(packet)
 
-                await (handle or self.handle)(packet)
+                if callable(handle):
+                    await handle(packet)
 
     @property
     def _packet_id(self):
@@ -84,6 +90,3 @@ class BeamChat(BeamAPI):
     @property
     def _chat_address(self):
         return next(self._address_counter)
-
-    async def handle(self, packet):
-        pass

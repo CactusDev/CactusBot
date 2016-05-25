@@ -18,7 +18,7 @@ class Beam(BeamChat, Handler):
 
         self.channel = channel
 
-        self.events = {  # TODO: move to BeamChat
+        self.chat_events = {
             "ChatMessage": self.on_message,
             "UserJoin": self.on_join,
             "UserLeave": self.on_leave
@@ -29,7 +29,15 @@ class Beam(BeamChat, Handler):
 
         return self
 
-    async def handle(self, response):  # TODO: move to BeamChat
+    async def run(self, *auth):
+        # TODO: insta-efficiency. just add logic!
+        login_data = await self.login(*auth)
+        self.chat = await self.get_chat(self.channel_data["id"])
+        await self._authenticate(
+            login_data["id"], self.chat["authkey"])
+        await self.read(self.handle_chat)
+
+    async def handle_chat(self, response):
         """Handle responses from a Beam websocket."""
 
         data = response.get("data")
@@ -37,15 +45,15 @@ class Beam(BeamChat, Handler):
             return
 
         event = response.get("event")
-        if event in self.events:
-            ensure_future(self.events[event](data))
+        if event in self.chat_events:
+            ensure_future(self.chat_events[event](data))
         elif response.get("id") is "auth":
             if data.get("authenticated") is True:
                 await self.send("CactusBot activated. Enjoy! :cactus")
             else:
                 self.logger.error("Chat authentication failure!")
 
-    async def on_message(self, data):  # TODO: move parts to Handler
+    async def on_message(self, data):
         """Handle chat message packets from Beam."""
 
         parsed = ''.join([
