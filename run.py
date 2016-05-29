@@ -10,4 +10,8 @@ async def run():
 
 install(level="DEBUG")
 
-get_event_loop().run_until_complete(run())
+loop = get_event_loop()
+try:
+    loop.run_until_complete(run())
+finally:
+    loop.close()
