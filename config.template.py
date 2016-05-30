@@ -1,10 +1,10 @@
 """CactusBot configuration."""
 
-from CactusBot.services import Beam
+from CactusBot.services import BeamHandler
 
 USERNAME = "BotUsername"
 PASSWORD = "p455w0rd"
 
 CHANNEL = "ChannelName"
 
-SERVICE = Beam(CHANNEL)
+SERVICE = BeamHandler(CHANNEL)

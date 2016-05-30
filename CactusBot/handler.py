@@ -7,7 +7,6 @@ from logging import getLogger
 class Handler(object):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
         self.logger = getLogger(__name__)
 
@@ -19,13 +18,12 @@ class Handler(object):
 
     async def send(self, *args, **kwargs):
         self.logger.info(
-            "SEND: {args} {kwargs}", dict(args=args, kwargs=kwargs), style='{'
+            "SEND: %(args)s %(kwargs)s", dict(args=args, kwargs=kwargs)
         )
 
     async def on_message(self, message, user):  # TODO: optimize
         self.logger.info(
-            "[%(user)s] %(message)s",
-            dict(user=user, message=message)
+            "[%(user)s] %(message)s", dict(user=user, message=message),
         )
 
         # TODO: better command parsing
@@ -37,17 +35,17 @@ class Handler(object):
             else:
                 response = "Command not found."
 
-            await self.send(response)
+            return response
 
         # TODO: /cry
         # TODO: spam protection
 
     async def on_join(self, user):
         self.logger.info("- {} joined".format(user))
-        return  # TODO: real fix for delurking
-        await self.send("Welcome, @{}!".format(user))
+        # TODO: fix delurking
+        return "Welcome, @{}!".format(user)
 
     async def on_leave(self, user):
         self.logger.info("- {} left".format(user))
-        return  # TODO: real fix for delurking
-        await self.send("Goodbye, @{}.".format(user))
+        # TODO: fix delurking
+        return "Goodbye, @{}.".format(user)

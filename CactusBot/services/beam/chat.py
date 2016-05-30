@@ -4,48 +4,58 @@ from .api import BeamAPI
 
 from websockets import connect
 from websockets.exceptions import ConnectionClosed
-from asyncio import sleep
+from asyncio import sleep, ensure_future
 
 from json import loads, dumps
 from itertools import count, cycle
 
 
-class BeamChat(BeamAPI):
+class BeamChat(object):
 
-    def __init__(self, channel, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, channel, api=None, **kwargs):
+        # super().__init__(**kwargs)
 
         self.logger = getLogger(__name__)
+        self.api = api or BeamAPI()
 
-        self.channel = channel
-        self.channel_data = dict()
+        self._channel = channel
+        self.channel = kwargs.get("channel_data")
+
+        self.chat = kwargs.get("chat")
 
         self._packet_counter = count()
 
     async def __aenter__(self):
-        # TODO: insta-efficiency. just add logic!
-        self.channel_data = await self.get_channel(self.channel)
-        self.chat = await self.get_chat(self.channel_data["id"])
+        if self.channel is None:
+            self.channel = await self.api.get_channel(self._channel)
+        if self.chat is None:
+            self.chat = await self.api.get_chat(self.channel["id"])
+
+        assert self.chat.get("endpoints"), "Endpoints are required to connect!"
         self._address_counter = cycle(self.chat["endpoints"])
 
-        await self._connect()
+        self.websocket = await self._connect()
+
         return self
 
     async def __aexit__(self, *args, **kwargs):
         await self._conn.__aexit__(*args, **kwargs)
+
+    def __await__(self, *args, **kwargs):
+        return self.__aenter__().__await__()
 
     async def _connect(self):
         backoff = count()
         while True:
             try:
                 self._conn = connect(self._chat_address)
-                self.websocket = await self._conn.__aenter__()
+                websocket = await self._conn.__aenter__()
             except ConnectionRefusedError:
                 seconds = min(2**next(backoff), 60)
                 self.logger.debug("Retrying in {} seconds...".format(seconds))
                 await sleep(seconds)
             else:
-                return True
+                return websocket
 
     async def send(self, *args, **kwargs):
         packet = {
@@ -59,9 +69,7 @@ class BeamChat(BeamAPI):
         await self.websocket.send(dumps(packet))
 
     async def _authenticate(self, *auth):
-        await self.send(
-            self.channel_data["id"], *auth, method="auth", id="auth"
-        )
+        await self.send(self.channel["id"], *auth, method="auth", id="auth")
 
     async def read(self, handle=None):
         while True:
@@ -71,7 +79,7 @@ class BeamChat(BeamAPI):
                 self.logger.warning("Connection to chat server lost. "
                                     "Attempting to reconnect.")
                 await self._connect()
-                await self._authenticate(self.channel)
+                await self._authenticate()
             else:
                 packet = loads(response)
 
@@ -81,7 +89,7 @@ class BeamChat(BeamAPI):
                     self.logger.debug(packet)
 
                 if callable(handle):
-                    await handle(packet)
+                    ensure_future(handle(packet))
 
     @property
     def _packet_id(self):
