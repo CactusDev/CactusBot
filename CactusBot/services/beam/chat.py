@@ -13,7 +13,6 @@ from itertools import count, cycle
 class BeamChat(object):
 
     def __init__(self, channel, api=None, **kwargs):
-        # super().__init__(**kwargs)
 
         self.logger = getLogger(__name__)
         self.api = api or BeamAPI()

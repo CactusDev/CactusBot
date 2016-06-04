@@ -10,7 +10,7 @@ class Handler(object):
 
         self.logger = getLogger(__name__)
 
-        self.commands = {  # TODO: make dynamic (and less silly)
+        self.commands = {  # TODO: implement command handler
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
             "help": "Check out my documentation at cactusbot.readthedocs.org."
@@ -21,7 +21,8 @@ class Handler(object):
             "SEND: %(args)s %(kwargs)s", dict(args=args, kwargs=kwargs)
         )
 
-    async def on_message(self, message, user):  # TODO: optimize
+    # TODO: optimize
+    async def on_message(self, message, user):
         self.logger.info(
             "[%(user)s] %(message)s", dict(user=user, message=message),
         )
@@ -41,11 +42,19 @@ class Handler(object):
         # TODO: spam protection
 
     async def on_join(self, user):
-        self.logger.info("- {} joined".format(user))
+        self.logger.info("- %s joined", user)
         # TODO: fix delurking
         return "Welcome, @{}!".format(user)
 
     async def on_leave(self, user):
-        self.logger.info("- {} left".format(user))
+        self.logger.info("- %s left", user)
         # TODO: fix delurking
         return "Goodbye, @{}.".format(user)
+
+    async def on_follow(self, user):
+        self.logger.info("- %s followed", user)
+        return "Thanks for the follow, @{}!".format(user)
+
+    async def on_subscribe(self, user):
+        self.logger.info("- %s subscribed", user)
+        return "Thanks for the subscription, @{}!".format(user)
