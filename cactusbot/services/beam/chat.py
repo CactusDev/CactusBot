@@ -1,4 +1,4 @@
-"""Interacts with Beam chat servers."""
+"""Interact with Beam chat servers."""
 
 from logging import getLogger
 
@@ -15,12 +15,15 @@ from websockets.exceptions import ConnectionClosed
 class BeamChat(ClientSession):
     """Interact with Beam chat."""
 
-    def __init__(self, channel: int, *endpoints):
+    def __init__(self, channel, *endpoints):
         super().__init__()
 
         self.logger = getLogger(__name__)
 
+        assert isinstance(channel, int), "Channel ID must be an integer."
         self.channel = channel
+
+        self.websocket = None
 
         self._packet_counter = count()
         self._endpoint_cycle = cycle(endpoints)
@@ -48,6 +51,9 @@ class BeamChat(ClientSession):
     async def send(self, *args, **kwargs):
         """Send a packet to chat."""
 
+        if self.websocket is None:
+            raise ConnectionError("Not connected. Run connect() first!")
+
         packet = {
             "type": "method",
             "method": "msg",
@@ -63,6 +69,9 @@ class BeamChat(ClientSession):
 
     async def read(self, handle=None):
         """Read and parse packets from chat."""
+
+        if self.websocket is None:
+            raise ConnectionError("Not connected. Run connect() first!")
 
         while True:
 
