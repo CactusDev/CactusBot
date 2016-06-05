@@ -1,10 +1,14 @@
+"""Interacts with the Beam API."""
+
 from logging import getLogger
 
-from aiohttp import ClientSession, ClientHttpProcessingError
 from urllib.parse import urljoin
+from aiohttp import ClientSession, ClientHttpProcessingError
 
 
 class BeamAPI(ClientSession):
+    """Interact with the Beam API."""
+
     path = "https://beam.pro/api/v1/"
 
     def __init__(self, **kwargs):
@@ -61,15 +65,16 @@ class BeamAPI(ClientSession):
         }
         return await self.post("/users/login", data=data)
 
-    async def get_channel(self, id, **params):
-        """Get channel data by username."""
-        return await self.get("/channels/{id}".format(id=id), params=params)
+    async def get_channel(self, channel, **params):
+        """Get channel data by username or ID."""
+        return await self.get(
+            "/channels/{channel}".format(channel=channel), params=params)
 
-    async def get_chat(self, id):
-        """Get chat server data."""
-        return await self.get("/chats/{id}".format(id=id))
+    async def get_chat(self, chat):
+        """Get required data for connecting to a chat server by channel ID."""
+        return await self.get("/chats/{chat}".format(chat=chat))
 
-    async def remove_message(self, id, message):
-        """Remove a message from chat."""
-        return await self.delete("/chats/{id}/message/{message}".format(
-            id=id, message=message), method="DELETE")
+    async def remove_message(self, chat, message):
+        """Remove a message from chat by ID."""
+        return await self.delete("/chats/{chat}/message/{message}".format(
+            chat=chat, message=message))
