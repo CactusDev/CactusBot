@@ -1,4 +1,4 @@
-"""BeamChat interacts with Beam chat servers."""
+"""Interacts with Beam chat servers."""
 
 from logging import getLogger
 
@@ -8,13 +8,15 @@ from itertools import count, cycle
 
 from json import loads, dumps
 
-from websockets import connect
+from aiohttp import ClientSession
 from websockets.exceptions import ConnectionClosed
 
 
-class BeamChat(object):
+class BeamChat(ClientSession):
+    """Interact with Beam chat."""
 
-    def __init__(self, channel: int, endpoints):
+    def __init__(self, channel: int, *endpoints):
+        super().__init__()
 
         self.logger = getLogger(__name__)
 
@@ -23,23 +25,12 @@ class BeamChat(object):
         self._packet_counter = count()
         self._endpoint_cycle = cycle(endpoints)
 
-    # async def __aenter__(self):
-    #     # self.websocket = await self.connect()
-    #     return self
-    #
-    # async def __aexit__(self, *args, **kwargs):
-    #     await self._conn.__aexit__(*args, **kwargs)
-
-    def __await__(self, *args, **kwargs):
-        return self.__aenter__().__await__()
-
     async def connect(self, *auth, backoff=2):
         """Connect to a chat server."""
         _backoff_count = count()
         while True:
             try:
-                self._conn = connect(self._endpoint)
-                self.websocket = await self._conn.__aenter__()  # TODO: fix
+                self.websocket = await super().ws_connect(self._endpoint)
             except ConnectionRefusedError:
                 seconds = min(backoff**next(_backoff_count), 60)
                 self.logger.debug("Retrying in %s seconds...", seconds)
@@ -49,27 +40,34 @@ class BeamChat(object):
                 return self.websocket
 
     async def send(self, *args, **kwargs):
+        """Send a packet to chat."""
+
         packet = {
             "type": "method",
             "method": "msg",
             "arguments": args,
             "id": kwargs.get("id") or self._packet_id
         }
+
         packet.update(kwargs)
+
         self.logger.debug(packet)
-        await self.websocket.send(dumps(packet))
+
+        self.websocket.send_str(dumps(packet))
 
     async def read(self, handle=None):
+        """Read and parse packets from chat."""
+
         while True:
+
             try:
-                response = await self.websocket.recv()
+                response = await self.websocket.receive()
             except ConnectionClosed:
                 self.logger.warning("Connection to chat server lost. "
                                     "Attempting to reconnect.")
                 await self.connect()
-                await self.authenticate()
             else:
-                packet = loads(response)
+                packet = loads(response.data)
 
                 if packet.get("error") is not None:
                     self.logger.error(packet)
