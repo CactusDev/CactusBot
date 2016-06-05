@@ -16,8 +16,10 @@ class BeamHandler(Handler):
 
         self.api = BeamAPI()
 
-        self.channel = channel  # TODO: remove
-        # self.channel = self.api.get_channel(channel)
+        self._channel = channel
+
+        # TODO: move here
+        # self.chat = BeamChat(self.channel["id"], chat["endpoints"])
 
         self.chat_events = {
             "ChatMessage": self.on_message,
@@ -25,23 +27,14 @@ class BeamHandler(Handler):
             "UserLeave": self.on_leave
         }
 
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *args, **kwargs):
-        pass
-
     async def run(self, *auth):
-        self.channel = await self.api.get_channel(self.channel)  # TODO: fix
+        channel = await self.api.get_channel(self._channel)
 
         user = await self.api.login(*auth)
-        chat = await self.api.get_chat(self.channel["id"])
+        chat = await self.api.get_chat(channel["id"])
 
-        self.chat = BeamChat(self.channel["id"], chat["endpoints"])
-
-        # await self.chat.__aenter__()
+        self.chat = BeamChat(channel["id"], *chat["endpoints"])
         await self.chat.connect(user["id"], chat["authkey"])
-        # await self.chat._authenticate(user_id, chat_authkey)
         await self.chat.read(self.handle_chat)
 
     async def handle_chat(self, response):
