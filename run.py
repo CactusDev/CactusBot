@@ -3,10 +3,9 @@ from coloredlogs import install
 from config import SERVICE, USERNAME, PASSWORD
 from asyncio import get_event_loop
 
-
+# TODO: move to Cactus
 async def run():
-    async with SERVICE as beam:
-        await beam.run(USERNAME, PASSWORD)
+    await SERVICE.run(USERNAME, PASSWORD)
 
 install(level="DEBUG")
 
