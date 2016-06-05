@@ -9,15 +9,15 @@ from .liveloading import BeamLiveloading
 
 class BeamHandler(Handler):
 
-    def __init__(self, channel, **kwargs):
+    def __init__(self, channel):
         super().__init__()
 
         self.logger = getLogger(__name__)
 
         self.api = BeamAPI()
 
-        self._channel = channel
-        self.channel = kwargs.get("channel_data")
+        self.channel = channel  # TODO: remove
+        # self.channel = self.api.get_channel(channel)
 
         self.chat_events = {
             "ChatMessage": self.on_message,
@@ -26,24 +26,22 @@ class BeamHandler(Handler):
         }
 
     async def __aenter__(self):
-        if self.channel is None:
-            self.channel = await self.api.get_channel(self._channel)
         return self
 
     async def __aexit__(self, *args, **kwargs):
         pass
 
     async def run(self, *auth):
-        self.chat = await BeamChat(
-            self._channel, api=self.api, channel_data=self.channel
-        )
-        await self.chat.__aenter__()
+        self.channel = await self.api.get_channel(self.channel)  # TODO: fix
 
-        self.liveloading = BeamLiveloading()
+        user = await self.api.login(*auth)
+        chat = await self.api.get_chat(self.channel["id"])
 
-        self.user = await self.api.login(*auth)
-        self._chat = await self.api.get_chat(self.channel["id"])
-        await self.chat._authenticate(self.user["id"], self._chat["authkey"])
+        self.chat = BeamChat(self.channel["id"], chat["endpoints"])
+
+        # await self.chat.__aenter__()
+        await self.chat.connect(user["id"], chat["authkey"])
+        # await self.chat._authenticate(user_id, chat_authkey)
         await self.chat.read(self.handle_chat)
 
     async def handle_chat(self, response):
@@ -63,7 +61,7 @@ class BeamHandler(Handler):
                 self.logger.error("Chat authentication failure!")
 
     async def send(self, *args, **kwargs):
-        if args is not None and args[0] is not None:
+        if args is not None and args[0] is not None:  # TODO: fix
             await self.chat.send(*args, **kwargs)
 
     async def on_message(self, data):
