@@ -36,8 +36,14 @@ class BeamChat(ClientSession):
                 self.logger.debug("Retrying in %s seconds...", seconds)
                 await sleep(seconds)
             else:
-                await self.send(self.channel, *auth, method="auth", id="auth")
+                await self.authenticate(*auth)
                 return self.websocket
+
+    async def authenticate(self, *auth):
+        """Send an authentication packet to chat."""
+
+        await self.send(self.channel, *auth, method="auth", id="auth")
+        return True
 
     async def send(self, *args, **kwargs):
         """Send a packet to chat."""
