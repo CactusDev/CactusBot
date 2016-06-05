@@ -1,3 +1,5 @@
+"""Interact with Beam."""
+
 from .handler import BeamHandler
 from .api import BeamAPI
 from .chat import BeamChat

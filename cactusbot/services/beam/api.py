@@ -1,4 +1,4 @@
-"""Interacts with the Beam API."""
+"""Interact with the Beam API."""
 
 from logging import getLogger
 
