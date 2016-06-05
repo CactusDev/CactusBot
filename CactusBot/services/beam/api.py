@@ -9,7 +9,7 @@ from aiohttp import ClientSession, ClientHttpProcessingError
 class BeamAPI(ClientSession):
     """Interact with the Beam API."""
 
-    path = "https://beam.pro/api/v1/"
+    PATH = "https://beam.pro/api/v1/"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -17,7 +17,7 @@ class BeamAPI(ClientSession):
         self.logger = getLogger(__name__)
 
     def _build(self, endpoint):
-        return urljoin(self.path, endpoint.lstrip('/'))
+        return urljoin(self.PATH, endpoint.lstrip('/'))
 
     async def request(self, method, endpoint, **kwargs):
         """Send HTTP request to Beam."""
