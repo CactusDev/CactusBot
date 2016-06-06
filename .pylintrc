@@ -13,11 +13,6 @@ min-similarity-lines=8
 notes=FIXME,TODO,CHANGED,XXX,IDEA,HACK,NOTE,REVIEW
 
 
-[LOGGING]
-
-logging-modules=logging
-
-
 [FORMAT]
 
 max-line-length=79

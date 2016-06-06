@@ -8,5 +8,7 @@ branches:
     - //^rel-v.+$//
 install:
   - pip install pylint
+env:
+  - PYLINTRC=.pylintrc
 script:
   - pylint run.py config.template.py cactusbot/
