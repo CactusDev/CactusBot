@@ -19,7 +19,7 @@ class BeamLiveloading(ClientSession):
     URL = "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket"
 
     RESPONSE_PATTERN = re.compile(r'^(?P<code>\d+)(?P<packet>.+)?$')
-    EVENT_PATTERN = re.compile(r'^(?P<scope>[a-z]+):\d+:(?P<event>[a-z]+)')
+    INTERFACE_PATTERN = re.compile(r'^(?P<scope>[a-z]+):\d+:(?P<event>[a-z]+)')
 
     def __init__(self, channel, user):
         super().__init__()
