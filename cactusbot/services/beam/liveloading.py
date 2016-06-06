@@ -67,10 +67,7 @@ class BeamLiveloading(ClientSession):
             else:
                 packet = await self.parse(response)
 
-                if packet.get("error") is not None:
-                    self.logger.error(packet)
-                else:
-                    self.logger.debug(packet)
+                self.logger.debug(packet)
 
                 if callable(handle):
                     asyncio.ensure_future(handle(packet))
