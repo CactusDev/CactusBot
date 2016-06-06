@@ -17,15 +17,11 @@ class Handler(object):
         }
 
     async def send(self, *args, **kwargs):
-        self.logger.info(
-            "SEND: %(args)s %(kwargs)s", dict(args=args, kwargs=kwargs)
-        )
+        raise NotImplementedError
 
     # TODO: optimize
     async def on_message(self, message, user):
-        self.logger.info(
-            "[%(user)s] %(message)s", dict(user=user, message=message),
-        )
+        self.logger.info("[%s] %s", user, message)
 
         # TODO: better command parsing
         if message.startswith('!') and len(message) > 1:
@@ -43,12 +39,10 @@ class Handler(object):
 
     async def on_join(self, user):
         self.logger.info("- %s joined", user)
-        # TODO: fix delurking
         return "Welcome, @{}!".format(user)
 
     async def on_leave(self, user):
         self.logger.info("- %s left", user)
-        # TODO: fix delurking
         return "Goodbye, @{}.".format(user)
 
     async def on_follow(self, user):
