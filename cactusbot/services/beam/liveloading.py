@@ -13,11 +13,11 @@ from aiohttp import ClientSession
 from aiohttp.errors import ClientOSError, ServerDisconnectedError
 
 
-
 class BeamLiveloading(ClientSession):
     """Interact with Beam liveloading."""
 
     URL = "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket"
+
     RESPONSE_PATTERN = re.compile(r'^(?P<code>\d+)(?P<packet>.+)?$')
     EVENT_PATTERN = re.compile(r'^(?P<scope>[a-z]+):\d+:(?P<event>[a-z]+)')
 
