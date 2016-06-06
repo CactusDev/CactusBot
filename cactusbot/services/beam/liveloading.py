@@ -34,7 +34,7 @@ class BeamLiveloading(ClientSession):
 
         self.websocket = None
 
-    async def connect(self, *, backoff=2):
+    async def connect(self, *, base=2, maximum=60):
         """Connect to the liveloading server."""
 
         _backoff_count = count()
@@ -43,11 +43,12 @@ class BeamLiveloading(ClientSession):
             try:
                 self.websocket = await super().ws_connect(self.URL)
             except ClientOSError:
-                seconds = min(backoff**next(_backoff_count), 60)
-                self.logger.debug("Retrying in %s seconds...", seconds)
-                await asyncio.sleep(seconds)
+                backoff = min(base**next(_backoff_count), maximum)
+                self.logger.debug("Reconnecting in %s seconds...", backoff)
+                await asyncio.sleep(backoff)
             else:
                 await self.subscribe()
+                self.logger.info("Connection established.")
                 return self.websocket
 
     async def watch(self, handle=None):

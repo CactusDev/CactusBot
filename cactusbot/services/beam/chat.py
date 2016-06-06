@@ -30,7 +30,7 @@ class BeamChat(ClientSession):
         self._packet_counter = count()
         self._endpoint_cycle = cycle(endpoints)
 
-    async def connect(self, *auth, backoff=2):
+    async def connect(self, *auth, base=2, maximum=60):
         """Connect to a chat server."""
 
         _backoff_count = count()
@@ -39,9 +39,9 @@ class BeamChat(ClientSession):
             try:
                 self.websocket = await super().ws_connect(self._endpoint)
             except ClientOSError:
-                seconds = min(backoff**next(_backoff_count), 60)
-                self.logger.debug("Retrying in %s seconds...", seconds)
-                await asyncio.sleep(seconds)
+                backoff = min(base**next(_backoff_count), maximum)
+                self.logger.debug("Retrying in %s seconds...", backoff)
+                await asyncio.sleep(backoff)
             else:
                 await self.authenticate(*auth)
                 self.logger.info("Connection established.")
