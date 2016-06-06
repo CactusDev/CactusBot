@@ -1,15 +1,15 @@
-"""Interact with Beam chat servers."""
+"""Interact with Beam chat."""
 
 from logging import getLogger
 
-from asyncio import sleep, ensure_future
+import asyncio
 
 from itertools import count, cycle
 
-from json import loads, dumps
+import json
 
 from aiohttp import ClientSession
-from websockets.exceptions import ConnectionClosed
+from aiohttp.errors import ClientOSError, ServerDisconnectedError
 
 
 class BeamChat(ClientSession):
@@ -23,6 +23,8 @@ class BeamChat(ClientSession):
         assert isinstance(channel, int), "Channel ID must be an integer."
         self.channel = channel
 
+        assert len(endpoints), "An endpoint is required to connect."
+
         self.websocket = None
 
         self._packet_counter = count()
@@ -30,23 +32,20 @@ class BeamChat(ClientSession):
 
     async def connect(self, *auth, backoff=2):
         """Connect to a chat server."""
+
         _backoff_count = count()
+
         while True:
             try:
                 self.websocket = await super().ws_connect(self._endpoint)
-            except ConnectionRefusedError:
+            except ClientOSError:
                 seconds = min(backoff**next(_backoff_count), 60)
                 self.logger.debug("Retrying in %s seconds...", seconds)
-                await sleep(seconds)
+                await asyncio.sleep(seconds)
             else:
                 await self.authenticate(*auth)
+                self.logger.info("Connection established.")
                 return self.websocket
-
-    async def authenticate(self, *auth):
-        """Send an authentication packet to chat."""
-
-        await self.send(self.channel, *auth, method="auth", id="auth")
-        return True
 
     async def send(self, *args, **kwargs):
         """Send a packet to chat."""
@@ -65,7 +64,7 @@ class BeamChat(ClientSession):
 
         self.logger.debug(packet)
 
-        self.websocket.send_str(dumps(packet))
+        self.websocket.send_str(json.dumps(packet))
 
     async def read(self, handle=None):
         """Read and parse packets from chat."""
@@ -74,15 +73,14 @@ class BeamChat(ClientSession):
             raise ConnectionError("Not connected. Run connect() first!")
 
         while True:
+            response = (await self.websocket.receive()).data
 
-            try:
-                response = await self.websocket.receive()
-            except ConnectionClosed:
+            if isinstance(response, ServerDisconnectedError):
                 self.logger.warning("Connection to chat server lost. "
                                     "Attempting to reconnect.")
                 await self.connect()
             else:
-                packet = loads(response.data)
+                packet = json.loads(response)
 
                 if packet.get("error") is not None:
                     self.logger.error(packet)
@@ -90,7 +88,13 @@ class BeamChat(ClientSession):
                     self.logger.debug(packet)
 
                 if callable(handle):
-                    ensure_future(handle(packet))
+                    asyncio.ensure_future(handle(packet))
+
+    async def authenticate(self, *auth):
+        """Send an authentication packet to chat."""
+
+        await self.send(self.channel, *auth, method="auth", id="auth")
+        return True
 
     @property
     def _packet_id(self):
