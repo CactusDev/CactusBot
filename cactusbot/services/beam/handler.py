@@ -1,4 +1,9 @@
+"""Handle data from Beam."""
+
 from logging import getLogger
+
+import asyncio
+import re
 
 from .. import Handler
 
@@ -8,6 +13,7 @@ from .liveloading import BeamLiveloading
 
 
 class BeamHandler(Handler):
+    """Handle data from Beam services."""
 
     def __init__(self, channel):
         super().__init__()
@@ -16,10 +22,10 @@ class BeamHandler(Handler):
 
         self.api = BeamAPI()
 
-        self._channel = channel
+        self.channel = channel
 
-        # TODO: move here
-        # self.chat = BeamChat(self.channel["id"], chat["endpoints"])
+        self.chat = None
+        self.liveloading = None
 
         self.chat_events = {
             "ChatMessage": self.on_message,
@@ -27,38 +33,69 @@ class BeamHandler(Handler):
             "UserLeave": self.on_leave
         }
 
+        self.liveloading_events = {
+            "channel": {
+                "followed": self.on_follow,
+                "subscribed": self.on_subscribe
+            }
+        }
+
     async def run(self, *auth):
-        channel = await self.api.get_channel(self._channel)
+        """Connect to Beam chat and handle incoming packets."""
+        channel = await self.api.get_channel(self.channel)
 
         user = await self.api.login(*auth)
         chat = await self.api.get_chat(channel["id"])
 
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
         await self.chat.connect(user["id"], chat["authkey"])
-        await self.chat.read(self.handle_chat)
+        asyncio.ensure_future(self.chat.read(self.handle_chat))
 
-    async def handle_chat(self, response):
-        """Handle responses from a Beam websocket."""
+        self.liveloading = BeamLiveloading(channel["id"], user["id"])
+        await self.liveloading.connect()
+        asyncio.ensure_future(self.liveloading.watch(self.handle_liveloading))
 
-        data = response.get("data")
+    async def handle_chat(self, packet):
+        """Handle chat packets."""
+
+        data = packet.get("data")
         if data is None:
             return
 
-        event = response.get("event")
+        event = packet.get("event")
         if event in self.chat_events:
             await self.chat_events[event](data)
-        elif response.get("id") == "auth":
+        elif packet.get("id") == "auth":
             if data.get("authenticated") is True:
-                await self.chat.send("CactusBot activated. Enjoy! :cactus")
+                await self.send("CactusBot activated. Enjoy! :cactus")
             else:
                 self.logger.error("Chat authentication failure!")
 
+    async def handle_liveloading(self, packet):
+        """Handle liveloading packets."""
+
+        data = packet.get("data")
+        if data is None or not isinstance(data[0], str):
+            return
+
+        event = re.match(self.liveloading.EVENT_PATTERN, data[0])
+        if event is None:
+            return
+
+        event = event.groups()
+        if event[1] in self.liveloading_events.get(event[0], {}):
+            await self.liveloading_events[event[0]][event[1]](data[1])
+
     async def send(self, *args, **kwargs):
-        if args is not None and args[0] is not None:  # TODO: fix
-            await self.chat.send(*args, **kwargs)
+        """Send a packet to Beam."""
+
+        if self.chat is None:
+            raise ConnectionError("Chat not initialized.")
+
+        await self.chat.send(*args, **kwargs)
 
     async def on_message(self, data):
-        """Handle chat message packets from Beam."""
+        """Handle chat message packets from chat."""
 
         parsed = ''.join([
             chunk["data"] if chunk["type"] == "text" else chunk["text"]
@@ -68,9 +105,19 @@ class BeamHandler(Handler):
         await self.send(await super().on_message(parsed, data["user_name"]))
 
     async def on_join(self, data):
-        """Handle user join packets from Beam."""
+        """Handle user join packets from chat."""
         await self.send(await super().on_join(data["username"]))
 
     async def on_leave(self, data):
-        """Handle user leave packets from Beam."""
-        await self.send(await super().on_leave(data["username"]))
+        """Handle user leave packets from chat."""
+        if data["username"] is not None:
+            await self.send(await super().on_leave(data["username"]))
+
+    async def on_follow(self, data):
+        """Handle follow packets from liveloading."""
+        if data["following"]:
+            await self.send(await super().on_follow(data["user"]["username"]))
+
+    async def on_subscribe(self, data):
+        """Handle subscribe packets from liveloading."""
+        await self.send(await super().on_subscribe(data["user"]["username"]))
