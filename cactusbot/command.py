@@ -18,9 +18,6 @@ def subcommand(function):
     def wrapper(self, *args, **data):
         """Parse subcommand data."""
 
-        if not params:
-            return function(self)
-
         args = list(args)
 
         args_params = tuple(
@@ -34,26 +31,30 @@ def subcommand(function):
 
 
         arg_range = (
-            len(tuple(p for p in args_params[1:] if p.default is p.empty)),
+            len(tuple(p for p in args_params if p.default is p.empty))+1,
             float('inf') if star_param else len(args_params)-1
         )
 
         if not arg_range[0] <= len(args) <= arg_range[1]:
 
+            if star_param is not None:
+                args_params += (star_param,)
             syntax = "!{command} {subcommand} {params}".format(
                 command=self.__command__, subcommand=function.__name__,
                 params='<'+'> <'.join(p.name for p in args_params[1:])+'>'
             )
 
-            if len(args) < len(args_params):
+            if len(args) < arg_range[0]:
                 return "Not enough arguments. ({})".format(syntax)
-            elif len(args) > len(args_params):
+            elif len(args) > arg_range[1]:
                 return "Too many arguments. ({})".format(syntax)
 
         for index, argument in enumerate(args_params[:len(args)]):
             annotation = argument.annotation
             if annotation is not argument.empty:
                 if isinstance(annotation, str):
+                    if annotation.startswith('?'):
+                        annotation = self.expressions.get(annotation[1:], '')
                     match = re.match('^'+annotation+'$', args[index])
                     if match is None:
                         return "Invalid {type}: '{value}'.".format(
@@ -94,6 +95,9 @@ class Command(metaclass=CommandMeta):
 
     def __init__(self):
         self.logger = getLogger(__name__)
+        self.expressions = {
+            "username": r'@?([A-Za-z0-9]{,32})'
+        }
 
     def __call__(self, *args, **data):
         # TODO: default subcommands
