@@ -54,9 +54,12 @@ def subcommand(function):
             annotation = argument.annotation
             if annotation is not argument.empty:
                 if isinstance(annotation, str):
-                    if re.match('^'+annotation+'$', args[index]) is None:
+                    match = re.match('^'+annotation+'$', args[index])
+                    if match is None:
                         return "Invalid {type}: '{value}'.".format(
                             type=argument.name, value=args[index])
+                    elif match.groups():
+                        args[index] = match.group(1)
                 else:
                     self.logger.warning(
                         "Invalid regex: '%s.%s.%s : %s'.",
