@@ -15,7 +15,7 @@ def subcommand(function):
     params = list(signature(function).parameters.values())
 
     @wraps(function)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **data):
         """Parse subcommand data."""
 
         if not params:
@@ -30,11 +30,11 @@ def subcommand(function):
 
         data_params = tuple(
             p for p in params if p.kind is p.KEYWORD_ONLY)
-        kwargs = dict((param.name, kwargs.get(param.annotation)) for param in data_params)
+        kwargs = dict((p.name, data.get(p.annotation)) for p in data_params)
 
 
         arg_range = (
-            len(tuple(arg for arg in args_params[1:] if arg.default is arg.empty)),
+            len(tuple(p for p in args_params[1:] if p.default is p.empty)),
             float('inf') if star_param else len(args_params)-1
         )
 
@@ -42,7 +42,7 @@ def subcommand(function):
 
             syntax = "!{command} {subcommand} {params}".format(
                 command=self.__command__, subcommand=function.__name__,
-                params='<{}>'.format('> <'.join(p.name for p in args_params[1:]))
+                params='<'+'> <'.join(p.name for p in args_params[1:])+'>'
             )
 
             if len(args) < len(args_params):
@@ -50,7 +50,6 @@ def subcommand(function):
             elif len(args) > len(args_params):
                 return "Too many arguments. ({})".format(syntax)
 
-        print(args_params)
         for index, argument in enumerate(args_params[:len(args)]):
             annotation = argument.annotation
             if annotation is not argument.empty:
@@ -65,10 +64,8 @@ def subcommand(function):
                         argument.name, annotation
                     )
 
-        positional = len(args_params) - 1
-        print(args, positional)
         return function(
-            self, *args[positional:],
+            self, *args[1:],
             **kwargs
         )
 
@@ -95,9 +92,9 @@ class Command(metaclass=CommandMeta):
     def __init__(self):
         self.logger = getLogger(__name__)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **data):
         # TODO: default subcommands
         # TODO: user levels
         if args[0] in self._subcommands:
-            return self._subcommands[args[0]](self, *args, **kwargs)
+            return self._subcommands[args[0]](self, *args, **data)
         return "Invalid argument: '{}'.".format(args[0])
