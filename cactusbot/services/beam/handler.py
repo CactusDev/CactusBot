@@ -51,7 +51,7 @@ class BeamHandler(Handler):
         await self.chat.connect(user["id"], chat["authkey"])
         asyncio.ensure_future(self.chat.read(self.handle_chat))
 
-        self.liveloading = BeamLiveloading(channel["id"], user["id"])
+        self.liveloading = BeamLiveloading(channel["id"], channel["user"]["id"])
         await self.liveloading.connect()
         asyncio.ensure_future(self.liveloading.watch(self.handle_liveloading))
 

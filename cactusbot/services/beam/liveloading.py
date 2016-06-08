@@ -87,26 +87,23 @@ class BeamLiveloading(ClientSession):
                 "user:{user}:achievement"
             )
 
-        for interface in interfaces:
-            interface = interface.format(
-                channel=self.channel,
-                user=self.user
-            )
-            packet = [
-                "put",
-                {
-                    "method": "put",
-                    "headers": {},
-                    "data": {
-                        "slug": [
-                            interface
-                        ]
-                    },
-                    "url": "/api/v1/live"
-                }
-            ]
-            self.websocket.send_str('420' + json.dumps(packet))
-            self.logger.debug("Subscribed to %s.", interface)
+        interfaces = tuple(
+            interface.format(channel=self.channel, user=self.user)
+            for interface in interfaces
+        )
+
+        packet = [
+            "put",
+            {
+                "method": "put",
+                "headers": {},
+                "data": {
+                    "slug": interfaces
+                },
+                "url": "/api/v1/live"
+            }
+        ]
+        self.websocket.send_str('420' + json.dumps(packet))
 
         self.logger.info("Successfully subscribed to liveloading interfaces.")
 
@@ -115,7 +112,6 @@ class BeamLiveloading(ClientSession):
 
         while True:
             self.websocket.send_str('2')
-            self.logger.debug("Ping!")
             await asyncio.sleep(interval)
 
     async def parse(self, packet):
