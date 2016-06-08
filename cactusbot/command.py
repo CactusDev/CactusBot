@@ -12,11 +12,10 @@ from logging import getLogger
 def subcommand(function):
     """Decorate a subcommand."""
 
-    names = list(signature(function).parameters.keys())
     params = list(signature(function).parameters.values())
 
     @wraps(function)
-    def wrapper(self, *args):
+    def wrapper(self, *args, **kwargs):
         """Parse subcommand data."""
 
         if not params:
@@ -24,28 +23,35 @@ def subcommand(function):
 
         args = list(args)
 
-        star = bool(
-            next((p for p in params if p.kind is p.VAR_POSITIONAL), False)
-        )
+        args_params = tuple(
+            p for p in params if p.kind is p.POSITIONAL_OR_KEYWORD)
+        star_param = next(
+            (p for p in params if p.kind is p.VAR_POSITIONAL), None)
+
+        data_params = tuple(
+            p for p in params if p.kind is p.KEYWORD_ONLY)
+        kwargs = dict((param.name, kwargs.get(param.annotation)) for param in data_params)
+
 
         arg_range = (
-            len(tuple(arg for arg in params if arg.default is arg.empty)),
-            float('inf') if star else len(params)
+            len(tuple(arg for arg in args_params[1:] if arg.default is arg.empty)),
+            float('inf') if star_param else len(args_params)-1
         )
 
         if not arg_range[0] <= len(args) <= arg_range[1]:
 
             syntax = "!{command} {subcommand} {params}".format(
                 command=self.__command__, subcommand=function.__name__,
-                params='<{}>'.format('> <'.join(p.name for p in params[1:]))
+                params='<{}>'.format('> <'.join(p.name for p in args_params[1:]))
             )
 
-            if len(args) < len(params):
+            if len(args) < len(args_params):
                 return "Not enough arguments. ({})".format(syntax)
-            elif len(args) > len(params):
+            elif len(args) > len(args_params):
                 return "Too many arguments. ({})".format(syntax)
 
-        for index, argument in enumerate(params[:len(args)]):
+        print(args_params)
+        for index, argument in enumerate(args_params[:len(args)]):
             annotation = argument.annotation
             if annotation is not argument.empty:
                 if isinstance(annotation, str):
@@ -59,10 +65,11 @@ def subcommand(function):
                         argument.name, annotation
                     )
 
-        positional = len(names) - star
+        positional = len(args_params) - 1
+        print(args, positional)
         return function(
             self, *args[positional:],
-            **dict(zip(names[1:positional], args[1:positional]))
+            **kwargs
         )
 
     wrapper.is_subcommand = True
@@ -88,8 +95,9 @@ class Command(metaclass=CommandMeta):
     def __init__(self):
         self.logger = getLogger(__name__)
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         # TODO: default subcommands
+        # TODO: user levels
         if args[0] in self._subcommands:
-            return self._subcommands[args[0]](self, *args)
+            return self._subcommands[args[0]](self, *args, **kwargs)
         return "Invalid argument: '{}'.".format(args[0])
