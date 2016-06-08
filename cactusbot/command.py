@@ -4,23 +4,33 @@ from inspect import signature
 
 from functools import wraps
 
+import re
+
+from logging import getLogger
+
+
 def subcommand(function):
     """Decorate a subcommand."""
 
+    names = list(signature(function).parameters.keys())
     params = list(signature(function).parameters.values())
 
     @wraps(function)
     def wrapper(self, *args):
         """Parse subcommand data."""
 
+        if not params:
+            return function(self)
+
         args = list(args)
 
-        # TODO: implement function.__doc__
+        star = bool(
+            next((p for p in params if p.kind is p.VAR_POSITIONAL), False)
+        )
+
         arg_range = (
             len(tuple(arg for arg in params if arg.default is arg.empty)),
-            len(params) if next(
-                (p for p in params if p.kind is p.VAR_POSITIONAL), None) else
-            float('inf')
+            float('inf') if star else len(params)
         )
 
         if not arg_range[0] <= len(args) <= arg_range[1]:
@@ -35,21 +45,25 @@ def subcommand(function):
             elif len(args) > len(params):
                 return "Too many arguments. ({})".format(syntax)
 
-        # TODO: argument regex
         for index, argument in enumerate(params[:len(args)]):
             annotation = argument.annotation
             if annotation is not argument.empty:
-                if callable(annotation):
-                    try:
-                        args[index] = annotation(args[index])
-                    except Exception:
+                if isinstance(annotation, str):
+                    if re.match('^'+annotation+'$', args[index]) is None:
                         return "Invalid {type}: '{value}'.".format(
-                            type=annotation.__name__, value=args[index])
+                            type=argument.name, value=args[index])
+                else:
+                    self.logger.warning(
+                        "Invalid regex: '%s.%s.%s : %s'.",
+                        self.__command__, function.__name__,
+                        argument.name, annotation
+                    )
 
-        if not params:
-            return function(self)
-
-        return function(self, *args[1:])
+        positional = len(names) - star
+        return function(
+            self, *args[positional:],
+            **dict(zip(names[1:positional], args[1:positional]))
+        )
 
     wrapper.is_subcommand = True
 
@@ -70,6 +84,9 @@ class CommandMeta(type):
 
 class Command(metaclass=CommandMeta):
     """Parent all command classes."""
+
+    def __init__(self):
+        self.logger = getLogger(__name__)
 
     def __call__(self, *args):
         # TODO: default subcommands
