@@ -31,8 +31,10 @@ def subcommand(function):
 
 
         arg_range = (
-            len(tuple(p for p in args_params if p.default is p.empty))+1,
-            float('inf') if star_param else len(args_params)-1
+            len(tuple(
+                p for p in args_params if p.default is p.empty
+            )) + bool(star_param),
+            float('inf') if star_param else len(args_params)
         )
 
         if not arg_range[0] <= len(args) <= arg_range[1]:
