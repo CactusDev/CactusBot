@@ -1,7 +1,7 @@
 """Manage commands."""
 
 
-from .. import Command
+from . import Command
 
 
 class Meta(Command):

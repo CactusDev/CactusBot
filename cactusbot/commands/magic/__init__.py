@@ -1,3 +1,6 @@
-from .command import Meta as Command
+from .. import Command
 
-__all__ = ["Command"]
+from .command import Meta
+from .quote import Quote
+
+__all__ = ["Command", "Meta", "Quote"]
