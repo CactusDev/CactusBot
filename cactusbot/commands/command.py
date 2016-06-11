@@ -16,8 +16,9 @@ class CommandMeta(type):
         subcommands = {}
         for value in attrs.values():
             if getattr(value, "is_subcommand", None):
-                subcommands[value.__name__] = value
-        attrs["_subcommands"] = subcommands
+                name = value.__annotations__.get("return") or value.__name__
+                subcommands[str(name)] = value
+        attrs["subcommands"] = subcommands
         return super().__new__(mcs, name, bases, attrs)
 
 
@@ -63,7 +64,8 @@ class Command(metaclass=CommandMeta):
             arg_range = (
                 len(tuple(
                     p for p in args_params if p.default is p.empty
-                )) + bool(star_param),
+                )) + (bool(star_param) if star_param and star_param.annotation
+                      else 0),
                 float('inf') if star_param else len(args_params)
             )
 
@@ -114,9 +116,13 @@ class Command(metaclass=CommandMeta):
         # TODO: default subcommands
         # TODO: user levels
         # TODO: secret subcommands
-        subcommand = self._subcommands.get(args[0])
+        # TODO: service-specific commands
+        subcommand = self.subcommands.get(args[0])
         if subcommand is not None:
-            return await self.inject(await subcommand(self, *args, **data), *args, **data)
+            return await self.inject(
+                await subcommand(self, *args, **data),
+                *args, **data
+            )
         return "Invalid argument: '{}'.".format(args[0])
 
     @staticmethod
@@ -139,6 +145,9 @@ class Command(metaclass=CommandMeta):
         # TODO: implement count
         response = response.replace("%COUNT%", "%COUNT%")
 
-        response = response.replace("%CHANNEL%", data.get("channel", "%CHANNEL%"))
+        response = response.replace(
+            "%CHANNEL%",
+            data.get("channel", "%CHANNEL%")
+        )
 
         return response
