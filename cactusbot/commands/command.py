@@ -26,11 +26,14 @@ class Command(metaclass=CommandMeta):
 
     __command__ = None
 
-    def __init__(self):
+    def __init__(self, api):
         self.logger = getLogger(__name__)
 
+        self.api = api
+
         self.regex = {
-            "username": r'@?([A-Za-z0-9]{,32})'
+            "username": r'@?([A-Za-z0-9]{,32})',
+            "command": r'!?(.+)'
         }
 
         if self.__command__ is None:
@@ -43,7 +46,7 @@ class Command(metaclass=CommandMeta):
         params = list(signature(function).parameters.values())
 
         @wraps(function)
-        def wrapper(self, *args, **data):
+        async def wrapper(self, *args, **data):
             """Parse subcommand data."""
 
             args = list(args)
@@ -88,8 +91,12 @@ class Command(metaclass=CommandMeta):
                         if match is None:
                             return "Invalid {type}: '{value}'.".format(
                                 type=argument.name, value=args[index])
-                        elif match.groups():
-                            args[index] = match.group(1)
+                        else:
+                            groups = match.groups()
+                            if len(groups) == 1:
+                                args[index] = groups[0]
+                            elif len(groups) > 1:
+                                args[index] = groups
                     else:
                         self.logger.warning(
                             "Invalid regex: '%s.%s.%s : %s'.",
@@ -97,15 +104,38 @@ class Command(metaclass=CommandMeta):
                             argument.name, annotation
                         )
 
-            return function(self, *args[1:], **kwargs)
+            return await function(self, *args[1:], **kwargs)
 
         wrapper.is_subcommand = True
 
         return wrapper
 
-    def __call__(self, *args, **data):
+    async def __call__(self, *args, **data):
         # TODO: default subcommands
         # TODO: user levels
-        if args[0] in self._subcommands:
-            return self._subcommands[args[0]](self, *args, **data)
+        subcommand = self._subcommands.get(args[0])
+        if subcommand is not None:
+            return await self.inject(subcommand(self, *args, **data), *args, **data)
         return "Invalid argument: '{}'.".format(args[0])
+
+    @staticmethod
+    async def inject(response, *args, **data):
+        """Inject targets into a response."""
+
+        response = response.replace("%USER%", data.get("username", "%USER%"))
+
+        try:
+            response = re.sub(
+                r'%ARG(\d+)%',
+                lambda match: args[int(match.group(1))],
+                response
+            )
+        except IndexError:
+            return "Not enough arguments!"
+
+        response = response.replace("%ARGS%", ' '.join(args))
+
+        # TODO: implement count
+        response = response.replace("%COUNT%", "%COUNT%")
+
+        response = response.replace("%CHANNEL%", data.get("channel", "%CHANNEL%"))
