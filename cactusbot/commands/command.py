@@ -113,9 +113,10 @@ class Command(metaclass=CommandMeta):
     async def __call__(self, *args, **data):
         # TODO: default subcommands
         # TODO: user levels
+        # TODO: secret subcommands
         subcommand = self._subcommands.get(args[0])
         if subcommand is not None:
-            return await self.inject(subcommand(self, *args, **data), *args, **data)
+            return await self.inject(await subcommand(self, *args, **data), *args, **data)
         return "Invalid argument: '{}'.".format(args[0])
 
     @staticmethod
@@ -139,3 +140,5 @@ class Command(metaclass=CommandMeta):
         response = response.replace("%COUNT%", "%COUNT%")
 
         response = response.replace("%CHANNEL%", data.get("channel", "%CHANNEL%"))
+
+        return response
