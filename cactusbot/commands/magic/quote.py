@@ -21,7 +21,7 @@ class Quote(Command):
     @Command.subcommand
     async def add(self, *quote, added_by: "username"):
         """Add a quote."""
-        response = self.api.add_quote(' '.join(quote), addedBy=added_by)
+        response = await self.api.add_quote(' '.join(quote), added_by=added_by)
         return "Added quote with ID {}.".format(response["data"]["id"])
 
     @Command.subcommand
