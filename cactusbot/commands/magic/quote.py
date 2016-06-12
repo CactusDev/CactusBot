@@ -1,9 +1,8 @@
 """Manage quotes."""
 
+from aiohttp import get
 
 from . import Command
-
-from aiohttp import get
 
 
 class Quote(Command):
@@ -29,12 +28,12 @@ class Quote(Command):
         """Remove a quote."""
         try:
             self.api.remove_quote(quote_id)
-        except Exception:  # TODO
+        except Exception:  # FIXME: data, not exceptions
             return "Quote {} does not exist!".format(quote_id)
         else:
             return "Removed quote with ID {}.".format(quote_id)
 
-    @Command.subcommand  # TODO: make secret
+    @Command.subcommand  # FIXME: make secret
     async def inspirational(self):
         """Retrieve an inspirational quote."""
         try:

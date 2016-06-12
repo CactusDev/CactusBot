@@ -29,7 +29,7 @@ class Meta(Command):
         # FIXME
         if response.status == 201:
             return "Added command !{}.".format(name[1])
-        elif response.status == 202:
+        if response.status == 202:
             return "Updated command !{}.".format(name[1])
         raise Exception
 
