@@ -31,15 +31,15 @@ class Command(metaclass=CommandMeta):
 
     __command__ = None
 
+    REGEX = {
+        "username": r'@?([A-Za-z0-9]{,32})',
+        "command": r'!?(.+)'
+    }
+
     def __init__(self, api):
         self.logger = getLogger(__name__)
 
         self.api = api
-
-        self.regex = {
-            "username": r'@?([A-Za-z0-9]{,32})',
-            "command": r'!?(.+)'
-        }
 
     async def __call__(self, *args, **data):
         # TODO: user levels
@@ -107,7 +107,7 @@ class Command(metaclass=CommandMeta):
                 if annotation is not argument.empty:
                     if isinstance(annotation, str):
                         if annotation.startswith('?'):
-                            annotation = self.regex.get(annotation[1:], '')
+                            annotation = self.REGEX.get(annotation[1:], '')
                         match = re.match('^'+annotation+'$', args[index])
                         if match is None:
                             return "Invalid {type}: '{value}'.".format(
