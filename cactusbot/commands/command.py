@@ -8,17 +8,21 @@ import re
 
 from logging import getLogger
 
+from collections import OrderedDict
+
 
 class CommandMeta(type):
     """Manage the backend of commands via a metaclass."""
 
     def __new__(mcs, name, bases, attrs):
-        subcommands = {}
+        subcommands = OrderedDict()
         for value in attrs.values():
             if getattr(value, "is_subcommand", None):
-                name = value.__annotations__.get("return") or value.__name__
-                subcommands[str(name)] = value
+                command = value.__annotations__.get("return") or value.__name__
+                subcommands[str(command)] = value
         attrs["subcommands"] = subcommands
+        if attrs.get("__command__") is None:
+            attrs["__command__"] = name.lower()
         return super().__new__(mcs, name, bases, attrs)
 
 
@@ -37,8 +41,23 @@ class Command(metaclass=CommandMeta):
             "command": r'!?(.+)'
         }
 
-        if self.__command__ is None:
-            self.__command__ = type(self).__name__.lower()
+    async def __call__(self, *args, **data):
+        # TODO: user levels
+        # TODO: secret subcommands
+        # TODO: service-specific commands
+
+        if len(args) == 0:  # TODO: default subcommands
+            return "Not enough arguments. (!{} {})".format(
+                self.__command__, '<'+'|'.join(self.subcommands.keys())+'>'
+            )
+            # FIXME: command OrderedDict ordering
+        subcommand = self.subcommands.get(args[0])
+        if subcommand is not None:
+            return await self.inject(
+                await subcommand(self, *args, **data),
+                *args, **data
+            )
+        return "Invalid argument: '{}'.".format(args[0])
 
     @staticmethod
     def subcommand(function):
@@ -111,19 +130,6 @@ class Command(metaclass=CommandMeta):
         wrapper.is_subcommand = True
 
         return wrapper
-
-    async def __call__(self, *args, **data):
-        # TODO: default subcommands
-        # TODO: user levels
-        # TODO: secret subcommands
-        # TODO: service-specific commands
-        subcommand = self.subcommands.get(args[0])
-        if subcommand is not None:
-            return await self.inject(
-                await subcommand(self, *args, **data),
-                *args, **data
-            )
-        return "Invalid argument: '{}'.".format(args[0])
 
     @staticmethod
     async def inject(response, *args, **data):
