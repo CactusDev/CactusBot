@@ -3,38 +3,60 @@
 
 from logging import getLogger
 
+from .api import CactusAPI
+from .commands import commands
+
+from uuid import uuid4
+from base64 import b32encode
+from traceback import format_exc
+
 
 class Handler(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
 
         self.logger = getLogger(__name__)
 
-        self.commands = {  # TODO: implement command handler
+        api = CactusAPI(None)  # FIXME: pass correct user
+
+        self.commands = {
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
             "help": "Check out my documentation at cactusbot.readthedocs.org."
         }
 
+        self.commands.update(
+            dict((command.__command__, command(api)) for command in commands)
+        )
+
     async def send(self, *args, **kwargs):
         raise NotImplementedError
 
-    # TODO: optimize
     async def on_message(self, message, user):
+        message = message.strip()
+
         self.logger.info("[%s] %s", user, message)
 
-        # TODO: better command parsing
         if message.startswith('!') and len(message) > 1:
             args = message.split()
+            command = args.pop(0)[1:]
 
-            if args[0][1:] in self.commands:
-                response = self.commands[args[0][1:]]
+            if command in self.commands:
+                response = self.commands[command]
+                if callable(response):
+                    try:
+                        response = await response(*args)
+                    except Exception:
+                        code = b32encode(uuid4().bytes).decode()[:12]
+                        traceback = format_exc()
+                        self.logger.error("Code: %s\n%s", code, traceback)
+                        return ("An error occured. Please send code {} to "
+                                "CactusDev.").format(code)
             else:
                 response = "Command not found."
 
             return response
 
-        # TODO: /cry
         # TODO: spam protection
 
     async def on_join(self, user):
