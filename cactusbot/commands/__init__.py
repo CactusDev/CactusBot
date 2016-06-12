@@ -1,4 +1,4 @@
 from .command import Command
-from .magic import *
+from .magic import commands
 
 __all__ = ["Command"]
