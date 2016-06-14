@@ -77,6 +77,7 @@ class BeamLiveloading(ClientSession):
         """Subscribe to liveloading interfaces."""
 
         if not interfaces:
+            # TODO: dict of interfaces with callbacks
             interfaces = (
                 "channel:{channel}:update",
                 "channel:{channel}:status",

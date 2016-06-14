@@ -9,7 +9,7 @@ from itertools import count, cycle
 import json
 
 from aiohttp import ClientSession
-from aiohttp.errors import ClientOSError, ServerDisconnectedError
+from aiohttp.errors import DisconnectedError, HttpProcessingError, ClientError
 
 
 class BeamChat(ClientSession):
@@ -38,7 +38,7 @@ class BeamChat(ClientSession):
         while True:
             try:
                 self.websocket = await super().ws_connect(self._endpoint)
-            except ClientOSError:
+            except (DisconnectedError, HttpProcessingError, ClientError):
                 backoff = min(base**next(_backoff_count), maximum)
                 self.logger.debug("Retrying in %s seconds...", backoff)
                 await asyncio.sleep(backoff)
@@ -75,7 +75,7 @@ class BeamChat(ClientSession):
         while True:
             response = (await self.websocket.receive()).data
 
-            if isinstance(response, ServerDisconnectedError):
+            if isinstance(response, Exception):
                 self.logger.warning("Connection to chat server lost. "
                                     "Attempting to reconnect.")
                 await self.connect()
