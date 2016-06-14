@@ -4,8 +4,8 @@ from .. import Command
 
 from .command import Meta
 from .quote import Quote
-from .cube import Cube
+from .cube import Cube, Temmie
 
-COMMANDS = (Meta, Quote, Cube)
+COMMANDS = (Meta, Quote, Cube, Temmie)
 
 __all__ = ["Command", "Meta", "Quote", "Cube"]
