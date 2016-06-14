@@ -43,8 +43,9 @@ class Command(metaclass=CommandMeta):
 
     async def __call__(self, *args, **data):
         # TODO: user levels
-        # TODO: secret subcommands
+        # TODO: secret subcommands | subcommand(secret=True)
         # TODO: service-specific commands
+        # TODO: emote, link, etc. parsing
 
         if len(args) == 0:  # TODO: default subcommands
             return "Not enough arguments. (!{} {})".format(
@@ -62,6 +63,9 @@ class Command(metaclass=CommandMeta):
     @staticmethod
     def subcommand(function):
         """Decorate a subcommand."""
+
+        function.__command__ = function.__annotations__.get(
+            "return", function.__name__).replace(' ', '_')
 
         params = list(signature(function).parameters.values())
 
@@ -93,7 +97,7 @@ class Command(metaclass=CommandMeta):
                 if star_param is not None:
                     args_params += (star_param,)
                 syntax = "!{command} {subcommand} {params}".format(
-                    command=self.__command__, subcommand=function.__name__,
+                    command=self.__command__, subcommand=function.__command__,
                     params='<'+'> <'.join(p.name for p in args_params[1:])+'>'
                 )
 
@@ -121,7 +125,7 @@ class Command(metaclass=CommandMeta):
                     else:
                         self.logger.warning(
                             "Invalid regex: '%s.%s.%s : %s'.",
-                            self.__command__, function.__name__,
+                            self.__command__, function.__command__,
                             argument.name, annotation
                         )
 

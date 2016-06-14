@@ -23,7 +23,7 @@ class Handler(object):
 
         api = CactusAPI(None)  # FIXME: pass correct user
 
-        self.commands = {
+        self.commands = {  # TODO: make configurable
             "cactus": "Ohai! I'm CactusBot. :cactus",
             "test": "Test confirmed. :cactus",
             "help": "Check out my documentation at cactusbot.readthedocs.org."
