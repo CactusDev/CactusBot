@@ -192,8 +192,20 @@ class Beam:
                 websocket_connection = websocket_connect(
                     self.servers[self.server_offset])
 
-                authkey = self.get_chat(
-                    self.connection_information["channel_id"])["authkey"]
+                # NOTE: We'll remove these try/excepts in the future
+                #   Current just for debugging, we need to see the returned
+                #   values from self.get_chat()
+                try:
+                    authkey = self.get_chat(
+                        self.connection_information["channel_id"])["authkey"]
+                except TypeError as e:
+                    self.logger.warning("Caught crash-worthy error!")
+                    self.logger.warning(repr(e))
+                    self.logger.warning(self.get_chat(
+                                    self.connection_information["channel_id"]))
+
+                    # Skip this loop
+                    continue
 
                 if self.connection_information["silent"]:
                     websocket_connection.add_done_callback(
@@ -212,16 +224,16 @@ class Beam:
                         )
                     )
 
-            response = loads(message)
+            else:
+                response = loads(message)
 
-            self.logger.debug("CHAT: {}".format(response))
+                self.logger.debug("CHAT: {}".format(response))
 
-            if callable(handler):
-                handler(response)
+                if callable(handler):
+                    handler(response)
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
-
         liveloading_websocket_connection = websocket_connect(
             "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket")
         liveloading_websocket_connection.add_done_callback(
@@ -255,11 +267,12 @@ class Beam:
 
             self.watch_liveloading()
         else:
-            raise ConnectionError(future.exception())
+            self.logger.warning(future.exception())
+            self.connect_to_liveloading(channel_id, user_id)
+            # raise ConnectionError(future.exception())
 
     def subscribe_to_interfaces(self, *interfaces):
         """Subscribe to a Beam liveloading interface."""
-
         for interface in interfaces:
             packet = [
                 "put",
@@ -305,7 +318,11 @@ class Beam:
             message = yield self.liveloading_websocket.read_message()
 
             if message is None:
+                self.logger.info("There was an error connecting.")
                 raise ConnectionError
+
+                self.logger.info("Attempting to reconnect.")
+                self.watch_liveloading()
 
             packet = self.parse_liveloading_message(message)
 

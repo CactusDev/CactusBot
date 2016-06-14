@@ -72,3 +72,6 @@ target/
 config.json
 stats.json
 data/*.db
+
+# Virtualenv
+venv/

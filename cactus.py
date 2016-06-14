@@ -142,14 +142,13 @@ class Cactus(MessageHandler, Beam):
         self._init_database(self.database)
         self.load_config(filename=self.config_file)
         self.load_stats(filename=self.stats_file)
+        self.started = True
 
         while self.config.get("autorestart") or not self.started:
             try:
                 self.bot_data = self.login(**self.config["auth"])
                 self.logger.info("Authenticated as: {}.".format(
                     self.bot_data["username"]))
-
-                self.started = True
 
                 self.channel = self.config["channel"]
                 self.channel_data = self.get_channel(self.channel)
@@ -161,9 +160,18 @@ class Cactus(MessageHandler, Beam):
                     self.bot_data["id"],
                     silent=self.silent)
 
-                self.connect_to_liveloading(
-                    self.channel_data["id"],
-                    self.channel_data["userId"])
+                def connect_liveloading():
+                    try:
+                        self.connect_to_liveloading(
+                            self.channel_data["id"],
+                            self.channel_data["userId"])
+                    except ConnectionError as e:
+                        self.logger.warning("Caught ConnectionError!")
+                        self.logger.warning("Reconnecting to liveloading")
+                        self.logger.warning(e)
+                        connect_liveloading()
+
+                connect_liveloading()
 
                 if str(self.debug).lower() in ("true", "debug"):
                     add_reload_hook(partial(
