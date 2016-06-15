@@ -16,7 +16,7 @@ class Cube(Command):
 
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
-    @Command.subcommand
+    @Command.subcommand(default=True)
     async def run(self, *args) -> "cube":  # FIXME: make default
         """Cube things!"""
 
@@ -68,10 +68,9 @@ class Temmie(Command):
         "/me You say hello to Temmie."
     ]  # HACK: using /me, which is not necessarily global
 
-    @Command.subcommand
-    async def get(self, query=None):  # FIXME: make default
+    @Command.subcommand(default=True)
+    async def get(self, query=None):
         """hOI!!!!!!"""
-
         if query is None:
             return choice(self.quotes)
         return get_close_matches(query, self.quotes, n=1, cutoff=0)[0]
