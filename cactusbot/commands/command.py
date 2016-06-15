@@ -78,12 +78,12 @@ class Command(metaclass=CommandMeta):
             self.__command__, '|'.join(self.subcommands.keys())
         )  # FIXME: command OrderedDict ordering
 
-
     @staticmethod
     def subcommand(function=None, *, default=False):
-        """Decorate a subcommand."""
+        """Decorate a subcommand with optional callability."""
 
         def decorator(function):
+            """Decorate a subcommand."""
 
             if default:
                 function._default = True
