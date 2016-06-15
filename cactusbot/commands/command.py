@@ -17,7 +17,7 @@ class CommandMeta(type):
     def __new__(mcs, name, bases, attrs):
         subcommands = OrderedDict()
         for value in attrs.values():
-            if getattr(value, "is_subcommand", None):
+            if getattr(value, "_subcommand", None):
                 command = value.__annotations__.get("return") or value.__name__
                 subcommands[str(command)] = value
         attrs["subcommands"] = subcommands
@@ -47,93 +47,117 @@ class Command(metaclass=CommandMeta):
         # TODO: service-specific commands
         # TODO: emote, link, etc. parsing
 
-        if len(args) == 0:  # TODO: default subcommands
-            return "Not enough arguments. (!{} {})".format(
-                self.__command__, '<'+'|'.join(self.subcommands.keys())+'>'
+        if len(args) == 0:
+            return "Not enough arguments. (!{} <{}>)".format(
+                self.__command__, '|'.join(self.subcommands.keys())
             )
             # FIXME: command OrderedDict ordering
         subcommand = self.subcommands.get(args[0])
+        print(args)
         if subcommand is not None:
             return await self.inject(
                 await subcommand(self, *args, **data),
                 *args, **data
             )
+        else:
+            defaults = tuple(
+                s for s in self.subcommands.values()
+                if getattr(s, "_default", False)
+            )
+
+            if len(defaults) == 1:
+                args = (defaults[0].__command__,) + args
+                return await self.inject(
+                    await defaults[0](self, *args, **data),
+                    *args, **data
+                )
+            elif defaults:
+                self.logger.warning("Multiple defaults defined.")
         return "Invalid argument: '{}'.".format(args[0])
 
     @staticmethod
-    def subcommand(function):
+    def subcommand(function=None, *, default=False):
         """Decorate a subcommand."""
 
-        function.__command__ = function.__annotations__.get(
-            "return", function.__name__).replace(' ', '_')
+        def decorator(function):
 
-        params = list(signature(function).parameters.values())
+            if default:
+                function._default = True
 
-        @wraps(function)
-        async def wrapper(self, *args, **data):
-            """Parse subcommand data."""
+            function.__command__ = function.__annotations__.get(
+                "return", function.__name__).replace(' ', '_')
 
-            args = list(args)
+            params = list(signature(function).parameters.values())
 
-            args_params = tuple(
-                p for p in params if p.kind is p.POSITIONAL_OR_KEYWORD)
-            star_param = next(
-                (p for p in params if p.kind is p.VAR_POSITIONAL), None)
+            @wraps(function)
+            async def wrapped(self, *args, **data):
+                """Parse subcommand data."""
 
-            data_params = tuple(
-                p for p in params if p.kind is p.KEYWORD_ONLY)
-            kwargs = {p.name: data.get(p.annotation) for p in data_params}
+                args = list(args)
 
-            arg_range = (
-                len(tuple(
-                    p for p in args_params if p.default is p.empty
-                )) + (bool(star_param) if star_param and star_param.annotation
-                      else 0),
-                float('inf') if star_param else len(args_params)
-            )
+                args_params = tuple(
+                    p for p in params if p.kind is p.POSITIONAL_OR_KEYWORD)
+                star_param = next(
+                    (p for p in params if p.kind is p.VAR_POSITIONAL), None)
 
-            if not arg_range[0] <= len(args) <= arg_range[1]:
+                data_params = tuple(
+                    p for p in params if p.kind is p.KEYWORD_ONLY)
+                kwargs = {p.name: data.get(p.annotation) for p in data_params}
 
-                if star_param is not None:
-                    args_params += (star_param,)
-                syntax = "!{command} {subcommand} {params}".format(
-                    command=self.__command__, subcommand=function.__command__,
-                    params='<'+'> <'.join(p.name for p in args_params[1:])+'>'
+                arg_range = (
+                    len(tuple(
+                        p for p in args_params if p.default is p.empty
+                    )) + (
+                        bool(star_param) if star_param and
+                        star_param.annotation else 0
+                    ),
+                    float('inf') if star_param else len(args_params)
                 )
 
-                if len(args) < arg_range[0]:
-                    return "Not enough arguments. ({})".format(syntax)
-                elif len(args) > arg_range[1]:
-                    return "Too many arguments. ({})".format(syntax)
+                if not arg_range[0] <= len(args) <= arg_range[1]:
 
-            for index, argument in enumerate(args_params[:len(args)]):
-                annotation = argument.annotation
-                if annotation is not argument.empty:
-                    if isinstance(annotation, str):
-                        if annotation.startswith('?'):
-                            annotation = self.REGEX.get(annotation[1:], '')
-                        match = re.match('^'+annotation+'$', args[index])
-                        if match is None:
-                            return "Invalid {type}: '{value}'.".format(
-                                type=argument.name, value=args[index])
+                    if star_param is not None:
+                        args_params += (star_param,)
+                    syntax = "!{command} {sub} <{params}>".format(
+                        command=self.__command__, sub=function.__command__,
+                        params='> <'.join(p.name for p in args_params[1:])
+                    )
+
+                    if len(args) < arg_range[0]:
+                        return "Not enough arguments. ({})".format(syntax)
+                    elif len(args) > arg_range[1]:
+                        return "Too many arguments. ({})".format(syntax)
+
+                for index, argument in enumerate(args_params[:len(args)]):
+                    annotation = argument.annotation
+                    if annotation is not argument.empty:
+                        if isinstance(annotation, str):
+                            if annotation.startswith('?'):
+                                annotation = self.REGEX.get(annotation[1:], '')
+                            match = re.match('^'+annotation+'$', args[index])
+                            if match is None:
+                                return "Invalid {type}: '{value}'.".format(
+                                    type=argument.name, value=args[index])
+                            else:
+                                groups = match.groups()
+                                if len(groups) == 1:
+                                    args[index] = groups[0]
+                                elif len(groups) > 1:
+                                    args[index] = groups
                         else:
-                            groups = match.groups()
-                            if len(groups) == 1:
-                                args[index] = groups[0]
-                            elif len(groups) > 1:
-                                args[index] = groups
-                    else:
-                        self.logger.warning(
-                            "Invalid regex: '%s.%s.%s : %s'.",
-                            self.__command__, function.__command__,
-                            argument.name, annotation
-                        )
+                            self.logger.warning(
+                                "Invalid regex: '%s.%s.%s : %s'.",
+                                self.__command__, function.__command__,
+                                argument.name, annotation
+                            )
 
-            return await function(self, *args[1:], **kwargs)
+                return await function(self, *args[1:], **kwargs)
 
-        wrapper.is_subcommand = True
+            wrapped._subcommand = True
 
-        return wrapper
+            return wrapped
+
+        return decorator(function) if function is not None else decorator
 
     @staticmethod
     async def inject(response, *args, **data):
