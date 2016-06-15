@@ -47,33 +47,37 @@ class Command(metaclass=CommandMeta):
         # TODO: service-specific commands
         # TODO: emote, link, etc. parsing
 
-        if len(args) == 0:
-            return "Not enough arguments. (!{} <{}>)".format(
-                self.__command__, '|'.join(self.subcommands.keys())
-            )
-            # FIXME: command OrderedDict ordering
-        subcommand = self.subcommands.get(args[0])
-        print(args)
-        if subcommand is not None:
-            return await self.inject(
-                await subcommand(self, *args, **data),
-                *args, **data
-            )
-        else:
-            defaults = tuple(
-                s for s in self.subcommands.values()
-                if getattr(s, "_default", False)
-            )
+        subcommand = None
 
-            if len(defaults) == 1:
-                args = (defaults[0].__command__,) + args
+        if args:
+            subcommand = self.subcommands.get(args[0], False)
+            if subcommand:
                 return await self.inject(
-                    await defaults[0](self, *args, **data),
+                    await subcommand(self, *args, **data),
                     *args, **data
                 )
-            elif defaults:
-                self.logger.warning("Multiple defaults defined.")
-        return "Invalid argument: '{}'.".format(args[0])
+
+        defaults = tuple(
+            s for s in self.subcommands.values()
+            if getattr(s, "_default", False)
+        )
+
+        if len(defaults) == 1:
+            args = (defaults[0].__command__,) + args
+            return await self.inject(
+                await defaults[0](self, *args, **data),
+                *args, **data
+            )
+        elif defaults:
+            self.logger.warning("Multiple defaults defined.")
+
+        if subcommand is False:
+            return "Invalid argument: '{}'.".format(args[0])
+
+        return "Not enough arguments. (!{} <{}>)".format(
+            self.__command__, '|'.join(self.subcommands.keys())
+        )  # FIXME: command OrderedDict ordering
+
 
     @staticmethod
     def subcommand(function=None, *, default=False):
