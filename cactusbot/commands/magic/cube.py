@@ -33,7 +33,7 @@ class Cube(Command):
         """Cube a value."""
 
         if value.startswith(':'):  # HACK: global emote parsing required
-            return '( {} )³'.format(value)
+            return '{} ³'.format(value)
 
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
