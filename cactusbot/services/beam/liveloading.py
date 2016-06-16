@@ -1,19 +1,13 @@
 """Interact with Beam liveloading."""
 
-from logging import getLogger
-
-import asyncio
-
-from itertools import count
-
 import re
 import json
+import asyncio
 
-from aiohttp import ClientSession
-from aiohttp.errors import DisconnectedError, HttpProcessingError, ClientError
+from .. import WebSocket
 
 
-class BeamLiveloading(ClientSession):
+class BeamLiveloading(WebSocket):
     """Interact with Beam liveloading."""
 
     URL = "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket"
@@ -22,9 +16,7 @@ class BeamLiveloading(ClientSession):
     INTERFACE_PATTERN = re.compile(r'^(?P<scope>[a-z]+):\d+:(?P<event>[a-z]+)')
 
     def __init__(self, channel, user):
-        super().__init__()
-
-        self.logger = getLogger(__name__)
+        super().__init__(self.URL)
 
         assert isinstance(channel, int), "Channel ID must be an integer."
         self.channel = channel
@@ -32,48 +24,16 @@ class BeamLiveloading(ClientSession):
         assert isinstance(user, int), "User ID must be an integer."
         self.user = user
 
-        self.websocket = None
+    async def read(self, handle):
+        """Read packets from the liveloading WebSocket."""
 
-    async def connect(self, *, base=2, maximum=60):
-        """Connect to the liveloading server."""
-
-        _backoff_count = count()
-
-        while True:
-            try:
-                self.websocket = await super().ws_connect(self.URL)
-            except (DisconnectedError, HttpProcessingError, ClientError):
-                backoff = min(base**next(_backoff_count), maximum)
-                self.logger.debug("Retrying in %s seconds...", backoff)
-                await asyncio.sleep(backoff)
-            else:
-                await self.subscribe()
-                self.logger.info("Connection established.")
-                return self.websocket
-
-    async def watch(self, handle=None):
-        """Watch the liveloading websocket for incoming packets."""
-
-        packet = await self.parse((await self.websocket.receive()).data)
+        packet = await self.parse(await self.receive())
 
         asyncio.ensure_future(self.ping(packet["data"]["pingInterval"]/1000))
 
-        while True:
-            response = (await self.websocket.receive()).data
+        await super().read(handle)
 
-            if isinstance(response, Exception):
-                self.logger.warning("Connection to liveloading server lost. "
-                                    "Attempting to reconnect.")
-                await self.connect()
-            else:
-                packet = await self.parse(response)
-
-                self.logger.debug(packet)
-
-                if callable(handle):
-                    asyncio.ensure_future(handle(packet))
-
-    async def subscribe(self, *interfaces):
+    async def initialize(self, *interfaces):
         """Subscribe to liveloading interfaces."""
 
         if not interfaces:

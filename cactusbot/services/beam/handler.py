@@ -53,7 +53,7 @@ class BeamHandler(Handler):
 
         self.liveloading = BeamLiveloading(channel["id"], channel["user"]["id"])
         await self.liveloading.connect()
-        asyncio.ensure_future(self.liveloading.watch(self.handle_liveloading))
+        asyncio.ensure_future(self.liveloading.read(self.handle_liveloading))
 
     async def handle_chat(self, packet):
         """Handle chat packets."""
@@ -102,7 +102,9 @@ class BeamHandler(Handler):
             for chunk in data["message"]["message"]
         ])
 
-        await self.send(await super().on_message(parsed, data["user_name"]))
+        response = await super().on_message(parsed, data["user_name"])
+        if response is not None:
+            await self.send(response)
 
     async def on_join(self, data):
         """Handle user join packets from chat."""
