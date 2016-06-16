@@ -78,7 +78,7 @@ class BeamHandler(Handler):
         if data is None or not isinstance(data[0], str):
             return
 
-        event = re.match(self.liveloading.INTERFACE_PATTERN, data[0])
+        event = re.match(self.liveloading.INTERFACE_EXPR, data[0])
         if event is None:
             return
 

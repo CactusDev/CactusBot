@@ -15,8 +15,8 @@ class BeamLiveloading(WebSocket):
 
     URL = "wss://realtime.beam.pro/socket.io/?EIO=3&transport=websocket"
 
-    RESPONSE_PATTERN = re.compile(r'^(?P<code>\d+)(?P<packet>.+)?$')
-    INTERFACE_PATTERN = re.compile(r'^(?P<scope>[a-z]+):\d+:(?P<event>[a-z]+)')
+    RESPONSE_EXPR = re.compile(r'^(\d+)(.+)?$')
+    INTERFACE_EXPR = re.compile(r'^([a-z]+):\d+:([a-z]+)')
 
     def __init__(self, channel, user):
         super().__init__(self.URL)
@@ -83,9 +83,9 @@ class BeamLiveloading(WebSocket):
     async def parse(self, packet):
         """Parse a packet from liveloading."""
 
-        match = re.match(self.RESPONSE_PATTERN, packet)
+        match = re.match(self.RESPONSE_EXPR, packet)
 
-        data = match.group("packet")
+        data = match.group(2)
         if data is not None:
             try:
                 data = json.loads(data)
@@ -93,6 +93,6 @@ class BeamLiveloading(WebSocket):
                 self.logger.exception("Invalid JSON: %s.", data)
 
         return {
-            "code": match.group("code"),
+            "code": match.group(1),
             "data": data
         }
