@@ -1,7 +1,10 @@
 """Interact with Beam liveloading."""
 
+from logging import getLogger
+
 import re
 import json
+
 import asyncio
 
 from .. import WebSocket
@@ -17,6 +20,8 @@ class BeamLiveloading(WebSocket):
 
     def __init__(self, channel, user):
         super().__init__(self.URL)
+
+        self.logger = getLogger(__name__)
 
         assert isinstance(channel, int), "Channel ID must be an integer."
         self.channel = channel

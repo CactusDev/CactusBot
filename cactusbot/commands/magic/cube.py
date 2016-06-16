@@ -17,9 +17,11 @@ class Cube(Command):
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
     @Command.subcommand(default=True)
-    async def run(self, *args) -> "cube":  # FIXME: make default
+    async def run(self, *args: False, username: "username") -> "cube":
         """Cube things!"""
 
+        if not args:
+            return self.cube(username)
         if args == ('2',):
             return "8! Whoa, that's 2Cubed!"
         elif len(args) > 8:
@@ -30,7 +32,7 @@ class Cube(Command):
     def cube(self, value: str):
         """Cube a value."""
 
-        if value.startswith(':'):  # HACK: implement better emote parsing
+        if value.startswith(':'):  # HACK: global emote parsing required
             return '( {} )³'.format(value)
 
         match = re.match(self.NUMBER_EXPR, value)

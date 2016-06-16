@@ -7,7 +7,6 @@ from logging import getLogger
 
 from uuid import uuid4
 from base64 import b32encode
-from traceback import format_exc
 
 from .commands import COMMANDS
 
@@ -55,10 +54,9 @@ class Handler(object):
                         response = await response(*args)
                     except Exception:
                         code = b32encode(uuid4().bytes).decode()[:12]
-                        traceback = format_exc()
-                        self.logger.error("Code: %s\n%s", code, traceback)
+                        self.logger.exception("Exception. Code: %s.", code)
                         return ("An error occured. Please send code {} to "
-                                "CactusDev.").format(code)
+                                "CactusDev.").format(code)  # FIXME: dynamic
             else:
                 response = "Command not found."
 
