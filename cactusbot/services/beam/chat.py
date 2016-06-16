@@ -30,6 +30,7 @@ class BeamChat(ClientSession):
         self._packet_counter = count()
         self._endpoint_cycle = cycle(endpoints)
 
+    # TODO: parent websocket class
     async def connect(self, *auth, base=2, maximum=60):
         """Connect to a chat server."""
 
@@ -80,15 +81,18 @@ class BeamChat(ClientSession):
                                     "Attempting to reconnect.")
                 await self.connect()
             else:
-                packet = json.loads(response)
-
-                if packet.get("error") is not None:
-                    self.logger.error(packet)
+                try:
+                    packet = json.loads(response)
+                except (TypeError, ValueError):
+                    self.logger.exception("Invalid JSON: %s.", response)
                 else:
-                    self.logger.debug(packet)
+                    if packet.get("error") is not None:
+                        self.logger.error(packet)
+                    else:
+                        self.logger.debug(packet)
 
-                if callable(handle):
-                    asyncio.ensure_future(handle(packet))
+                    if callable(handle):
+                        asyncio.ensure_future(handle(packet))
 
     async def authenticate(self, *auth):
         """Send an authentication packet to chat."""

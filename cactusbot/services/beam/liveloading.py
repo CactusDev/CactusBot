@@ -10,7 +10,7 @@ import re
 import json
 
 from aiohttp import ClientSession
-from aiohttp.errors import ClientOSError, ServerDisconnectedError
+from aiohttp.errors import DisconnectedError, HttpProcessingError, ClientError
 
 
 class BeamLiveloading(ClientSession):
@@ -42,7 +42,7 @@ class BeamLiveloading(ClientSession):
         while True:
             try:
                 self.websocket = await super().ws_connect(self.URL)
-            except ClientOSError:
+            except (DisconnectedError, HttpProcessingError, ClientError):
                 backoff = min(base**next(_backoff_count), maximum)
                 self.logger.debug("Retrying in %s seconds...", backoff)
                 await asyncio.sleep(backoff)
@@ -61,7 +61,7 @@ class BeamLiveloading(ClientSession):
         while True:
             response = (await self.websocket.receive()).data
 
-            if isinstance(response, ServerDisconnectedError):
+            if isinstance(response, Exception):
                 self.logger.warning("Connection to liveloading server lost. "
                                     "Attempting to reconnect.")
                 await self.connect()
@@ -122,7 +122,10 @@ class BeamLiveloading(ClientSession):
 
         data = match.group("packet")
         if data is not None:
-            data = json.loads(data)
+            try:
+                data = json.loads(data)
+            except ValueError:
+                self.logger.exception("Invalid JSON: %s.", data)
 
         return {
             "code": match.group("code"),
