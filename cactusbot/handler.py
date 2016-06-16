@@ -51,7 +51,10 @@ class Handler(object):
                 response = self.commands[command]
                 if callable(response):
                     try:
-                        response = await response(*args)
+                        response = await response(
+                            *args,
+                            username=user
+                        )
                     except Exception:
                         code = b32encode(uuid4().bytes).decode()[:12]
                         self.logger.exception("Exception. Code: %s.", code)
