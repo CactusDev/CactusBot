@@ -98,8 +98,7 @@ class BeamHandler(Handler):
         """Handle chat message packets from chat."""
 
         parsed = ''.join([
-            chunk["data"] if chunk["type"] == "text" else chunk["text"]
-            for chunk in data["message"]["message"]
+            chunk["text"] for chunk in data["message"]["message"]
         ])
 
         response = await super().on_message(parsed, data["user_name"])
