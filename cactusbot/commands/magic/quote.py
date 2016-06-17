@@ -8,9 +8,9 @@ from . import Command
 class Quote(Command):
     """Manage quotes."""
 
-    __command__ = "quote"
+    COMMAND = "quote"
 
-    @Command.subcommand(default=True)
+    @Command.subcommand(hidden=True)
     async def get(self, quote_id: r'[1-9]\d*'=None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
         if quote_id is None:
@@ -49,3 +49,5 @@ class Quote(Command):
                 quote=data["quoteText"].strip(),
                 author=data["quoteAuthor"].strip() or "Unknown"
             )
+
+    DEFAULT = get

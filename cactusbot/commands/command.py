@@ -21,15 +21,16 @@ class CommandMeta(type):
                 command = value.__annotations__.get("return") or value.__name__
                 subcommands[str(command)] = value
         attrs["subcommands"] = subcommands
-        if attrs.get("__command__") is None:
-            attrs["__command__"] = name.lower()
+        if attrs.get("COMMAND") is None:
+            attrs["COMMAND"] = name.lower()
         return super().__new__(mcs, name, bases, attrs)
 
 
 class Command(metaclass=CommandMeta):
     """Parent all command classes."""
 
-    __command__ = None
+    COMMAND = None
+    DEFAULT = None
 
     REGEX = {
         "username": r'@?([A-Za-z0-9]{,32})',
@@ -50,45 +51,38 @@ class Command(metaclass=CommandMeta):
         subcommand = None
 
         if args:
-            subcommand = self.subcommands.get(args[0], False)
-            if subcommand:
+            subcommand = self.subcommands.get(args[0], None)
+            if subcommand is not None:
                 return await self.inject(
                     await subcommand(self, *args, **data),
                     *args, **data
                 )
 
-        defaults = tuple(
-            s for s in self.subcommands.values()
-            if getattr(s, "_default", False)
-        )
-
-        if len(defaults) == 1:
-            args = (defaults[0].__command__,) + args
+        if self.DEFAULT is not None:
+            assert callable(self.DEFAULT)
             return await self.inject(
-                await defaults[0](self, *args, **data),
+                await self.DEFAULT(self, *args, **data),
                 *args, **data
             )
-        elif defaults:
-            self.logger.warning("Multiple defaults defined.")
 
-        if subcommand is False:
+        if subcommand is None and args:
             return "Invalid argument: '{}'.".format(args[0])
 
         return "Not enough arguments. (!{} <{}>)".format(
-            self.__command__, '|'.join(self.subcommands.keys())
+            self.COMMAND, '|'.join(self.subcommands.keys())
         )  # FIXME: command OrderedDict ordering
 
     @staticmethod
-    def subcommand(function=None, *, default=False):
+    def subcommand(function=None, *, hidden=False):
         """Decorate a subcommand with optional callability."""
 
         def decorator(function):
             """Decorate a subcommand."""
 
-            if default:
-                function._default = True
+            if hidden:
+                function._hidden = True
 
-            function.__command__ = function.__annotations__.get(
+            function.COMMAND = function.__annotations__.get(
                 "return", function.__name__).replace(' ', '_')
 
             params = list(signature(function).parameters.values())
@@ -123,7 +117,7 @@ class Command(metaclass=CommandMeta):
                     if star_param is not None:
                         args_params += (star_param,)
                     syntax = "!{command} {sub} <{params}>".format(
-                        command=self.__command__, sub=function.__command__,
+                        command=self.COMMAND, sub=function.COMMAND,
                         params='> <'.join(p.name for p in args_params[1:])
                     )
 
@@ -151,7 +145,7 @@ class Command(metaclass=CommandMeta):
                         else:
                             self.logger.warning(
                                 "Invalid regex: '%s.%s.%s : %s'.",
-                                self.__command__, function.__command__,
+                                self.COMMAND, function.COMMAND,
                                 argument.name, annotation
                             )
 

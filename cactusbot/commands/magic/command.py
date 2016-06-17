@@ -7,7 +7,7 @@ from . import Command
 class Meta(Command):
     """Manage commands."""
 
-    __command__ = "command"
+    COMMAND = "command"
 
     permissions = {
         '+': "Mod",

@@ -1,22 +1,21 @@
 """Cube things."""
 
-
-from . import Command
-
 import re
 
 from random import choice
 from difflib import get_close_matches
 
+from . import Command
+
 
 class Cube(Command):
     """Cube things."""
 
-    __command__ = "cube"
+    COMMAND = "cube"
 
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
-    @Command.subcommand(default=True)
+    @Command.subcommand(hidden=True)
     async def run(self, *args: False, username: "username") -> "cube":
         """Cube things!"""
 
@@ -41,11 +40,13 @@ class Cube(Command):
 
         return '({})³'.format(value)
 
+    DEFAULT = run
+
 
 class Temmie(Command):
     "awwAwa!!"
 
-    __command__ = "temmie"
+    COMMAND = "temmie"
 
     quotes = [
         "fhsdhjfdsfjsddshjfsd",
@@ -68,11 +69,13 @@ class Temmie(Command):
         "/me You flex at Temmie...",
         "/me Temmie only wants the Temmie Flakes.",
         "/me You say hello to Temmie."
-    ]  # HACK: using /me, which is not necessarily global
+    ]  # HACK: using /me, which is not global
 
-    @Command.subcommand(default=True)
+    @Command.subcommand(hidden=True)
     async def get(self, query=None):
         """hOI!!!!!!"""
         if query is None:
             return choice(self.quotes)
         return get_close_matches(query, self.quotes, n=1, cutoff=0)[0]
+
+    DEFAULT = get

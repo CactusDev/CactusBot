@@ -29,7 +29,7 @@ class Handler(object):
         }
 
         self.commands.update(
-            dict((command.__command__, command(api)) for command in COMMANDS)
+            dict((command.COMMAND, command(api)) for command in COMMANDS)
         )
 
     async def send(self, *args, **kwargs):
