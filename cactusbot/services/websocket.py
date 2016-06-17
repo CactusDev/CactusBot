@@ -60,7 +60,7 @@ class WebSocket(ClientSession):
 
         while True:
             packet = await self.receive()
-            if isinstance(packet, Exception):
+            if packet is None or isinstance(packet, Exception):
                 self.logger.warning("Connection lost. Reconnecting.")
                 await self.connect()
 
