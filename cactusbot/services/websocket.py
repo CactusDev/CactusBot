@@ -60,13 +60,14 @@ class WebSocket(ClientSession):
 
         while True:
             packet = await self.receive()
-            if packet is None or isinstance(packet, Exception):
+            if isinstance(packet, str):
+                packet = await self.parse(packet)
+                if packet is not None:
+                    asyncio.ensure_future(handle(packet))
+            else:
                 self.logger.warning("Connection lost. Reconnecting.")
                 await self.connect()
 
-            packet = await self.parse(packet)
-            if packet is not None:
-                asyncio.ensure_future(handle(packet))
 
     async def initialize(self):
         """Run initialization procedure."""

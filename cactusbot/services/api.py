@@ -7,7 +7,7 @@ from aiohttp import ClientSession, ClientHttpProcessingError
 
 
 class API(ClientSession):
-    """Interact with CactusAPI."""
+    """Interact with a REST API."""
 
     URL = None
 
