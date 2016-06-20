@@ -1,4 +1,6 @@
-__version__ = "v0.4.0-dev"
+"""CactusBot."""
 
-# TODO: Fix
-# from .cactus import Cactus
+from .cactus import Cactus, __version__
+
+
+__all__ = ["__version__", "Cactus"]
