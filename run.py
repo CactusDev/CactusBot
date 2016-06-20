@@ -2,20 +2,19 @@
 
 from asyncio import get_event_loop
 
-from coloredlogs import install
+from cactusbot import Cactus
 
 from config import SERVICE, USERNAME, PASSWORD
 
 
-# TODO: move to Cactus
-async def run():
-    await SERVICE.run(USERNAME, PASSWORD)
+if __name__ == "__main__":
 
-install(level="DEBUG")
+    loop = get_event_loop()
 
-loop = get_event_loop()
-try:
-    loop.run_until_complete(run())
-    loop.run_forever()
-finally:
-    loop.close()
+    cactus = Cactus(SERVICE)
+
+    try:
+        loop.run_until_complete(cactus.run(USERNAME, PASSWORD))
+        loop.run_forever()
+    finally:
+        loop.close()
