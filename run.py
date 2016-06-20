@@ -2,12 +2,36 @@
 
 from asyncio import get_event_loop
 
+from argparse import ArgumentParser
+
 from cactusbot import Cactus
 
 from config import SERVICE, USERNAME, PASSWORD
 
 
 if __name__ == "__main__":
+
+    parser = ArgumentParser(description="Run CactusBot.")
+
+    parser.add_argument(
+        "--debug",
+        help="set custom logger level",
+        metavar="LEVEL",
+        nargs='?',
+        const="DEBUG",
+        default="INFO"
+    )
+
+    parser.add_argument(
+        "--quiet",
+        help="send no messages to public chat",
+        metavar="USER",
+        nargs='?',
+        const=True,
+        default=False
+    )
+
+    args = parser.parse_args()
 
     loop = get_event_loop()
 
