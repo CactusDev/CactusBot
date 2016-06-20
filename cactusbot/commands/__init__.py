@@ -1,3 +1,5 @@
+"""Handle commands."""
+
 from .command import Command
 from .magic import COMMANDS
 
