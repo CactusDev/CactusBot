@@ -4,6 +4,8 @@ from asyncio import get_event_loop
 
 from argparse import ArgumentParser
 
+import logging
+
 from cactusbot import Cactus
 
 from config import SERVICE, USERNAME, PASSWORD
@@ -32,6 +34,13 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    logging.basicConfig(
+        level=args.debug,
+        format="{asctime} {levelname} {name} {funcName}: {message}",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        style='{'
+    )
 
     loop = get_event_loop()
 
