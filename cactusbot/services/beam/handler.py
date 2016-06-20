@@ -75,7 +75,7 @@ class BeamHandler(Handler):
         """Handle liveloading packets."""
 
         data = packet.get("data")
-        if data is None or not isinstance(data[0], str):
+        if not isinstance(data, list) or not isinstance(data[0], str):
             return
 
         event = re.match(self.liveloading.INTERFACE_EXPR, data[0])
