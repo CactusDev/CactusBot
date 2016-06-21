@@ -23,21 +23,27 @@ class BeamChat(WebSocket):
 
         self._packet_counter = itertools.count()
 
-    async def send(self, *args, **kwargs):
+    async def send(self, *args, method="msg", max_length=500, **kwargs):
         """Send a packet."""
 
-        # FIXME: chat length limit
+        # TODO: lock before auth
 
         packet = {
             "type": "method",
-            "method": "msg",
+            "method": method,
             "arguments": args,
             "id": kwargs.get("id") or self._packet_id
         }
 
         packet.update(kwargs)
 
-        await super().send(json.dumps(packet))
+        if packet["method"] == "msg":
+            for message in packet.copy()["arguments"]:
+                for i in range(0, len(message), max_length):
+                    packet["arguments"] = (message[i:i+max_length],)
+                    await super().send(json.dumps(packet))
+        else:
+            await super().send(json.dumps(packet))
 
     async def initialize(self, *auth):
         """Send an authentication packet."""
