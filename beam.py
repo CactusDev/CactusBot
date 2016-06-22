@@ -335,7 +335,8 @@ class Beam:
 
             self.watch_liveloading()
         else:
-            raise ConnectionError(future.exception())
+            self.logger.warning(future.exception())
+            self.connect_to_liveloading(channel_id, user_id)
 
     def subscribe_to_interfaces(self, *interfaces):
         """Subscribe to a Beam liveloading interface."""
@@ -390,6 +391,9 @@ class Beam:
 
                 return self.connect_to_liveloading(
                     **self.liveloading_connection_information)
+
+                self.logger.info("Attempting to reconnect.")
+                self.watch_liveloading()
 
             packet = self.parse_liveloading_message(message)
 

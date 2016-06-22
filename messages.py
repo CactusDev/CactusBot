@@ -62,10 +62,7 @@ class MessageHandler(Beam):
     def message_handler(self, data):
         """Handle chat message packets from Beam."""
 
-        parsed = ''.join([
-            chunk["data"] if chunk["type"] == "text" else chunk["text"]
-            for chunk in data["message"]["message"]
-        ])
+        parsed = ''.join([obj["text"] for obj in data["message"]["message"]])
 
         self.logger.info("{bot}{me}[{user}] {message}".format(
             bot='$ ' if data["user_name"] == self.config["auth"]["username"]
