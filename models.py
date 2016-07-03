@@ -13,6 +13,8 @@ from random import randrange, choice
 
 from tornado.ioloop import PeriodicCallback
 
+import re
+
 basedir = abspath(dirname(__file__))
 engine = create_engine("sqlite:///" + join(basedir, "data/data.db"))
 Base = declarative_base()
@@ -481,9 +483,18 @@ class FriendCommand(Command):
 
     @mod_only
     def __call__(self, args, data):
-        if len(args) == 2:
-            id = self.get_channel(args[1])["user"]["id"]
-            query = session.query(User).filter_by(id=id).first()
+        if len(args) < 2:
+            return "Not enough arguments."
+        elif len(args) == 2:
+            match = re.match(r'@?([A-Za-z0-9]{,32})', args[1])
+            if match is None:
+                return "Invalid username '{}'.".format(args[1])
+
+            id = self.get_channel(args[1])
+            if id.get("statusCode") == 404:
+                return "User has not entered this channel."
+
+            query = session.query(User).filter_by(id=id["user"]["id"]).first()
             if query:
                 query.friend = not query.friend
                 session.commit()
@@ -493,8 +504,6 @@ class FriendCommand(Command):
                 return "User has not entered this channel."
         elif len(args) > 2:
             return "Too many arguments."
-        else:
-            return "Not enough arguments."
 
 
 class SpamProtCommand(Command):
@@ -505,7 +514,9 @@ class SpamProtCommand(Command):
 
     @mod_only
     def __call__(self, args, data=None):
-        if len(args) >= 3:
+        if len(args) < 3:
+            return "Not enough arguments!"
+        elif len(args) >= 3:
             if args[1] == "length":
                 if args[2].isdigit():
                     self.update_config(
