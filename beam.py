@@ -57,7 +57,7 @@ class Beam:
         except ImportError:
             colored_formatter = formatter
             self.logger.warning(
-                "Module 'coloredlogs' unavailable; using ugly logging.")
+                "Module 'coloredlogs' unavailable; using normal logging.")
 
         stream_handler = StreamHandler()
         stream_handler.setLevel(level)
@@ -151,37 +151,21 @@ class Beam:
     def authenticate(self, *args):
         """Authenticate session to a Beam chat through a websocket."""
 
-        try:
-            future = args[-1]
-            if future.exception() is None:
-                self.websocket = future.result()
-                self.logger.info("Successfully connected to chat {}.".format(
-                    self.channel_data["token"]))
+        future = args[-1]
+        if future.exception() is None:
+            self.websocket = future.result()
+            self.logger.info("Successfully connected to chat {}.".format(
+                self.channel_data["token"]))
 
-                self.send_message(*args[:-1], method="auth")
+            self.send_message(*args[:-1], method="auth")
 
-                if self.quiet:
-                    self.http_session = Session()
+            if self.quiet:
+                self.http_session = Session()
 
-                self.read_chat(self.handle)
-            else:
-                raise ConnectionError(future.exception())
-        except:
-            self.logger.error("There was an issue connecting. Trying again.")
-            future = args[-1]
-            if future.exception() is None:
-                self.websocket = future.result()
-                self.logger.info("Successfully connected to chat {}.".format(
-                    self.channel_data["token"]))
-
-                self.send_message(*args[:-1], method="auth")
-
-                if self.quiet:
-                    self.http_session = Session()
-
-                self.read_chat(self.handle)
-            else:
-                raise ConnectionError(future.exception())
+            self.read_chat(self.handle)
+        else:
+            self.logger.error("There was an issue connecting. Trying again")
+            self.authenticate(*args)
 
     def send_message(self, *args, method="msg"):
         """Send a message to a Beam chat through a websocket."""
@@ -254,20 +238,8 @@ class Beam:
                 websocket_connection = websocket_connect(
                     self.servers[self.server_offset])
 
-                # NOTE: We'll remove these try/excepts in the future
-                #   Current just for debugging, we need to see the returned
-                #   values from self.get_chat()
-                try:
-                    authkey = self.get_chat(
-                        self.connection_information["channel_id"])["authkey"]
-                except TypeError as e:
-                    self.logger.warning("Caught crash-worthy error!")
-                    self.logger.warning(repr(e))
-                    self.logger.warning(self.get_chat(
-                        self.connection_information["channel_id"]))
-
-                    # Skip this loop
-                    continue
+                authkey = self.get_chat(
+                    self.connection_information["channel_id"])["authkey"]
 
                 if self.connection_information["quiet"]:
                     return websocket_connection.add_done_callback(
@@ -360,7 +332,7 @@ class Beam:
     def parse_liveloading_message(self, message):
         """Parse a message received from the Beam liveloading websocket."""
 
-        sections = match("(\d+)(.+)?$", message).groups()
+        sections = match(r"(\d+)(.+)?$", message).groups()
 
         return {
             "code": sections[0],

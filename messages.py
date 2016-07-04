@@ -1,13 +1,17 @@
+"""Handle all the messages."""
+
+from re import findall
+
 from beam import Beam
 from models import (Command, User, session, CommandCommand, QuoteCommand,
                     CubeCommand, SocialCommand, UptimeCommand, PointsCommand,
                     TemmieCommand, FriendCommand, SpamProtCommand, ProCommand,
                     SubCommand, RepeatCommand)
 
-from re import findall
-
 
 class MessageHandler(Beam):
+    """Handle messages."""
+
     def __init__(self, *args, **kwargs):
         super(MessageHandler, self).__init__(*args, **kwargs)
         self.events = {
@@ -63,12 +67,15 @@ class MessageHandler(Beam):
         """Handle chat message packets from Beam."""
 
         try:
-            parsed = ''.join([obj["text"] for obj in data["message"]["message"]])
+            parsed = ''.join(
+                [obj["text"] for obj in data["message"]["message"]]
+            )
         except:
             self.logger.error("Caught an error.")
         else:
             self.logger.info("{bot}{me}[{user}] {message}".format(
-                bot='$ ' if data["user_name"] == self.config["auth"]["username"]
+                bot='$ ' if data["user_name"] == self.config["auth"][
+                    "username"]
                     else '',
                 me='*' if data["message"]["meta"].get("me") else '',
                 user=data["user_name"] + " > " + self.config["auth"]["username"]
@@ -116,7 +123,7 @@ class MessageHandler(Beam):
                         data["user_name"], "Please stop spamming emoticons.",
                         method="whisper")
                 elif (findall((r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|"
-                              "[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
+                              r"[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
                               parsed) and not
                         self.config["spam_protection"].get(
                             "allow_links", False)):
@@ -168,7 +175,6 @@ class MessageHandler(Beam):
                             data["user_name"], message, method="whisper")
                 else:
                     self.send_message(*messages)
-
 
     def join_handler(self, data):
         """Handle user join packets from Beam."""
