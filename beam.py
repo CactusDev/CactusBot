@@ -319,9 +319,7 @@ class Beam:
                 "method": "put",
                 "headers": {},
                 "data": {
-                    "slug": [
-                        interfaces
-                    ]
+                    "slug": interfaces
                 },
                 "url": "/api/v1/live"
             }
