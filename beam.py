@@ -313,21 +313,20 @@ class Beam:
     def subscribe_to_interfaces(self, *interfaces):
         """Subscribe to a Beam liveloading interface."""
 
-        for interface in interfaces:
-            packet = [
-                "put",
-                {
-                    "method": "put",
-                    "headers": {},
-                    "data": {
-                        "slug": [
-                            interface
-                        ]
-                    },
-                    "url": "/api/v1/live"
-                }
-            ]
-            self.liveloading_websocket.write_message('420' + dumps(packet))
+        packet = [
+            "put",
+            {
+                "method": "put",
+                "headers": {},
+                "data": {
+                    "slug": [
+                        interfaces
+                    ]
+                },
+                "url": "/api/v1/live"
+            }
+        ]
+        self.liveloading_websocket.write_message('420' + dumps(packet))
 
     def parse_liveloading_message(self, message):
         """Parse a message received from the Beam liveloading websocket."""
