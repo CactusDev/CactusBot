@@ -289,11 +289,12 @@ class Beam:
                 "Successfully connected to liveloading websocket.")
 
             interfaces = (
+                "user:{user_id}:update"
+                "channel:{channel_id}:hosted",
                 "channel:{channel_id}:update",
                 "channel:{channel_id}:followed",
                 "channel:{channel_id}:subscribed",
                 "channel:{channel_id}:resubscribed",
-                "user:{user_id}:update"
             )
             self.subscribe_to_interfaces(
                 *tuple(
@@ -390,3 +391,9 @@ class Beam:
                         self.send_message(
                             "Thanks for the subscription, @{}! <3".format(
                                 packet["data"][1]["user"]["username"]))
+                    elif packet["data"][1].get("hoster"):
+                        self.logger.info("- {} hosted the channel.".format(
+                            packet["data"][1]["hoster"]["token"]))
+                        self.send_message(
+                            "Thanks for the hosting the channel, @{}!".format(
+                                packet["data"][1]["hoster"]["token"]))
