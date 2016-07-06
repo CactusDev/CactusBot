@@ -262,13 +262,13 @@ class Beam:
                             )
                         )
 
-                else:
-                    response = loads(message)
+            else:
+                response = loads(message)
 
-                    self.logger.debug("CHAT: {}".format(response))
+                self.logger.debug("CHAT: {}".format(response))
 
-                    if callable(handler):
-                        handler(response)
+                if callable(handler):
+                    handler(response)
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
