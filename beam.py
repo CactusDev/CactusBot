@@ -238,33 +238,37 @@ class Beam:
                 websocket_connection = websocket_connect(
                     self.servers[self.server_offset])
 
-                authkey = self.get_chat(
-                    self.connection_information["channel_id"])["authkey"]
-
-                if self.connection_information["quiet"]:
-                    return websocket_connection.add_done_callback(
-                        partial(
-                            self.authenticate,
-                            self.connection_information["channel_id"]
-                        )
-                    )
+                try:
+                    authkey = self.get_chat(
+                        self.connection_information["channel_id"])["authkey"]
+                except TypeError:
+                    self.logger.error("Couldn't get the auth key from data.")
+                    self.read_chat(self.handle)
                 else:
-                    return websocket_connection.add_done_callback(
-                        partial(
-                            self.authenticate,
-                            self.connection_information["channel_id"],
-                            self.connection_information["bot_id"],
-                            authkey
+                    if self.connection_information["quiet"]:
+                        return websocket_connection.add_done_callback(
+                            partial(
+                                self.authenticate,
+                                self.connection_information["channel_id"]
+                            )
                         )
-                    )
+                    else:
+                        return websocket_connection.add_done_callback(
+                            partial(
+                                self.authenticate,
+                                self.connection_information["channel_id"],
+                                self.connection_information["bot_id"],
+                                authkey
+                            )
+                        )
 
-            else:
-                response = loads(message)
+                else:
+                    response = loads(message)
 
-                self.logger.debug("CHAT: {}".format(response))
+                    self.logger.debug("CHAT: {}".format(response))
 
-                if callable(handler):
-                    handler(response)
+                    if callable(handler):
+                        handler(response)
 
     def connect_to_liveloading(self, channel_id, user_id):
         """Connect to Beam liveloading."""
