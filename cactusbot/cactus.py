@@ -49,8 +49,12 @@ class Cactus(object):
 
         self.logger.info(CACTUS_ART)
 
+        # TODO: Convert this to allow for multiple services
         try:
-            await self.service.run(username, password)
+            for service in services:
+                await service.run(stuff)
+        # try:
+        #     await self.service.run(username, password)
 
         except KeyboardInterrupt:
             self.logger.info("Removing thorns... done.")
