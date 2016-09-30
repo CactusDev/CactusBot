@@ -19,11 +19,8 @@ class SpamHandler(Handler):
         """Handle message events."""
         packet = json.loads(packet)
         # exceeds_caps = self.check_caps(''.join(chunk for chunk in packet if chunk["type"] == "text"))
-        print("Caps")
         contains_emotes = self.check_emotes(packet)
-        print("emote")
         has_links = self.check_links(packet)
-        print("links")
 
         if contains_emotes or has_links:
             return True
