@@ -8,10 +8,15 @@ class LoggingHandler(Handler):
     """Logging handler."""
 
     def __init__(self):
+        super().__init__()
         self.logger = logging.getLogger(__name__)
 
     def on_log(self, packet):
         """Handle logging events."""
-        # XXX: This is subject to change. We'll have to see what the data structure ends up as.
-        self.logger.info(packet["message"])
+        self.logger.info(''.join(chunk["text"] for chunk in packet))
+        self.logger.debug(packet)
+    
+    def on_message(self, packet):
+        """Handle message events."""
+        self.logger.info(''.join(chunk["text"] for chunk in packet))
         self.logger.debug(packet)
