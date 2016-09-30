@@ -14,10 +14,9 @@ class CommandHandler(Handler):
         self.logger = logging.getLogger(__name__)
 
     def on_message(self, packet):
+        """Handle message events."""
         user = ""  # TODO: Implement internal packet format for transferring data
         message = ""  # TODO: Implement internal packet format for transferring data
-
-        self.logger.info("[%s] %s", user, packet)
 
         if message.startswith('!') and len(message) > 1:
             command, *args = message.split()
