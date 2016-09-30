@@ -11,15 +11,16 @@ class Handlers(object):
 
         for handler in self.handlers:
             if hasattr(handler, "on_" + event):
+                response = ""
                 try:
                     response = getattr(handler, "on_" + event)(packet)
-                except Exception:
+                except Exception as e:
                     print("Uh oh!")
-                
-                if response is StopIteration:
-                    break
-
-                yield response
+                    print(e)
+                else:
+                    if response is StopIteration:
+                        break
+                    yield response
 
 class Handler(object):
     """Handler."""
