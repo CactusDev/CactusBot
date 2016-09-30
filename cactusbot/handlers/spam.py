@@ -3,7 +3,6 @@
 from ..handler import Handler
 
 import logging
-import json
 
 class SpamHandler(Handler):
     """Spam handler."""
@@ -17,12 +16,15 @@ class SpamHandler(Handler):
 
     def on_message(self, packet):
         """Handle message events."""
-        packet = json.loads(packet)
-        # exceeds_caps = self.check_caps(''.join(chunk for chunk in packet if chunk["type"] == "text"))
+        built_message = ""
+        for chunk in packet:
+            if chunk["type"] == "text":
+                built_message += chunk["text"]
+        exceeds_caps = self.check_caps(built_message)
         contains_emotes = self.check_emotes(packet)
         has_links = self.check_links(packet)
 
-        if contains_emotes or has_links:
+        if exceeds_caps or contains_emotes or has_links:
             return True
         else:
             return False
@@ -34,4 +36,4 @@ class SpamHandler(Handler):
         return sum(chunk["type"] == "emote" for chunk in packet) > self.MAX_EMOTES
 
     def check_caps(self, message):
-        return sum(char.isupper() - char.islower() for char in message["text"]) > self.MAX_SCORE
+        return sum(char.isupper() - char.islower() for char in message) > self.MAX_SCORE
