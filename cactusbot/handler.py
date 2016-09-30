@@ -24,4 +24,9 @@ class Handlers(object):
 
 class Handler(object):
     """Handler."""
-    pass
+    
+    def __init__(self):
+        self.handlers = Handlers()
+
+    def log(self, message):
+        self.handlers.handle("log", message)
