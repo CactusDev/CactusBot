@@ -33,9 +33,9 @@ class SpamHandler(Handler):
         return not self.ALLOW_LINKS and any(chunk["type"] == "link" for chunk in packet)
         
     def check_emotes(self, packet):
-        """Check for emotes in the message."""
+        """Check for excessive emotes in the message."""
         return sum(chunk["type"] == "emote" for chunk in packet) > self.MAX_EMOTES
 
     def check_caps(self, message):
-        """Check for caps in the message."""
+        """Check for excessive capital characters in the message."""
         return sum(char.isupper() - char.islower() for char in message) > self.MAX_SCORE
