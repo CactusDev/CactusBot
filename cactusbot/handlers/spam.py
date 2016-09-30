@@ -30,10 +30,13 @@ class SpamHandler(Handler):
             return False
 
     def check_links(self, packet):
+        """Check for links in the message."""
         return not self.ALLOW_LINKS and any(chunk["type"] == "link" for chunk in packet)
         
     def check_emotes(self, packet):
+        """Check for emotes in the message."""
         return sum(chunk["type"] == "emote" for chunk in packet) > self.MAX_EMOTES
 
     def check_caps(self, message):
+        """Check for caps in the message."""
         return sum(char.isupper() - char.islower() for char in message) > self.MAX_SCORE
