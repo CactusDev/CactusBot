@@ -1,5 +1,7 @@
 """Handle handlers."""
 
+import logging
+
 class Handlers(object):
     """Handlers."""
 
@@ -26,7 +28,4 @@ class Handler(object):
     """Handler."""
     
     def __init__(self):
-        self.handlers = Handlers()
-
-    def log(self, message):
-        self.handlers.handle("log", message)
+        self.logger = logging.getLogger(__name__)

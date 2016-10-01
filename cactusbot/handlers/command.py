@@ -2,20 +2,19 @@
 
 from ..handler import Handler
 
-import logging
-
-from ..api import CactusAPI
-
 
 class CommandHandler(Handler):
     """Command handler."""
 
     def on_message(self, packet):
         """Handle message events."""
-        user = ""  # TODO: Implement internal packet format for transferring data
-        message = ""  # TODO: Implement internal packet format for transferring data
+        self.logger.debug(packet)
+        self.logger.info(
+            ''.join(chunk["text"] for chunk in packet if chunk["type"] == chunk["text"])
+        )
 
-        self.log(packet)
+        # user = packet["user"]
+        message = ''.join(chunk["text"] for chunk in packet if chunk["type"] == chunk["text"])
 
         if message.startswith('!') and len(message) > 1:
             command, *args = message.split()
