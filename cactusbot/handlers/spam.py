@@ -12,6 +12,7 @@ class SpamHandler(Handler):
     ALLOW_LINKS = False
 
     def __init__(self):
+        super().__init__()
         self.logger = logging.getLogger(__name__)
 
     def on_message(self, packet):
@@ -23,6 +24,7 @@ class SpamHandler(Handler):
         contains_emotes = self.check_emotes(packet)
         has_links = self.check_links(packet)
 
+        # FIXME: Make this return something that matters and is usable
         if exceeds_caps or contains_emotes or has_links:
             return True
         else:

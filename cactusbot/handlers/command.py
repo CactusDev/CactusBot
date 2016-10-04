@@ -8,10 +8,6 @@ class CommandHandler(Handler):
 
     def on_message(self, packet):
         """Handle message events."""
-        self.logger.debug(packet)
-        self.logger.info(
-            ''.join(chunk["text"] for chunk in packet if chunk["type"] == chunk["text"])
-        )
 
         # user = packet["user"]
         message = ''.join(chunk["text"] for chunk in packet if chunk["type"] == chunk["text"])
