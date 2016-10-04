@@ -17,19 +17,24 @@ class LoggingHandler(Handler):
     def on_follow(self, packet):
         """Handle follow events."""
         self.logger.debug(packet)
-        self.logger.info(" - " + packet["user"], "followed the channel")
+        self.logger.info("- %s followed", packet["user"])
 
     def on_subscribe(self, packet):
         """Handle subscription events."""
         self.logger.debug(packet)
-        self.logger.info(" - " + packet["user"], "subscribed the channel")
+        self.logger.info("- %s subscribed", packet["user"])
 
     def on_resubscribe(self, packet):
         """Handle resubscription events."""
         self.logger.debug(packet)
-        self.logger.info(" - " + packet["user"], "resubscribed the channel")
+        self.logger.info("- %s resbscribed", packet["user"])
 
     def on_host(self, packet):
         """Handle host events."""
         self.logger.debug(packet)
-        self.logger.info(" - " + packet["user"], "hosted the channel")
+        self.logger.info("- %s hosted", packet["user"])
+
+    def on_join(self, packet):
+        """Handle user join events."""
+        self.logger.debug(packet)
+        self.logger.info("- %s joined", packet["user"])
