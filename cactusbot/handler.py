@@ -2,10 +2,14 @@
 
 import logging
 
+
 class Handlers(object):
     """Handlers."""
 
     def __init__(self, *handlers):
+
+        self.logger = logging.getLogger(__name__)
+
         self.handlers = handlers
 
     def handle(self, event, packet):
@@ -17,8 +21,7 @@ class Handlers(object):
                 try:
                     response = getattr(handler, "on_" + event)(packet)
                 except Exception as e:
-                    print("Uh oh!")
-                    print(e)
+                    self.logger.warning(e)
                 else:
                     if response is StopIteration:
                         break
@@ -26,6 +29,6 @@ class Handlers(object):
 
 class Handler(object):
     """Handler."""
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
