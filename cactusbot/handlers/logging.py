@@ -6,14 +6,16 @@ from ..handler import Handler
 class LoggingHandler(Handler):
     """Logging handler."""
 
+    def __init__(self):
+        super().__init__()
+
     def on_message(self, packet):
         """Handle message events."""
-        self.logger.debug(packet)
-        self.logger.info(
-            packet["user"],
-            ''.join(chunk["text"] for chunk in packet if
-                    chunk["type"] == chunk["text"])
-        )
+        self.logger.info(packet["user"])
+        # self.logger.info(
+        #     packet["user_name"] + " - " +
+        #     ''.join(chunk["text"] for chunk in packet["message"])
+        # )
 
     def on_follow(self, packet):
         """Handle follow events."""

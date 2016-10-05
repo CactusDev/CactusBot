@@ -1,6 +1,7 @@
 """Handle handlers."""
 
 import logging
+import sys
 
 
 class Handlers(object):
@@ -32,3 +33,9 @@ class Handler(object):
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+
+        ch = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
