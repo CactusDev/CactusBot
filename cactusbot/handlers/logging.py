@@ -11,7 +11,8 @@ class LoggingHandler(Handler):
         self.logger.debug(packet)
         self.logger.info(
             packet["user"],
-            ''.join(chunk["text"] for chunk in packet if chunk["type"] == chunk["text"])
+            ''.join(chunk["text"] for chunk in packet if
+                    chunk["type"] == chunk["text"])
         )
 
     def on_follow(self, packet):

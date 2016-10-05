@@ -15,7 +15,8 @@ class CommandHandler(Handler):
     def on_message(self, packet):
         """Handle message events."""
 
-        message = ''.join(chunk["text"] for chunk in packet if chunk["type"] == chunk["text"])
+        message = ''.join(chunk["text"] for chunk in packet if
+                          chunk["type"] == chunk["text"])
 
         if message.startswith('!') and len(message) > 1:
             command, *args = message.split()
