@@ -6,7 +6,13 @@ class MessagePacket(Packet):
     TYPE = "message"
 
     def __init__(self, *message, user, role=1, **meta):
-        self.message = message
+
+        message = list(message)
+        for index, chunk in enumerate(message):
+            if isinstance(chunk, tuple):
+                message[index] = dict(zip(("type", "data", "text"), chunk))
+        self.message = tuple(message)
+
         self.user = user
         self.role = role
         self.meta = meta
