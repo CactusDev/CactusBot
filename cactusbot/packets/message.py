@@ -17,13 +17,13 @@ class MessagePacket(Packet):
         self.role = role
         self.meta = meta
 
+    def __str__(self):
+        return "<Message: {} - \"{}\">".format(self.user, self._str)
+
     def __len__(self):
         total = 0
         for chunk in self.message:
-            if chunk["type"] == "emoticon":
-                total += 1
-            else:
-                total += len(chunk["text"])
+            total += 1 if chunk["type"] == "emoticon" else len(chunk["text"])
         return total
 
     def __getitem__(self, key):
@@ -31,7 +31,8 @@ class MessagePacket(Packet):
 
     @property
     def _str(self):
-        return ''.join(chunk["text"] for chunk in self.message)
+        return ' '.join(chunk["text"].strip() for chunk in self.message if
+                        chunk["text"] != " ")
 
     @property
     def json(self):
