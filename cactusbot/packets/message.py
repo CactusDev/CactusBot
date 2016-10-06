@@ -18,7 +18,7 @@ class MessagePacket(Packet):
         self.meta = meta
 
     def __str__(self):
-        return "<Message: {} - \"{}\">".format(self.user, self._str)
+        return "<Message: {} - \"{}\">".format(self.user, self.text)
 
     def __len__(self):
         total = 0
@@ -27,12 +27,11 @@ class MessagePacket(Packet):
         return total
 
     def __getitem__(self, key):
-        return self._str[key]
+        return self.text[key]
 
     @property
-    def _str(self):
-        return ' '.join(chunk["text"].strip() for chunk in self.message if
-                        chunk["text"] != " ")
+    def text(self):
+        return ''.join(chunk["text"] for chunk in self.message)
 
     @property
     def json(self):
