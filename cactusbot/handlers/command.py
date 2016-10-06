@@ -15,13 +15,11 @@ class CommandHandler(Handler):
     def on_message(self, packet):
         """Handle message events."""
 
-        message = ''.join(chunk["text"] for chunk in packet if
-                          chunk["type"] == chunk["text"])
-
-        if message.startswith('!') and len(message) > 1:
-            command, *args = message.split()
+        message = ''.join(chunk["text"] for chunk in packet["message"])
+        if message[0] == "!":
+            command = message[1:]
             if command in self.BUILTINS:
-                # TODO: Make this send the response of that command.
-                pass
+                print(self.BUILTINS[command])
             else:
-                # TODO: Poll the api and see if the command exists.
+                # TODO: Custom command stuff
+                pass
