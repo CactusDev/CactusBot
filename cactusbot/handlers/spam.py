@@ -2,8 +2,6 @@
 
 from ..handler import Handler
 
-import logging
-
 
 class SpamHandler(Handler):
     """Spam handler."""
@@ -11,10 +9,6 @@ class SpamHandler(Handler):
     MAX_SCORE = 16
     MAX_EMOTES = 6
     ALLOW_LINKS = False
-
-    def __init__(self):
-        super().__init__()
-        self.logger = logging.getLogger(__name__)
 
     def on_message(self, packet):
         """Handle message events."""
