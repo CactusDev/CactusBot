@@ -1,4 +1,5 @@
 from ...packets import MessagePacket
+from . import emotes
 
 
 class BeamParser:
@@ -7,29 +8,22 @@ class BeamParser:
     def parse_message(cls, packet):
         message = []
         for chunk in packet["message"]["message"]:
+            packet = {
+                "type": chunk["type"],
+                "data": None,
+                "text": chunk["text"]
+            }
             if chunk["type"] == "emoticon":
-                # TODO: emoticon map
-                message.append({
-                    "type": chunk["type"],
-                    "data": "unknown",  # HACK
-                    "text": chunk["text"]
-                })
+                packet["data"] = emotes.get(chunk["text"], chunk["text"])
+                message.append(packet)
             elif chunk["type"] == "link":
-                message.append({
-                    "type": chunk["type"],
-                    "data": chunk["url"],
-                    "text": chunk["text"]
-                })
+                packet["data"] = chunk["url"]
+                message.append(packet)
             elif chunk["type"] == "tag":
-                message.append({
-                    "type": chunk["type"],
-                    "data": chunk["username"],
-                    "text": chunk["text"]
-                })
+                packet["data"] = chunk["username"]
+                message.append(packet)
             elif chunk["text"]:
-                message.append({
-                    "type": chunk["type"],
-                    "data": chunk["data"],
-                    "text": chunk["text"]
-                })
+                packet["data"] = chunk["data"]
+                message.append(packet)
+
         return MessagePacket(*message, user=packet["user_name"])
