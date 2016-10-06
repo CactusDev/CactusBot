@@ -10,11 +10,11 @@ class BeamParser:
         for chunk in packet["message"]["message"]:
             packet = {
                 "type": chunk["type"],
-                "data": None,
+                "data": "",
                 "text": chunk["text"]
             }
             if chunk["type"] == "emoticon":
-                packet["data"] = emotes.get(chunk["text"], chunk["text"])
+                packet["data"] = emotes.get(chunk["text"], "")
                 message.append(packet)
             elif chunk["type"] == "link":
                 packet["data"] = chunk["url"]
