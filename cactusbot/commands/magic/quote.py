@@ -3,6 +3,7 @@
 from aiohttp import get
 
 from . import Command
+from ...packets import MessagePacket
 
 
 class Quote(Command):
@@ -14,14 +15,23 @@ class Quote(Command):
     async def get(self, quote_id: r'[1-9]\d*'=None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
         if quote_id is None:
-            return self.api.get_quote()
-        return self.api.get_quote(quote_id)
+            return MessagePacket(
+                ("text", self.api.get_quote()),
+                user="BOT USER"
+            )
+        return MessagePacket(
+            ("text", self.api.get_quote(quote_id)),
+            user="BOT USER"
+        )
 
     @Command.subcommand
     async def add(self, *quote, added_by: "username"):
         """Add a quote."""
         response = await self.api.add_quote(' '.join(quote), added_by=added_by)
-        return "Added quote with ID {}.".format(response["data"]["id"])
+        return MessagePacket(
+            ("text", "Added quote with ID {}.".format(response["data"]["id"])),
+            user="BOT USER"
+        )
 
     @Command.subcommand
     async def remove(self, quote_id: r'[1-9]\d*'):
@@ -29,9 +39,15 @@ class Quote(Command):
         try:
             self.api.remove_quote(quote_id)
         except Exception:  # FIXME: data, not exceptions
-            return "Quote {} does not exist!".format(quote_id)
+            return MessagePacket(
+                ("text", "Quote {} does not exist!".format(quote_id)),
+                user="BOT USER"
+            )
         else:
-            return "Removed quote with ID {}.".format(quote_id)
+            return MessagePacket(
+                ("text", "Removed quote with ID {}.".format(quote_id)),
+                user="BOT USER"
+            )
 
     @Command.subcommand  # FIXME: make secret
     async def inspirational(self):
@@ -42,12 +58,18 @@ class Quote(Command):
                 params=dict(method="getQuote", lang="en", format="json")
             )).json()
         except Exception:
-            return ("Unable to get an inspirational quote. "
-                    "Have a :hamster instead.")
+            return MessagePacket(
+                ("text", "Unable to get an inspirational quote"),
+                user="BOT USER"
+            )
         else:
-            return "\"{quote}\" -{author}".format(
-                quote=data["quoteText"].strip(),
-                author=data["quoteAuthor"].strip() or "Unknown"
+            return MessagePacket(
+                ("text", "\"{quote}\" -{author}".format(
+                    quote=data["quoteText"].strip(),
+                    author=data["quoteAuthor"].strip() or "Unknown"
+                    )
+                ),
+                user="BOT USER"
             )
 
     DEFAULT = get

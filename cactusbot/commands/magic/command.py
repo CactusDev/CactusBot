@@ -2,6 +2,7 @@
 
 
 from . import Command
+from ...packets import MessagePacket
 
 
 class Meta(Command):
@@ -26,17 +27,29 @@ class Meta(Command):
             added_by=added_by
         )
         if data[0].get("meta")["updated"]:
-            return "Updated command !{}.".format(name[1])
+            return MessagePacket(
+                ("text", "Updated command !{}.".format(name[1])),
+                user="BOT USER"
+            )
         elif data[0].get("meta")["created"]:
-            return "Added command !{}.".format(name[1])
+            return MessagePacket(
+                ("text", "Added command !{}.".format(name[1])),
+                user="BOT USER"
+            )
 
     @Command.subcommand
     async def remove(self, name: "?command", *, removed_by: "username"):
         """Remove a command."""
         removed = await self.api.remove_command(name, removed_by=removed_by)
         if removed:
-            return "Removed command !{}.".format(name)
-        return "Command !{} does not exist!".format(name)
+            return MessagePacket(
+                ("text", "Removed command !{}.".format(name)),
+                user="BOT USER"
+            )
+        return MessagePacket(
+            ("text", "Command !{} does not exist!".format(name)),
+            user="BOT USER"
+        )
 
     @Command.subcommand
     async def list(self):
@@ -44,9 +57,13 @@ class Meta(Command):
         commands = await self.api.get_command()
 
         if commands:
-            return "Commands: {}.".format(
-                ', '.join(
-                    command["data"]["attributes"]["name"]
-                    for command in commands)
+            return MessagePacket(
+                ("text", "Commands: {}".format(
+                    ', '.join(command["data"]["attributes"]["name"] for
+                    command in commands))),
+                user="BOT USER"
             )
-        return "No commands added."
+        return MessagePacket(
+            ("text", "No commands added!"),
+            user="BOT USER"
+        )

@@ -3,6 +3,7 @@
 import json
 
 from . import Command
+from ...packets import MessagePacket
 
 import aiohttp
 
@@ -23,21 +24,32 @@ class Social(Command):
         social_data = social_data["user"]["social"]
 
         if not social_data:
-            return "No social services found on this streamer's profile."
-
+            return MessagePacket(
+                ("text", "No social services found on this streamer's profile."),
+                user="BOT USER"
+            )
         if not args:
             if "verified" in social_data:
                 print("social")
                 del social_data["verified"]
-            return ', '.join('{}: {}'.format(service.title(), url) for service, url in social_data.items())
+            return MessagePacket(
+                ("text", ', '.join('{}: {}'.format(service.title(), url) for service, url in social_data.items())),
+                user="BOT USER"
+            )
         else:
             selected = set(map(str.lower, args))
             available = set(social_data.keys())
 
             if selected.issubset(available):
-                return ', '.join('{}: {}'.format(service.title(), social_data[service]) for service in selected)
-            return "The service{s} {services} don't exist.".format(
-                services=', '.join(selected.difference(available)), s='s' if len(selected.difference(available) > 1) else '')
+                return MessagePacket(
+                    ("text", ', '.join('{}: {}'.format(service.title(), social_data[service]) for service in selected)),
+                    user="BOT USER"
+                )
+            return MessagePacket(
+                ("text", "The service{s} {services} don't exist.".format(
+                services=', '.join(selected.difference(available)), s='s' if len(selected.difference(available) > 1) else '')),
+                user="BOT USER"
+            )
 
 
     DEFAULT = get
