@@ -41,14 +41,17 @@ class BeamConstellation(WebSocket):
 
         if not interfaces:
             interfaces = [
-                "channel:{channel}:update".format(channel=self.channel),
-                "channel:{channel}:status".format(channel=self.channel),
-                "channel:{channel}:followed".format(channel=self.channel),
-                "channel:{channel}:subscribed".format(channel=self.channel),
-                "user:{user}:followed".format(user=self.user),
-                "user:{user}:subscribed".format(user=self.user),
-                "user:{user}:achievement".format(user=self.user)
+                "channel:{channel}:update",
+                "channel:{channel}:status",
+                "channel:{channel}:followed",
+                "channel:{channel}:subscribed",
+                "channel:{channel}:hosted",
+                "user:{user}:followed",
+                "user:{user}:subscribed",
+                "user:{user}:achievement"
             ]
+            interfaces = [interface.format(channel=self.channel, user=self.user)
+            for interface in interfaces]
 
         packet = {
             "type": "method",
@@ -61,5 +64,4 @@ class BeamConstellation(WebSocket):
 
         self.websocket.send_str(json.dumps(packet))
 
-        print(await self.websocket.receive())
         self.logger.info("Successfully subscribed to Constellation interfaces.")
