@@ -63,6 +63,9 @@ class BeamHandler:
                 data = self.parser.parse_message(data)
 
             for response in self.handlers.handle(event, data):
+                if callable(response):
+                    response = await response(response)
+                    print(response)
                 await self.send(response.text)  # HACK
 
         elif packet.get("id") == "auth":

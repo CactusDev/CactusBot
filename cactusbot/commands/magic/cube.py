@@ -6,6 +6,8 @@ from random import choice
 from difflib import get_close_matches
 
 from . import Command
+from ...packets import MessagePacket
+from ...services.beam.parser import BeamParser
 
 
 class Cube(Command):
@@ -16,15 +18,15 @@ class Cube(Command):
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
     @Command.subcommand(hidden=True)
-    async def run(self, *args: False, username: "username") -> "cube":
+    def run(self, *args: False, username: "username") -> "cube":
         """Cube things!"""
 
         if not args:
             return self.cube(username)
         if args == ('2',):
-            return "8! Whoa, that's 2Cubed!"
+            return MessagePacket(("text", "8. Woah, that's 2Cubed!"), user="BOT USER")
         elif len(args) > 8:
-            return "Whoa! That's 2 many cubes!"
+            return MessagePacket(("text", "Woah, that's 2 many cubes"), user="BOT USER")
 
         return ' · '.join(self.cube(arg) for arg in args)
 
@@ -36,9 +38,8 @@ class Cube(Command):
 
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
-            return '{:.4g}'.format(float(match.string)**3)
-
-        return '({})³'.format(value)
+            return MessagePacket(("text", '{:.4g}'.format(float(match.string)**3)), user="BOT USER")
+        return MessagePacket(("text",'({})³'.format(value)), user="BOT USER")
 
     DEFAULT = run
 
@@ -72,10 +73,16 @@ class Temmie(Command):
     ]  # HACK: using /me, which is not global
 
     @Command.subcommand(hidden=True)
-    async def get(self, query=None):
+    def get(self, query=None):
         """hOI!!!!!!"""
         if query is None:
-            return choice(self.quotes)
-        return get_close_matches(query, self.quotes, n=1, cutoff=0)[0]
+            return MessagePacket(
+                ("text", choice(self.quotes)),
+                user="BOT USER"
+            )
+        return MessagePacket(
+            ("text", get_close_matches(query, self.quotes, n=1, cutoff=0)[0]),
+            user="BOT USER"
+        )
 
     DEFAULT = get
