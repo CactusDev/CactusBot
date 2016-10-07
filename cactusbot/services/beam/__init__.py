@@ -1,13 +1,8 @@
 """Interact with Beam."""
 
-import json
-from os import path
-
 from .api import BeamAPI
 from .chat import BeamChat
 from .liveloading import BeamLiveloading
+from .parser import BeamParser
 
-__all__ = ["BeamAPI", "BeamChat", "BeamLiveloading"]
-
-with open(path.join(path.dirname(__file__), "emotes.json")) as file:
-    emotes = json.load(file)
+__all__ = ["BeamAPI", "BeamChat", "BeamLiveloading", "BeamParser"]
