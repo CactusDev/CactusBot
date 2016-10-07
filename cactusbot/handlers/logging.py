@@ -11,7 +11,7 @@ class LoggingHandler(Handler):
 
     def on_message(self, packet):
         """Handle message events."""
-        self.logger.info("- %s : %s", packet["user_name"], ''.join(chunk["text"] for chunk in packet["message"]))
+        self.logger.info("- %s : %s", packet["user"], ''.join(chunk["text"] for chunk in packet["message"]))
 
     def on_follow(self, packet):
         """Handle follow events."""
