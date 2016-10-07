@@ -23,9 +23,11 @@ class Handlers(object):
                         "Exception in handler %s:", type(handler).__name__,
                         exc_info=1)
                 else:
-                    if response is StopIteration:
+                    # TODO: support for multiple responses in an iterable
+                    if response is not None:
+                        yield response
+                    elif response is StopIteration:
                         break
-                    yield response
 
 
 class Handler(object):
