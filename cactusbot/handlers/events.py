@@ -3,6 +3,7 @@
 from ..handler import Handler
 from ..packets import MessagePacket
 
+
 class EventHandler(Handler):
     """Events handler."""
 
@@ -16,7 +17,8 @@ class EventHandler(Handler):
     def on_follow(self, username):
         """Handle follow packets."""
         return MessagePacket(
-            ("text", "Thanks for following the channel, @{} !".format(username)),
+            ("text", "Thanks for following the channel, @{} !".format(
+                username)),
             user="BOT USER"
         )
 

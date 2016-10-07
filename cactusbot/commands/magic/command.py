@@ -58,9 +58,12 @@ class Meta(Command):
 
         if commands:
             return MessagePacket(
-                ("text", "Commands: {}".format(
-                    ', '.join(command["data"]["attributes"]["name"] for
-                    command in commands))),
+                ("text",
+                 "Commands: {}".format(', '.join(
+                     command["data"]["attributes"]["name"] for
+                     command in commands
+                     ))
+                 ),
                 user="BOT USER"
             )
         return MessagePacket(

@@ -50,8 +50,10 @@ class BeamConstellation(WebSocket):
                 "user:{user}:subscribed",
                 "user:{user}:achievement"
             ]
-            interfaces = [interface.format(channel=self.channel, user=self.user)
-            for interface in interfaces]
+            interfaces = list(
+                interface.format(channel=self.channel, user=self.user)
+                for interface in interfaces
+            )
 
         packet = {
             "type": "method",
@@ -64,4 +66,5 @@ class BeamConstellation(WebSocket):
 
         self.websocket.send_str(json.dumps(packet))
 
-        self.logger.info("Successfully subscribed to Constellation interfaces.")
+        self.logger.info(
+            "Successfully subscribed to Constellation interfaces.")

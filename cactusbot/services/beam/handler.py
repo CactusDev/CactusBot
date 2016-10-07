@@ -31,7 +31,7 @@ class BeamHandler:
         self.constellation = None
 
         self.chat_events = {
-            "ChatMessage": "message"            
+            "ChatMessage": "message"
         }
 
         self.constellation_events = {
@@ -57,7 +57,8 @@ class BeamHandler:
 
         self.constellation = BeamConstellation(channel["id"], user["id"])
         await self.constellation.connect()
-        asyncio.ensure_future(self.constellation.read(self.handle_constellation))
+        asyncio.ensure_future(
+            self.constellation.read(self.handle_constellation))
 
     async def handle_chat(self, packet):
         """Handle chat packets."""
@@ -132,4 +133,3 @@ class BeamHandler:
     def on_host(self, data):
         """Handle host packets from Constellation."""
         return self.handlers.handle("host", data["user"]["username"])
-

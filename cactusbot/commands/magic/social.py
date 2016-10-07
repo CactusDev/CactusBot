@@ -25,7 +25,10 @@ class Social(Command):
 
         if not social_data:
             return MessagePacket(
-                ("text", "No social services found on this streamer's profile."),
+                (
+                    "text",
+                    "No social services found on this streamer's profile."
+                ),
                 user="BOT USER"
             )
         if not args:
@@ -33,7 +36,8 @@ class Social(Command):
                 print("social")
                 del social_data["verified"]
             return MessagePacket(
-                ("text", ', '.join('{}: {}'.format(service.title(), url) for service, url in social_data.items())),
+                ("text", ', '.join('{}: {}'.format(service.title(), url) for
+                                   service, url in social_data.items())),
                 user="BOT USER"
             )
         else:
@@ -42,14 +46,17 @@ class Social(Command):
 
             if selected.issubset(available):
                 return MessagePacket(
-                    ("text", ', '.join('{}: {}'.format(service.title(), social_data[service]) for service in selected)),
+                    ("text", ', '.join('{}: {}'.format(
+                        service.title(), social_data[service]
+                        ) for service in selected)),
                     user="BOT USER"
                 )
             return MessagePacket(
                 ("text", "The service{s} {services} don't exist.".format(
-                services=', '.join(selected.difference(available)), s='s' if len(selected.difference(available) > 1) else '')),
+                    services=', '.join(
+                        selected.difference(available)), s='s' if len(
+                            selected.difference(available) > 1) else '')),
                 user="BOT USER"
             )
-
 
     DEFAULT = get

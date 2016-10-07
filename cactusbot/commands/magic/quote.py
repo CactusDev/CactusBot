@@ -68,7 +68,7 @@ class Quote(Command):
                     quote=data["quoteText"].strip(),
                     author=data["quoteAuthor"].strip() or "Unknown"
                     )
-                ),
+                 ),
                 user="BOT USER"
             )
 

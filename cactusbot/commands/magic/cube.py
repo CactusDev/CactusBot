@@ -24,9 +24,11 @@ class Cube(Command):
         if not args:
             return self.cube(username)
         if args == ('2',):
-            return MessagePacket(("text", "8. Woah, that's 2Cubed!"), user="BOT USER")
+            return MessagePacket(
+                ("text", "8. Woah, that's 2Cubed!"), user="BOT USER")
         elif len(args) > 8:
-            return MessagePacket(("text", "Woah, that's 2 many cubes"), user="BOT USER")
+            return MessagePacket(
+                    ("text", "Woah, that's 2 many cubes"), user="BOT USER")
 
         return ' · '.join(self.cube(arg) for arg in args)
 
@@ -38,8 +40,10 @@ class Cube(Command):
 
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
-            return MessagePacket(("text", '{:.4g}'.format(float(match.string)**3)), user="BOT USER")
-        return MessagePacket(("text",'({})³'.format(value)), user="BOT USER")
+            return MessagePacket(
+                ("text", '{:.4g}'.format(float(match.string)**3)),
+                user="BOT USER")
+        return MessagePacket(("text", '({})³'.format(value)), user="BOT USER")
 
     DEFAULT = run
 
