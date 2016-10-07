@@ -8,18 +8,18 @@ class CommandHandler(Handler):
 
     BUILTINS = {
         "cactus": "Ohai! I'm CactusBot. :cactus",
-        "test": "Test confirmed :cactus",
-        "help": "Check out my documentation at cactusbot.rtfd.org"
+        "test": "Test confirmed. :cactus",
+        "help": "Check out my documentation at cactusbot.rtfd.org."
     }
 
     def on_message(self, packet):
         """Handle message events."""
 
-        message = ''.join(chunk["text"] for chunk in packet["message"])
-        if message[0] == "!":
-            command = message[1:]
+        if packet[0] == "!" and len(packet) > 1:
+            command, *args = packet[1:].split()
             if command in self.BUILTINS:
-                print(self.BUILTINS[command])
+                self.logger.debug("args: %s", args)
+                return self.BUILTINS[command]
             else:
                 # TODO: Custom command stuff
                 pass
