@@ -3,7 +3,6 @@
 from . import Command
 
 
-
 # TODO: Finish this command.
 class Friend(Command):
     """Manage friends."""
