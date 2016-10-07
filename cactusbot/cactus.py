@@ -1,6 +1,7 @@
 """CactusBot!"""
 
 from logging import getLogger
+import coloredlogs
 
 import time
 
@@ -38,6 +39,7 @@ class Cactus(object):
         super().__init__()
 
         self.logger = getLogger(__name__)
+        coloredlogs.install()
 
         self.service = service
 
