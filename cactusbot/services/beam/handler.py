@@ -2,10 +2,14 @@
 
 from logging import getLogger
 
+import json
 import asyncio
+
+from ...handler import Handler
 
 from .api import BeamAPI
 from .chat import BeamChat
+from .constellation import BeamConstellation
 from .parser import BeamParser
 
 
@@ -24,10 +28,10 @@ class BeamHandler:
         self.channel = ""
 
         self.chat = None
-        self.liveloading = None
+        self.constellation = None
 
         self.chat_events = {
-            "ChatMessage": "message"
+            "ChatMessage": "message"            
         }
 
     async def run(self, *auth):

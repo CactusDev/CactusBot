@@ -2,7 +2,6 @@
 
 from .api import BeamAPI
 from .chat import BeamChat
-from .liveloading import BeamLiveloading
-from .parser import BeamParser
+from .constellation import BeamConstellation
 
-__all__ = ["BeamAPI", "BeamChat", "BeamLiveloading", "BeamParser"]
+__all__ = ["BeamHandler", "BeamAPI", "BeamChat", "BeamConstellation"]

@@ -21,17 +21,14 @@ class Meta(Command):
 
         permissions = ','.join(self.permissions[symbol] for symbol in name[0])
 
-        response = await self.api.add_command(
+        data = await self.api.add_command(
             name[1], ' '.join(response), permissions=permissions,
             added_by=added_by
         )
-
-        # FIXME
-        if response.status == 201:
-            return "Added command !{}.".format(name[1])
-        if response.status == 202:
+        if data[0].get("meta")["updated"]:
             return "Updated command !{}.".format(name[1])
-        raise Exception
+        elif data[0].get("meta")["created"]:
+            return "Added command !{}.".format(name[1])
 
     @Command.subcommand
     async def remove(self, name: "?command", *, removed_by: "username"):
@@ -45,8 +42,11 @@ class Meta(Command):
     async def list(self):
         """List all custom commands."""
         commands = await self.api.get_command()
+
         if commands:
             return "Commands: {}.".format(
-                ', '.join(command["name"] for command in commands)
+                ', '.join(
+                    command["data"]["attributes"]["name"]
+                    for command in commands)
             )
         return "No commands added."
