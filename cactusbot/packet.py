@@ -7,7 +7,7 @@ class Packet:
         self.kwargs = kwargs
 
     def __repr__(self):
-        return '<{}: {}>'.format(self.TYPE, json.dumps(self.json))
+        return '<{}: {}>'.format(self.TYPE.title(), json.dumps(self.json))
 
     @property
     def json(self):

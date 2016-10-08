@@ -5,19 +5,14 @@ from ..packet import Packet
 
 class BanPacket(Packet):
 
-    def __init__(self, *actions, user):
-        self.actions = actions
+    def __init__(self, user, time=0):
         self.user = user
-
-    def __repr__(self):
-        return "<Ban: {}>".format(self.json)
+        self.time = time
 
     def __str__(self):
-        return "<Ban: {} - {}>".format(self.user, self.text)
-    
-    @property
-    def text(self):
-        return ''.join(action["action"] for action in self.actions)
+        if self.time:
+            return "<Ban: {}, {} seconds>".format(self.user, self.time)
+        return "<Ban: {}>".format(self.user)
 
     @property
     def json(self):

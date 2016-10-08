@@ -19,9 +19,6 @@ class MessagePacket(Packet):
         self.role = role
         self.meta = meta
 
-    def __repr__(self):
-        return "<Message: {}>".format(self.json)
-
     def __str__(self):
         return "<Message: {} - \"{}\">".format(self.user, self.text)
 
