@@ -2,23 +2,23 @@
 
 from ..packet import Packet
 
-class ActionPacket(Packet):
+class EventPacket(Packet):
     
-    TYPE = "action"
+    TYPE = "event"
 
-    def __init__(self, packet_type, user):
-        self.packet_type = packet_type
+    def __init__(self, event_type, user):
+        self.event_type = event_type
         self.user = user
 
     def __repr__(self):
-        return "<Action: {}>".format(self.json)
+        return "<Event: {}>".format(self.json)
 
     def __str__(self):
-        return "<Action: {} - {}".format(self.user, self.packet_type)
+        return "<Event: {} - {}".format(self.user, self.event_type)
 
     @property
     def json(self):
         return {
             "user": self.user,
-            "action": self.packet_type
+            "event": self.event_type
         }
