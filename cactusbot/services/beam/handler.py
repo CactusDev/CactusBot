@@ -4,7 +4,6 @@ from logging import getLogger
 
 import json
 import asyncio
-import time
 
 from ...packets import MessagePacket, EventPacket
 
@@ -64,8 +63,6 @@ class BeamHandler:
     async def handle_chat(self, packet):
         """Handle chat packets."""
 
-        start = int(round(time.time() * 1000))
-
         data = packet.get("data")
         if data is None:
             return
@@ -83,8 +80,6 @@ class BeamHandler:
                     response = await response(response)
                     print(response)
                 await self.send(response.text)  # HACK
-                end = int(round(time.time() * 1000))
-                print(end - start)
 
         elif packet.get("id") == "auth":
             if data.get("authenticated") is True:
