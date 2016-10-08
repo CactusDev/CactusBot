@@ -1,4 +1,4 @@
-from ...packets import MessagePacket
+from ...packets import MessagePacket, EventPacket
 
 import json
 from os import path
@@ -49,4 +49,24 @@ class BeamParser:
             *message,
             user=packet["user_name"],
             role=cls.ROLES[packet["user_roles"][0]]
+        )
+
+    @classmethod
+    def parse_follow(cls, packet):
+        return EventPacket(
+            "follow",
+            packet["user"]["username"],
+            packet["following"]
+        )
+
+    @classmethod
+    def parse_subscribe(cls, packet):
+        return EventPacket("subscribe", packet["user"]["username"])
+
+    @classmethod
+    def parse_host(cls, packet):
+        return EventPacket(
+            "host",
+            packet["user"]["username"],
+            packet["hosting"]
         )

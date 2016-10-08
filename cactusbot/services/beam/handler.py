@@ -1,11 +1,8 @@
 """Handle data from Beam."""
 
-from logging import getLogger
+import logging
 
-import json
 import asyncio
-
-from ...packets import MessagePacket, EventPacket
 
 from .api import BeamAPI
 from .chat import BeamChat
@@ -18,7 +15,7 @@ class BeamHandler:
 
     def __init__(self, channel, handlers):
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         self.api = BeamAPI()
         self.parser = BeamParser()
@@ -35,11 +32,9 @@ class BeamHandler:
         }
 
         self.constellation_events = {
-            "channel": {
-                "followed": self.on_follow,
-                "subscribed": self.on_subscribe,
-                "hosted": self.on_host
-            }
+            "channel:followed": "follow",
+            "channel:subscribed": "subscribe",
+            "channel:hosted": "host"
         }
 
     async def run(self, *auth):
@@ -68,49 +63,40 @@ class BeamHandler:
             return
 
         event = packet.get("event")
+
         if event in self.chat_events:
             event = self.chat_events[event]
 
             # HACK
             if getattr(self.parser, "parse_" + event):
-                data = self.parser.parse_message(data)
+                data = getattr(self.parser, "parse_" + event)(data)
 
             for response in self.handlers.handle(event, data):
                 if callable(response):
                     response = await response(response)
-                    print(response)
                 await self.send(response.text)  # HACK
 
-        elif packet.get("id") == "auth":
-            if data.get("authenticated") is True:
-                await self.send("CactusBot activated. Enjoy! :cactus")
-            else:
-                self.logger.error("Chat authentication failure!")
+        # TODO: Activation message
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""
 
-        packet = json.loads(packet)
-
-        data = packet.get("data")
-        if not isinstance(data, dict):
+        if "data" not in packet:
             return
+        data = packet["data"]["payload"]
 
-        event = data["channel"].split(":")
-        data = data.get("payload")
-        if not isinstance(data, dict):
-            return
+        scope, _, event = packet["data"]["channel"].split(":")
+        event = scope + ':' + event
 
-        if event is None:
-            return
+        if event in self.constellation_events:
+            event = self.constellation_events[event]
 
-        if "user" in data:
-            if event[0] in self.constellation_events:
-                if event[2] in self.constellation_events[event[0]]:
-                    data = self.constellation_events[event[0]][event[2]](data)
-                    if data is not None:
-                        for response in data:
-                            await self.send(response.text)
+            # HACK
+            if getattr(self.parser, "parse_" + event):
+                data = getattr(self.parser, "parse_" + event)(data)
+
+            for response in self.handlers.handle(event, data):
+                await self.send(response.text)  # HACK
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""
@@ -119,16 +105,3 @@ class BeamHandler:
             raise ConnectionError("Chat not initialized.")
 
         await self.chat.send(*args, **kwargs)
-
-    def on_follow(self, data):
-        """Handle follow packets from Constellation."""
-        if data["following"]:
-            return self.handlers.handle("follow", EventPacket("follow", data["user"]["username"]))
-
-    def on_subscribe(self, data):
-        """Handle subscribe packets from Constellation."""
-        return self.handlers.handle("subscribe", EventPacket("subscribe", data["user"]["username"]))
-
-    def on_host(self, data):
-        """Handle host packets from Constellation."""
-        return self.handlers.handle("host", EventPacket("host", data["user"]["username"]))
