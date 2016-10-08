@@ -13,7 +13,7 @@ class BanPacket(Packet):
         return "<Ban: {}>".format(self.json)
 
     def __str__(self):
-        return "<Ban: {} - {}".format(self.user, self.text)
+        return "<Ban: {} - {}>".format(self.user, self.text)
     
     @property
     def text(self):
