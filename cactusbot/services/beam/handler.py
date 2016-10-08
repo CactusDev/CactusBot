@@ -6,7 +6,7 @@ import json
 import asyncio
 import time
 
-from ...packets import MessagePacket
+from ...packets import MessagePacket, EventPacket
 
 from .api import BeamAPI
 from .chat import BeamChat
@@ -128,12 +128,12 @@ class BeamHandler:
     def on_follow(self, data):
         """Handle follow packets from Constellation."""
         if data["following"]:
-            return self.handlers.handle("follow", data["user"]["username"])
+            return self.handlers.handle("follow", EventPacket("follow", data["user"]["username"]))
 
     def on_subscribe(self, data):
         """Handle subscribe packets from Constellation."""
-        return self.handlers.handle("subscribe", data["user"]["username"])
+        return self.handlers.handle("subscribe", EventPacket("subscribe", data["user"]["username"]))
 
     def on_host(self, data):
         """Handle host packets from Constellation."""
-        return self.handlers.handle("host", data["user"]["username"])
+        return self.handlers.handle("host", EventPacket("host", data["user"]["username"]))
