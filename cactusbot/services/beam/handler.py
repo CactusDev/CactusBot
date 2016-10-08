@@ -74,7 +74,10 @@ class BeamHandler:
             for response in self.handlers.handle(event, data):
                 if callable(response):
                     response = await response(response)
-                await self.send(response.text)  # HACK
+                if type(response) == str:
+                    await self.send(response)
+                else:
+                    await self.send(response.text)  # HACK
 
         # TODO: Activation message
 
