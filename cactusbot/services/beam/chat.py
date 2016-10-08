@@ -1,7 +1,7 @@
 """Interact with Beam chat."""
 
 
-from logging import getLogger
+import logging
 
 import json
 
@@ -16,7 +16,7 @@ class BeamChat(WebSocket):
     def __init__(self, channel, *endpoints):
         super().__init__(*endpoints)
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         assert isinstance(channel, int), "Channel ID must be an integer."
         self.channel = channel

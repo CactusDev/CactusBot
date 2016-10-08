@@ -6,7 +6,7 @@ from functools import wraps
 
 import re
 
-from logging import getLogger
+import logging
 
 from collections import OrderedDict
 
@@ -38,7 +38,7 @@ class Command(metaclass=CommandMeta):
     }
 
     def __init__(self, api):
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         self.api = api
 

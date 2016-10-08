@@ -1,6 +1,6 @@
 """Interact with WebSockets safely."""
 
-from logging import getLogger
+import logging
 
 import asyncio
 
@@ -16,7 +16,7 @@ class WebSocket(ClientSession):
     def __init__(self, *endpoints):
         super().__init__()
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         assert len(endpoints), "An endpoint is required to connect."
 
