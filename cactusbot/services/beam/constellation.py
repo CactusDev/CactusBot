@@ -1,11 +1,7 @@
 """Interact with Beam Constellation."""
 
-from logging import getLogger
-
 import re
 import json
-
-import asyncio
 
 from .. import WebSocket
 
@@ -21,26 +17,17 @@ class BeamConstellation(WebSocket):
     def __init__(self, channel, user):
         super().__init__(self.URL)
 
-        self.logger = getLogger(__name__)
-
         assert isinstance(channel, int), "Channel ID must be an integer."
         self.channel = channel
 
         assert isinstance(user, int), "User ID must be an integer."
         self.user = user
 
-    async def read(self, handle):
-        """Read packets from the Constellation WebSocket."""
-
-        packet = await self.parse(await self.receive())
-
-        await super().read(handle)
-
     async def initialize(self, *interfaces):
         """Subscribe to Constellation interfaces."""
 
         if not interfaces:
-            interfaces = [
+            interfaces = (
                 "channel:{channel}:update",
                 "channel:{channel}:status",
                 "channel:{channel}:followed",
@@ -49,11 +36,12 @@ class BeamConstellation(WebSocket):
                 "user:{user}:followed",
                 "user:{user}:subscribed",
                 "user:{user}:achievement"
-            ]
-            interfaces = list(
+            )
+
+            interfaces = [
                 interface.format(channel=self.channel, user=self.user)
                 for interface in interfaces
-            )
+            ]
 
         packet = {
             "type": "method",
@@ -65,6 +53,22 @@ class BeamConstellation(WebSocket):
         }
 
         self.websocket.send_str(json.dumps(packet))
+        await self.receive()
 
         self.logger.info(
             "Successfully subscribed to Constellation interfaces.")
+
+    async def parse(self, packet):
+        """Parse a chat packet."""
+
+        try:
+            packet = json.loads(packet)
+        except (TypeError, ValueError):
+            self.logger.exception("Invalid JSON: %s.", packet)
+            return None
+        else:
+            if packet.get("error") is not None:
+                self.logger.error(packet)
+            else:
+                self.logger.debug(packet)
+            return packet
