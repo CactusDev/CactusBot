@@ -1,7 +1,6 @@
 """CactusBot!"""
 
-from logging import getLogger
-import coloredlogs
+import logging
 
 import time
 
@@ -32,14 +31,13 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """.format(version=__version__)
 
 
-class Cactus(object):
+class Cactus:
     """Run CactusBot safely."""
 
     def __init__(self, service, *, debug="INFO", quiet=False):
         super().__init__()
 
-        self.logger = getLogger(__name__)
-        coloredlogs.install()
+        self.logger = logging.getLogger(__name__)
 
         self.service = service
 
