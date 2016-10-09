@@ -8,6 +8,7 @@ from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
+from ...packets import MessagePacket
 
 
 class BeamHandler:
@@ -55,6 +56,11 @@ class BeamHandler:
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))
 
+        await self.send(MessagePacket(
+            ("text", "Cactusbot activated. "),
+            ("emote", "cactus", ":cactus")   
+        ))
+
     async def handle_chat(self, packet):
         """Handle chat packets."""
 
@@ -72,13 +78,8 @@ class BeamHandler:
                 data = getattr(self.parser, "parse_" + event)(data)
 
             for response in self.handlers.handle(event, data):
-                # HACK: external outgoing parsing required
-                text = response.text
-                if response.action:
-                    text = "/me " + text
+                text = self.parser.synthesize(response)
                 await self.send(text)  # HACK
-
-        # TODO: Activation message
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""

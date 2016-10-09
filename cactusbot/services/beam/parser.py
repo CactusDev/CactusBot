@@ -70,3 +70,12 @@ class BeamParser:
             packet["user"]["username"],
             packet["hosting"]
         )
+
+    @classmethod
+    def synthesize(cls, packet):
+        message = ""
+        if packet.action:
+            message = "/me "
+        for component in packet:
+            message += component["text"]
+        return message
