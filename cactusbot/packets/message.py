@@ -1,11 +1,13 @@
 from ..packet import Packet
 
+import re
+
 
 class MessagePacket(Packet):
 
     TYPE = "message"
 
-    def __init__(self, *message, user, role=1, **meta):
+    def __init__(self, *message, user="", role=1, action=False):
 
         message = list(message)
         for index, chunk in enumerate(message):
@@ -13,11 +15,13 @@ class MessagePacket(Packet):
                 if len(chunk) == 2:
                     chunk = chunk + (chunk[1],)
                 message[index] = dict(zip(("type", "data", "text"), chunk))
-        self.message = tuple(message)
+            elif isinstance(chunk, str):
+                message[index] = {"type": "text", "data": chunk, "text": chunk}
+        self.message = message
 
         self.user = user
         self.role = role
-        self.meta = meta
+        self.action = action
 
     def __str__(self):
         return "<Message: {} - \"{}\">".format(self.user, self.text)
@@ -45,3 +49,19 @@ class MessagePacket(Packet):
             "role": self.role,
             "message": self.message
         }
+
+    def replace(self, **values):
+        for index, chunk in enumerate(self.message):
+            if chunk["type"] == "text":
+                for old, new in values.items():
+                    if new is not None:
+                        self.message[index]["text"] = chunk["text"].replace(
+                            old, new)
+        return self
+
+    def sub(self, pattern, repl):
+        for index, chunk in enumerate(self.message):
+            if chunk["type"] == "text":
+                self.message[index]["text"] = re.sub(
+                    pattern, repl, chunk["text"])
+        return self
