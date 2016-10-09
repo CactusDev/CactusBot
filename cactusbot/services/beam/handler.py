@@ -72,12 +72,11 @@ class BeamHandler:
                 data = getattr(self.parser, "parse_" + event)(data)
 
             for response in self.handlers.handle(event, data):
-                if callable(response):
-                    response = await response(response)
-                if type(response) == str:
-                    await self.send(response)
-                else:
-                    await self.send(response.text)  # HACK
+                # HACK: external outgoing parsing required
+                text = response.text
+                if response.action:
+                    text = "/me " + text
+                await self.send(text)  # HACK
 
         # TODO: Activation message
 

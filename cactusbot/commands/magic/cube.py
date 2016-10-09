@@ -18,17 +18,15 @@ class Cube(Command):
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
     @Command.subcommand(hidden=True)
-    def run(self, *args: False, username: "username") -> "cube":
+    async def run(self, *args: False, username: "username") -> "cube":
         """Cube things!"""
 
         if not args:
             return self.cube(username)
         if args == ('2',):
-            return MessagePacket(
-                ("text", "8. Woah, that's 2Cubed!"), user="BOT USER")
+            return MessagePacket("8. Woah, that's 2Cubed!")
         elif len(args) > 8:
-            return MessagePacket(
-                    ("text", "Woah, that's 2 many cubes"), user="BOT USER")
+            return MessagePacket("Woah, that's 2 many cubes")
 
         return ' · '.join(self.cube(arg) for arg in args)
 
@@ -40,10 +38,8 @@ class Cube(Command):
 
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
-            return MessagePacket(
-                ("text", '{:.4g}'.format(float(match.string)**3)),
-                user="BOT USER")
-        return MessagePacket(("text", '({})³'.format(value)), user="BOT USER")
+            return MessagePacket('{:.4g}'.format(float(match.string)**3))
+        return MessagePacket('({})³'.format(value))
 
     DEFAULT = run
 
@@ -53,40 +49,37 @@ class Temmie(Command):
 
     COMMAND = "temmie"
 
-    quotes = [
-        "fhsdhjfdsfjsddshjfsd",
-        "hOI!!!!!! i'm tEMMIE!!",
-        "awwAwa cute!! (pets u)",
-        "OMG!! humans TOO CUTE (dies)",
-        "NO!!!!! muscles r... NOT CUTE",
-        "NO!!! so hungr... (dies)",
-        "FOOB!!!",
-        "can't blame a BARK for tryin'...",
-        ("/me RATED TEM OUTTA TEM. Loves to pet cute humans. "
-         "But you're allergic!"),
-        "/me Special enemy Temmie appears here to defeat you!!",
-        "/me Temmie is trying to glomp you.",
-        "/me Temmie forgot her other attack.",
-        "/me Temmie is doing her hairs.",
-        "/me Smells like Temmie Flakes.",
-        "/me Temmie vibrates intensely.",
-        "/me Temmiy accidentally misspells her own name.",
-        "/me You flex at Temmie...",
-        "/me Temmie only wants the Temmie Flakes.",
-        "/me You say hello to Temmie."
-    ]  # HACK: using /me, which is not global
+    QUOTES = (
+        ("fhsdhjfdsfjsddshjfsd", False),
+        ("hOI!!!!!! i'm tEMMIE!!", False),
+        ("awwAwa cute!! (pets u)", False),
+        ("OMG!! humans TOO CUTE (dies)", False),
+        ("NO!!!!! muscles r... NOT CUTE", False),
+        ("NO!!! so hungr... (dies)", False),
+        ("FOOB!!!", False),
+        ("can't blame a BARK for tryin'...", False),
+        ("RATED TEM OUTTA TEM. Loves to pet cute humans. "
+         "But you're allergic!", True),
+        ("Special enemy Temmie appears here to defeat you!!", True),
+        ("Temmie is trying to glomp you.", True),
+        ("Temmie forgot her other attack.", True),
+        ("Temmie is doing her hairs.", True),
+        ("Smells like Temmie Flakes.", True),
+        ("Temmie vibrates intensely.", True),
+        ("Temmiy accidentally misspells her own name.", True),
+        ("You flex at Temmie...", True),
+        ("Temmie only wants the Temmie Flakes.", True),
+        ("You say hello to Temmie.", True)
+    )
 
     @Command.subcommand(hidden=True)
-    def get(self, query=None):
+    async def get(self, query=None):
         """hOI!!!!!!"""
         if query is None:
-            return MessagePacket(
-                ("text", choice(self.quotes)),
-                user="BOT USER"
-            )
-        return MessagePacket(
-            ("text", get_close_matches(query, self.quotes, n=1, cutoff=0)[0]),
-            user="BOT USER"
-        )
+            quote, action = choice(self.QUOTES)
+        else:
+            quote, action = get_close_matches(
+                query, self.QUOTES, n=1, cutoff=0)[0]
+        return MessagePacket(quote, action=action)
 
     DEFAULT = get
