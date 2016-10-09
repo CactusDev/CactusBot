@@ -8,7 +8,7 @@ class SpamHandler(Handler):
     """Spam handler."""
 
     MAX_SCORE = 16
-    MAX_EMOTES = 6
+    MAX_EMOJI = 6
     ALLOW_LINKS = False
     # TODO: Make configurable
 
@@ -22,18 +22,18 @@ class SpamHandler(Handler):
             chunk["text"] for chunk in packet if
             chunk["type"] == "text"
         ))
-        contains_emotes = self.check_emotes(packet)
-        has_links = self.check_links(packet)
+        exceeds_emoji = self.check_emoji(packet)
+        contains_links = self.check_links(packet)
 
         if exceeds_caps:
             return (MessagePacket("Please do not spam capital letters.",
                                   target=packet.user),
                     BanPacket(packet.user, 1))
-        elif contains_emotes:
+        elif exceeds_emoji:
             return (MessagePacket("Please do not spam emoji.",
                                   target=packet.user),
                     BanPacket(packet.user, 1))
-        elif has_links:
+        elif contains_links:
             return (MessagePacket("Please do not post links.",
                                   target=packet.user),
                     BanPacket(packet.user, 5))
@@ -45,10 +45,10 @@ class SpamHandler(Handler):
         return sum(char.isupper() - char.islower() for
                    char in message) > self.MAX_SCORE
 
-    def check_emotes(self, packet):
-        """Check for excessive emotes in the message."""
+    def check_emoji(self, packet):
+        """Check for excessive emoji in the message."""
         return sum(chunk["type"] == "emoji" for
-                   chunk in packet) > self.MAX_EMOTES
+                   chunk in packet) > self.MAX_EMOJI
 
     def check_links(self, packet):
         """Check for links in the message."""

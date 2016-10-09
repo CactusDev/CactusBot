@@ -19,8 +19,8 @@ class BeamParser:
         "Banned": -1
     }
 
-    with open(path.join(path.dirname(__file__), "emotes.json")) as file:
-        EMOTES = json.load(file)
+    with open(path.join(path.dirname(__file__), "emoji.json")) as file:
+        EMOJI = json.load(file)
 
     @classmethod
     def parse_message(cls, packet):
@@ -33,7 +33,7 @@ class BeamParser:
                 "text": component["text"]
             }
             if component["type"] == "emoji":
-                chunk["data"] = cls.EMOTES.get(component["text"], "")
+                chunk["data"] = cls.EMOJI.get(component["text"], "")
                 message.append(chunk)
             elif component["type"] == "link":
                 chunk["data"] = component["url"]
@@ -77,14 +77,14 @@ class BeamParser:
     @classmethod
     def synthesize(cls, packet):
         message = ""
-        emotes = dict(zip(cls.EMOTES.values(), cls.EMOTES.keys()))
+        emoji = dict(zip(cls.EMOJI.values(), cls.EMOJI.keys()))
 
         if packet.action:
             message = "/me "
 
         for component in packet:
             if component["type"] == "emoji":
-                message += emotes.get(component["data"], component["text"])
+                message += emoji.get(component["data"], component["text"])
             else:
                 message += component["text"]
 

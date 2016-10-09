@@ -46,7 +46,6 @@ class Command(metaclass=CommandMeta):
         # TODO: user levels
         # TODO: secret subcommands | subcommand(secret=True)
         # TODO: service-specific commands
-        # TODO: emote, link, etc. parsing
 
         subcommand = None
 
