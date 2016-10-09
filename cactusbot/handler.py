@@ -2,6 +2,8 @@
 
 import logging
 
+from .packet import Packet
+
 
 class Handlers(object):
     """Handlers."""
@@ -23,11 +25,12 @@ class Handlers(object):
                         "Exception in handler %s:", type(handler).__name__,
                         exc_info=1)
                 else:
-                    # TODO: support for multiple responses in an iterable
-                    if response is not None:
+                    if isinstance(response, Packet):
                         yield response
+                    elif isinstance(response, (tuple, list)):
+                        yield from response
                     elif response is StopIteration:
-                        break
+                        return
 
 
 class Handler(object):
