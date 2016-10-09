@@ -67,3 +67,16 @@ class BeamChat(WebSocket):
     @property
     def _packet_id(self):
         return next(self._packet_counter)
+
+    async def timeout(self, user, time):
+        """Timeout a user for a given amount of time."""
+        self.send({
+            "type": "method",
+            "method": "timeout",
+            "arguments": [
+                user,
+                time
+            ],
+            "id": 1
+        })
+

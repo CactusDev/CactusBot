@@ -78,9 +78,9 @@ class BeamHandler:
                 data = getattr(self.parser, "parse_" + event)(data)
 
             for response in self.handlers.handle(event, data):
-                if type(response) == MessagePacket:
+                if isinstance(response, MessagePacket):
                     text = self.parser.synthesize(response)
-                elif type(response) == BanPacket:
+                elif isinstance(response, BanPacket):
                     await self.timeout(packet.user, response.time)
                 await self.send(text)
 
@@ -111,15 +111,3 @@ class BeamHandler:
             raise ConnectionError("Chat not initialized.")
 
         await self.chat.send(*args, **kwargs)
-
-    async def timeout(self, user, time):
-        """Timeout a user for a given amount of time."""
-        self.chat.send({
-            "type": "method",
-            "method": "timeout",
-            "arguments": [
-                user,
-                time
-            ],
-            "id": 1
-        })
