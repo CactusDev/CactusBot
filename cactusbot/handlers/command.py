@@ -42,11 +42,17 @@ class CommandHandler(Handler):
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
             if command in self.BUILTINS:
-                return self.BUILTINS[command]
+                response = self.BUILTINS[command]
+                if packet.target:
+                    response.target = packet.user
+                return response
             elif command in self.MAGICS:
-                return self.loop.run_until_complete(
+                response = self.loop.run_until_complete(
                     self.MAGICS[command](*args)
                 )  # HACK: until asynchronous generators
+                if packet.target:
+                    response.target = packet.user
+                return response
             else:
                 # TODO: custom commands
                 return self.inject(MessagePacket(args[0]), *args[1:])  # XXX
