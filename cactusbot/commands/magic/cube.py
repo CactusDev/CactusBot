@@ -24,11 +24,11 @@ class Cube(Command):
         if not args:
             return self.cube(username)
         if args == ('2',):
-            return MessagePacket("8. Woah, that's 2Cubed!")
+            return "8. Whoa, that's 2Cubed!"
         elif len(args) > 8:
-            return MessagePacket("Woah, that's 2 many cubes")
+            return "Whoa, that's 2 many cubes"
 
-        return MessagePacket(' · '.join(self.cube(arg).text for arg in args))
+        return ' · '.join(self.cube(arg) for arg in args)
 
     def cube(self, value: str):
         """Cube a value."""
@@ -38,8 +38,8 @@ class Cube(Command):
 
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
-            return MessagePacket('{:.4g}'.format(float(match.string)**3))
-        return MessagePacket('({})³'.format(value))
+            return '{:.4g}'.format(float(match.string)**3)
+        return '({})³'.format(value)
 
     DEFAULT = run
 
@@ -73,13 +73,18 @@ class Temmie(Command):
     )
 
     @Command.subcommand(hidden=True)
-    async def get(self, query=None):
+    async def get(self, *query: False):
         """hOI!!!!!!"""
-        if query is None:
-            quote, action = choice(self.QUOTES)
+
+        if query:
+            quotes = dict(zip((
+                quote.lower() for quote, _ in self.QUOTES), self.QUOTES))
+            lowered = get_close_matches(
+                ' '.join(query).lower(), quotes.keys(), n=1, cutoff=0)[0]
+            quote, action = quotes[lowered]
         else:
-            quote, action = get_close_matches(
-                query, self.QUOTES, n=1, cutoff=0)[0]
+            quote, action = choice(self.QUOTES)
+
         return MessagePacket(quote, action=action)
 
     DEFAULT = get

@@ -3,6 +3,7 @@
 import logging
 
 from .packet import Packet
+from .packets import MessagePacket
 
 
 class Handlers(object):
@@ -29,8 +30,16 @@ class Handlers(object):
                         yield response
                     elif isinstance(response, (tuple, list)):
                         yield from response
+                    elif isinstance(response, str):
+                        yield MessagePacket(response)
                     elif response is StopIteration:
                         return
+                    elif response is None:
+                        pass
+                    else:
+                        self.logger.warning(
+                            "Invalid return type from %s: %s",
+                            type(handler).__name__, type(response).__name__)
 
 
 class Handler(object):
