@@ -28,7 +28,7 @@ class Cube(Command):
         elif len(args) > 8:
             return MessagePacket("Woah, that's 2 many cubes")
 
-        return ' · '.join(self.cube(arg) for arg in args)
+        return MessagePacket(' · '.join(self.cube(arg).text for arg in args))
 
     def cube(self, value: str):
         """Cube a value."""
