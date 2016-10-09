@@ -32,7 +32,7 @@ class BeamParser:
                 "data": "",
                 "text": component["text"]
             }
-            if component["type"] == "emoticon":
+            if component["type"] == "emoji":
                 chunk["data"] = cls.EMOTES.get(component["text"], "")
                 message.append(chunk)
             elif component["type"] == "link":
@@ -48,7 +48,10 @@ class BeamParser:
         return MessagePacket(
             *message,
             user=packet["user_name"],
-            role=cls.ROLES[packet["user_roles"][0]]
+            role=cls.ROLES[packet["user_roles"][0]],
+            action=packet["message"]["meta"].get("me", False),
+            target=packet["message"]["meta"].get(
+                "whisper") and packet["target"]
         )
 
     @classmethod
@@ -74,8 +77,18 @@ class BeamParser:
     @classmethod
     def synthesize(cls, packet):
         message = ""
+        emotes = dict(zip(cls.EMOTES.values(), cls.EMOTES.keys()))
+
         if packet.action:
             message = "/me "
+
         for component in packet:
-            message += component["text"]
-        return message
+            if component["type"] == "emoji":
+                message += emotes.get(component["data"], component["text"])
+            else:
+                message += component["text"]
+
+        if packet.target:
+            return (packet.target, message), {"method": "whisper"}
+
+        return (message,), {}
