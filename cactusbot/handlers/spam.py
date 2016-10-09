@@ -1,7 +1,7 @@
 """Handle incoming spam messages."""
 
 from ..handler import Handler
-from ..packets import MessagePacket
+from ..packets import BanPacket
 
 
 class SpamHandler(Handler):
@@ -24,9 +24,14 @@ class SpamHandler(Handler):
         contains_emotes = self.check_emotes(packet)
         has_links = self.check_links(packet)
 
-        # FIXME: Timeout packets
-        if exceeds_caps or contains_emotes or has_links:
-            return MessagePacket(("text", "That is spam!"), user="BOT")  # HACK
+        if exceeds_caps:
+            return BanPacket(packet.user, 1)
+        elif contains_emotes:
+            return BanPacket(packet.user, 25)
+        elif has_links:
+            return BanPacket(packet.user, 5)
+        else:
+            return None
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""

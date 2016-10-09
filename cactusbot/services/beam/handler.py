@@ -8,7 +8,7 @@ from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
-from ...packets import MessagePacket
+from ...packets import MessagePacket, BanPacket
 
 
 class BeamHandler:
@@ -78,8 +78,11 @@ class BeamHandler:
                 data = getattr(self.parser, "parse_" + event)(data)
 
             for response in self.handlers.handle(event, data):
-                text = self.parser.synthesize(response)
-                await self.send(text)  # HACK
+                if type(response) == MessagePacket:
+                    text = self.parser.synthesize(response)
+                elif type(response) == BanPacket:
+                    await self.timeout(packet.user, response.time)
+                await self.send(text)
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""
@@ -108,3 +111,15 @@ class BeamHandler:
             raise ConnectionError("Chat not initialized.")
 
         await self.chat.send(*args, **kwargs)
+
+    async def timeout(self, user, time):
+        """Timeout a user for a given amount of time."""
+        self.chat.send({
+            "type": "method",
+            "method": "timeout",
+            "arguments": [
+                user,
+                time
+            ],
+            "id": 1
+        })
