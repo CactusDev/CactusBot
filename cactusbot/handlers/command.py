@@ -13,12 +13,12 @@ class CommandHandler(Handler):
 
     BUILTINS = {
         "cactus": MessagePacket(
-            ("text", "Ohai! I'm CactusBot. "),
-            ("emoticon", "cactus", ":cactus")
+            ("text", "Hi! I'm CactusBot. "),
+            ("emoji", ":cactus:", "🌵")
         ),
         "test": MessagePacket(
             ("text", "Test confirmed. "),
-            ("emoticon", "cactus", ":cactus")
+            ("emoji", ":cactus:", "🌵")
         ),
         "help": MessagePacket(
             ("text", "Check out my documentation at "),
@@ -47,7 +47,8 @@ class CommandHandler(Handler):
                 return self.loop.run_until_complete(
                     self.MAGICS[command](*args)
                 )  # HACK: until asynchronous generators
-            else:  # TODO
+            else:
+                # TODO: custom commands
                 return self.inject(MessagePacket(args[0]), *args[1:])  # XXX
 
     @staticmethod

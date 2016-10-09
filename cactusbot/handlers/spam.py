@@ -1,7 +1,7 @@
 """Handle incoming spam messages."""
 
 from ..handler import Handler
-from ..packets import BanPacket
+from ..packets import MessagePacket, BanPacket
 
 
 class SpamHandler(Handler):
@@ -10,6 +10,7 @@ class SpamHandler(Handler):
     MAX_SCORE = 16
     MAX_EMOTES = 6
     ALLOW_LINKS = False
+    # TODO: Make configurable
 
     def on_message(self, packet):
         """Handle message events."""
@@ -25,11 +26,17 @@ class SpamHandler(Handler):
         has_links = self.check_links(packet)
 
         if exceeds_caps:
-            return BanPacket(packet.user, 1)
+            return (MessagePacket("Please do not spam capital letters.",
+                                  target=packet.user),
+                    BanPacket(packet.user, 1))
         elif contains_emotes:
-            return BanPacket(packet.user, 25)
+            return (MessagePacket("Please do not spam emoji.",
+                                  target=packet.user),
+                    BanPacket(packet.user, 1))
         elif has_links:
-            return BanPacket(packet.user, 5)
+            return (MessagePacket("Please do not post links.",
+                                  target=packet.user),
+                    BanPacket(packet.user, 5))
         else:
             return None
 
@@ -40,7 +47,7 @@ class SpamHandler(Handler):
 
     def check_emotes(self, packet):
         """Check for excessive emotes in the message."""
-        return sum(chunk["type"] == "emoticon" for
+        return sum(chunk["type"] == "emoji" for
                    chunk in packet) > self.MAX_EMOTES
 
     def check_links(self, packet):
