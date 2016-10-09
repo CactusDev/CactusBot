@@ -23,7 +23,7 @@ class BeamChat(WebSocket):
 
         self._packet_counter = itertools.count()
 
-    async def send(self, *args, max_length=500, **kwargs):
+    async def send(self, *args, max_length=360, **kwargs):
         """Send a packet."""
 
         # TODO: lock before auth
@@ -40,7 +40,7 @@ class BeamChat(WebSocket):
         if packet["method"] == "msg":
             for message in packet.copy()["arguments"]:
                 for index in range(0, len(message), max_length):
-                    packet["arguments"] = (message[index:index+max_length],)
+                    packet["arguments"] = (message[index:index + max_length],)
                     await super().send(json.dumps(packet))
         else:
             await super().send(json.dumps(packet))
@@ -67,16 +67,3 @@ class BeamChat(WebSocket):
     @property
     def _packet_id(self):
         return next(self._packet_counter)
-
-    async def timeout(self, user, time):
-        """Timeout a user for a given amount of time."""
-        self.send({
-            "type": "method",
-            "method": "timeout",
-            "arguments": [
-                user,
-                time
-            ],
-            "id": 1
-        })
-
