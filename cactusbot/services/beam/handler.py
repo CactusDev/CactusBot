@@ -57,8 +57,8 @@ class BeamHandler:
             self.constellation.read(self.handle_constellation))
 
         await self.send(MessagePacket(
-            ("text", "Cactusbot activated. "),
-            ("emote", "cactus", ":cactus")   
+            ("text", "CactusBot activated. "),
+            ("emoji", ":cactus:", "🌵")
         ))
 
     async def handle_chat(self, packet):
@@ -73,16 +73,24 @@ class BeamHandler:
         if event in self.chat_events:
             event = self.chat_events[event]
 
-            # HACK
+            # HACK?
             if getattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
             for response in self.handlers.handle(event, data):
                 if isinstance(response, MessagePacket):
-                    text = self.parser.synthesize(response)
+                    args, kwargs = self.parser.synthesize(response)
+                    await self.send(*args, **kwargs)
+
                 elif isinstance(response, BanPacket):
-                    await self.timeout(packet.user, response.time)
-                await self.send(text)
+                    if response.time:
+                        await self.send(
+                            response.user,
+                            response.time,
+                            method="timeout"
+                        )
+                    else:
+                        pass  # TODO: full ban
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""
