@@ -25,38 +25,27 @@ class Social(Command):
 
         if not social_data:
             return MessagePacket(
-                (
-                    "text",
-                    "No social services found on this streamer's profile."
-                ),
-                user="BOT USER"
+                "No social services found on this streamer's profile."
             )
         if not args:
             if "verified" in social_data:
                 print("social")
                 del social_data["verified"]
-            return MessagePacket(
-                ("text", ', '.join('{}: {}'.format(service.title(), url) for
-                                   service, url in social_data.items())),
-                user="BOT USER"
+            return MessagePacket(', '.join(
+                '{}: {}'.format(service.title(), url)
+                for service, url in social_data.items())
             )
         else:
             selected = set(map(str.lower, args))
             available = set(social_data.keys())
 
             if selected.issubset(available):
-                return MessagePacket(
-                    ("text", ', '.join('{}: {}'.format(
-                        service.title(), social_data[service]
-                        ) for service in selected)),
-                    user="BOT USER"
-                )
-            return MessagePacket(
-                ("text", "The service{s} {services} don't exist.".format(
-                    services=', '.join(
-                        selected.difference(available)), s='s' if len(
-                            selected.difference(available) > 1) else '')),
-                user="BOT USER"
+                return MessagePacket(', '.join('{}: {}'.format(
+                    service.title(), social_data[service]
+                ) for service in selected))
+            return MessagePacket("The service{s} {services} don't exist.".format(
+                services=', '.join(selected.difference(available)),
+                s='s' if len(selected.difference(available) > 1) else '')
             )
 
     DEFAULT = get

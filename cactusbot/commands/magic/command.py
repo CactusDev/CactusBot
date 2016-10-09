@@ -27,29 +27,17 @@ class Meta(Command):
             added_by=added_by
         )
         if data[0].get("meta")["updated"]:
-            return MessagePacket(
-                ("text", "Updated command !{}.".format(name[1])),
-                user="BOT USER"
-            )
+            return MessagePacket("Updated command !{}.".format(name[1]))
         elif data[0].get("meta")["created"]:
-            return MessagePacket(
-                ("text", "Added command !{}.".format(name[1])),
-                user="BOT USER"
-            )
+            return MessagePacket("Added command !{}.".format(name[1]))
 
     @Command.subcommand
     async def remove(self, name: "?command", *, removed_by: "username"):
         """Remove a command."""
         removed = await self.api.remove_command(name, removed_by=removed_by)
         if removed:
-            return MessagePacket(
-                ("text", "Removed command !{}.".format(name)),
-                user="BOT USER"
-            )
-        return MessagePacket(
-            ("text", "Command !{} does not exist!".format(name)),
-            user="BOT USER"
-        )
+            return MessagePacket("Removed command !{}.".format(name))
+        return MessagePacket("Command !{} does not exist!".format(name))
 
     @Command.subcommand
     async def list(self):
@@ -57,16 +45,8 @@ class Meta(Command):
         commands = await self.api.get_command()
 
         if commands:
-            return MessagePacket(
-                ("text",
-                 "Commands: {}".format(', '.join(
-                     command["data"]["attributes"]["name"] for
-                     command in commands
-                     ))
-                 ),
-                user="BOT USER"
-            )
-        return MessagePacket(
-            ("text", "No commands added!"),
-            user="BOT USER"
-        )
+            return MessagePacket("Commands: {}".format(', '.join(
+                command["data"]["attributes"]["name"] for
+                command in commands
+            )))
+        return MessagePacket("No commands added!")

@@ -53,17 +53,11 @@ class Command(metaclass=CommandMeta):
         if args:
             subcommand = self.subcommands.get(args[0], None)
             if subcommand is not None:
-                return await self.inject(
-                    await subcommand(self, *args, **data),
-                    *args, **data
-                )
+                return await subcommand(self, *args, **data)
 
         if self.DEFAULT is not None:
             assert callable(self.DEFAULT)
-            return await self.inject(
-                await self.DEFAULT(self, *args, **data),
-                *args, **data
-            )
+            return await self.DEFAULT(self, *args, **data)
 
         if subcommand is None and args:
             return "Invalid argument: '{}'.".format(args[0])
@@ -132,7 +126,8 @@ class Command(metaclass=CommandMeta):
                         if isinstance(annotation, str):
                             if annotation.startswith('?'):
                                 annotation = self.REGEX.get(annotation[1:], '')
-                            match = re.match('^'+annotation+'$', args[index])
+                            match = re.match(
+                                '^' + annotation + '$', args[index])
                             if match is None:
                                 return "Invalid {type}: '{value}'.".format(
                                     type=argument.name, value=args[index])
@@ -156,30 +151,3 @@ class Command(metaclass=CommandMeta):
             return wrapped
 
         return decorator(function) if function is not None else decorator
-
-    @staticmethod
-    async def inject(response, *args, **data):
-        """Inject targets into a response."""
-
-        response = response.replace("%USER%", data.get("username", "%USER%"))
-
-        try:
-            response = re.sub(
-                r'%ARG(\d+)%',
-                lambda match: args[int(match.group(1))],
-                response
-            )
-        except IndexError:
-            return "Not enough arguments!"
-
-        response = response.replace("%ARGS%", ' '.join(args))
-
-        # TODO: implement count
-        response = response.replace("%COUNT%", "%COUNT%")
-
-        response = response.replace(
-            "%CHANNEL%",
-            data.get("channel", "%CHANNEL%")
-        )
-
-        return response
