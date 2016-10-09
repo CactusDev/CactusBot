@@ -32,7 +32,8 @@ class BeamParser:
                 "data": "",
                 "text": component["text"]
             }
-            if component["type"] == "emoji":
+            if component["type"] == "emoticon":
+                chunk["type"] = "emojiOK"
                 chunk["data"] = cls.EMOJI.get(component["text"], "")
                 message.append(chunk)
             elif component["type"] == "link":
@@ -42,7 +43,7 @@ class BeamParser:
                 chunk["data"] = component["username"]
                 message.append(chunk)
             elif component["text"]:
-                chunk["data"] = component["data"]
+                chunk["data"] = component["text"]
                 message.append(chunk)
 
         return MessagePacket(
