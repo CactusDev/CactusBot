@@ -24,15 +24,6 @@ if __name__ == "__main__":
         default="INFO"
     )
 
-    parser.add_argument(
-        "--quiet",
-        help="send no messages to public chat",
-        metavar="USER",
-        nargs='?',
-        const=True,
-        default=False
-    )
-
     args = parser.parse_args()
 
     logging.basicConfig(
