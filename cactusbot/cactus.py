@@ -34,7 +34,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 class Cactus:
     """Run CactusBot safely."""
 
-    def __init__(self, service, *, debug="INFO", quiet=False):
+    def __init__(self, service, *, debug="INFO"):
         super().__init__()
 
         self.logger = logging.getLogger(__name__)
@@ -42,7 +42,6 @@ class Cactus:
         self.service = service
 
         self.debug = debug  # XXX: find purpose or remove
-        self.quiet = quiet  # TODO: implement
 
     async def run(self, username, password):
         """Run bot."""

@@ -23,7 +23,6 @@ Copy `data/config-template.json` to `data/config.json`, and open `data/config.js
 
 To run CactusBot, execute `cactus.py`. The following optional arguments will alter the behavior.
 - `--debug` will display logger output of level `DEBUG`. Other levels may be passed to force alternate minimum levels.
-- `--quiet` will ensure no messages are sent to Beam chat. The output will be displayed in console, however, as if the messages were sent.
 
 ## Bot Deactivation
 
