@@ -7,7 +7,7 @@ class MessagePacket(Packet):
 
     TYPE = "message"
 
-    def __init__(self, *message, user="", role=1, action=False):
+    def __init__(self, *message, user="", role=1, action=False, target=""):
 
         message = list(message)
         for index, chunk in enumerate(message):
@@ -22,6 +22,7 @@ class MessagePacket(Packet):
         self.user = user
         self.role = role
         self.action = action
+        self.target = target
 
     def __str__(self):
         return "<Message: {} - \"{}\">".format(self.user, self.text)
@@ -29,7 +30,7 @@ class MessagePacket(Packet):
     def __len__(self):
         total = 0
         for chunk in self.message:
-            total += 1 if chunk["type"] == "emoticon" else len(chunk["text"])
+            total += 1 if chunk["type"] == "emoji" else len(chunk["text"])
         return total
 
     def __getitem__(self, key):
@@ -45,9 +46,11 @@ class MessagePacket(Packet):
     @property
     def json(self):
         return {
+            "message": self.message,
             "user": self.user,
             "role": self.role,
-            "message": self.message
+            "action": self.action,
+            "target": self.target
         }
 
     def replace(self, **values):
