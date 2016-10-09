@@ -33,7 +33,7 @@ class BeamParser:
                 "text": component["text"]
             }
             if component["type"] == "emoticon":
-                chunk["type"] = "emojiOK"
+                chunk["type"] = "emoji"
                 chunk["data"] = cls.EMOJI.get(component["text"], "")
                 message.append(chunk)
             elif component["type"] == "link":
