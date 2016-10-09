@@ -1,5 +1,7 @@
 """Handle commands."""
 
+import asyncio
+
 from ..handler import Handler
 from ..packets import MessagePacket
 from ..commands import COMMANDS
@@ -9,36 +11,62 @@ from ..api import CactusAPI
 class CommandHandler(Handler):
     """Command handler."""
 
-    def __init__(self, channel):
-        self.api = CactusAPI(channel)
-
-        self.BUILTINS = {
-            "cactus": MessagePacket(
-                ("text", "Ohai! I'm CactusBot. "),
-                ("emoticon", "cactus", ":cactus"),
-                user="BOT USER"
-            ),
-            "test": MessagePacket(
-                ("text", "Test confirmed. "),
-                ("emoticon", "cactus", ":cactus"),
-                user="BOT USER"
-            ),
-            "help": MessagePacket(
-                ("text", "Check out my documentation at "),
-                ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
-                ("text", "."),
-                user="BOT USER"
-            )
-        }
-
-        self.BUILTINS.update(
-            dict((command.COMMAND, command.DEFAULT) for command in COMMANDS)
+    BUILTINS = {
+        "cactus": MessagePacket(
+            ("text", "Ohai! I'm CactusBot. "),
+            ("emoticon", "cactus", ":cactus")
+        ),
+        "test": MessagePacket(
+            ("text", "Test confirmed. "),
+            ("emoticon", "cactus", ":cactus")
+        ),
+        "help": MessagePacket(
+            ("text", "Check out my documentation at "),
+            ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
+            ("text", ".")
         )
+    }
+
+    def __init__(self, channel):
+        super().__init__()
+
+        self.api = CactusAPI(channel)
+        self.loop = asyncio.new_event_loop()  # HACK
+
+        self.MAGICS = dict((command.COMMAND, command(self.api))
+                           for command in COMMANDS)
 
     def on_message(self, packet):
         """Handle message events."""
 
-        if packet[0] == "!" and len(packet) > 1:
+        if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
             if command in self.BUILTINS:
                 return self.BUILTINS[command]
+            elif command in self.MAGICS:
+                return self.loop.run_until_complete(
+                    self.MAGICS[command](*args)
+                )  # HACK: until asynchronous generators
+            else:  # TODO
+                return self.inject(MessagePacket(args[0]), *args[1:])  # XXX
+
+    @staticmethod
+    def inject(packet, *args, **data):
+        """Inject targets into a packet."""
+
+        try:
+            packet.sub(
+                r'%ARG(\d+)%',
+                lambda match: args[int(match.group(1))]
+            )
+        except IndexError:
+            return MessagePacket("Not enough arguments!")
+
+        packet.replace(**{
+            "%ARGS%": ' '.join(args),
+            "%USER%": data.get("username"),
+            "%COUNT%": "%COUNT%",  # TODO
+            "%CHANNEL%": data.get("channel")
+        })
+
+        return packet
