@@ -1,6 +1,7 @@
 import json
 import time
 
+
 class CacheUtils(object):
 
     # You have found MysticalMage's code, turn back now, no good lies ahead

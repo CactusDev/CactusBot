@@ -30,10 +30,8 @@ class EventHandler(Handler):
                 if cache.in_cache(packet.user):
                     if self.cache_follows_time > 0:
                         configtime = int(self.cache_follows_time * 60)
-                        cache_time = int(
-                                    calendar.timegm(tuple(
-                                    cache.return_data(packet.user)))
-                                    )
+                        cache_time = int(calendar.timegm(tuple(
+                                    cache.return_data(packet.user))))
 
                         if (cache_time + configtime) <= int(time.time()):
                             cache.cache_add(packet.user)
