@@ -19,6 +19,7 @@ CHANNEL = "TargetChannel"
 
 To keep down spam, you may wish to cache the followers, this can be done by changing the config setting to `True`
 `CACHE_FOLLOWS = True`
+Aditionally if you wish to only cache the users for a set time, you can change `CACHE_FOLLOWS_TIME` to a time in minutes. If left at 0, the users will be cached FOREVER (Mwahaha).
 
 # Control
 
