@@ -3,7 +3,8 @@
 from cactusbot.services.beam.handler import BeamHandler
 
 from cactusbot.handler import Handlers
-from cactusbot.handlers import CommandHandler, LoggingHandler, SpamHandler, EventHandler
+from cactusbot.handlers import (CommandHandler, LoggingHandler,
+                                SpamHandler, EventHandler)
 
 
 USERNAME = "BotUsername"
@@ -14,6 +15,7 @@ CHANNEL = "TargetName"
 # Caches followers to remove chat spam (Default: False)
 CACHE_FOLLOWS = False
 
-handlers = Handlers(LoggingHandler(), EventHandler(), CommandHandler(CHANNEL), SpamHandler())
+handlers = Handlers(LoggingHandler(), EventHandler(CACHE_FOLLOWS), 
+                    CommandHandler(CHANNEL), SpamHandler())
 
 SERVICE = BeamHandler(CHANNEL, handlers)
