@@ -6,16 +6,19 @@
 
 # Configuration
 
-Copy `data/config-template.json` to `data/config.json`, and open `data/config.json` with the editor of your choice. Navigate to the `auth` block, and enter the bot's Beam username and password.
+Copy `config-template.py` to `config.py`, and open `config.py` with the editor of your choice. Navigate to the `USERNAME` block, and enter the bot's Beam username and password. Put the channel you want the bot to be in `CHANNEL`
 
-```json
+```python
 …
-"auth": {
-    "username": "YourBotName",
-    "password": "p455w0rd"
-},
+USERNAME = "BotUsername"
+PASSWORD = "BotPassword"
+
+CHANNEL = "TargetChannel"
 …
 ```
+
+To keep down spam, you may wish to cache the followers, this can be done by changing the config setting to `True`
+`CACHE_FOLLOWS = True`
 
 # Control
 
