@@ -41,6 +41,8 @@ class EventHandler(Handler):
                 else:
                     cache.cache_add(packet.user)
                     return on_follow_return()
+            else:
+                return on_follow_return()
 
     def on_subscribe(self, packet):
         """Handle subscription packets."""
