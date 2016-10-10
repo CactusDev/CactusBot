@@ -1,5 +1,6 @@
 class CacheUtils(object):
 
+    # You have found MysticalMage's code, turn back now, no good lies ahead
     def in_cache_followers(user):
         """ Returns if user is in the cache. """
         follower_cache = open("Caches/CacheFollowers.txt", "r")

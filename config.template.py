@@ -7,9 +7,13 @@ from cactusbot.handlers import CommandHandler, LoggingHandler, SpamHandler, Even
 
 
 USERNAME = "BotUsername"
-PASSWORD = "p455w0rd"
+PASSWORD = "BotPassword"
 
-CHANNEL = "ChannelName"
+CHANNEL = "TargetName"
+
+# Caches followers to remove chat spam (Default: False)
+CACHE_FOLLOWS = False
+
 handlers = Handlers(LoggingHandler(), EventHandler(), CommandHandler(CHANNEL), SpamHandler())
 
 SERVICE = BeamHandler(CHANNEL, handlers)
