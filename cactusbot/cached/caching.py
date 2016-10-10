@@ -12,7 +12,7 @@ class CacheUtils(object):
         return False
 
     def cache_followers_add(user):
-        """ Adds user to cache with newline. """
+        """ Adds user to cache with newline at end. """
         follower_cache = open("Caches/CacheFollowers.txt", "a+")
         follower_cache.write(user + "\n")
         follower_cache.close()
