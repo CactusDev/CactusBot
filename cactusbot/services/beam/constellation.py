@@ -8,9 +8,7 @@ from .. import WebSocket
 
 class BeamConstellation(WebSocket):
     """Interact with Beam Constellation."""
-
     URL = "wss://constellation.beam.pro"
-
     RESPONSE_EXPR = re.compile(r'^(\d+)(.+)?$')
     INTERFACE_EXPR = re.compile(r'^([a-z]+):\d+:([a-z]+)')
 

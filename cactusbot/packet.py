@@ -2,6 +2,7 @@ import json
 
 
 class Packet:
+
     def __init__(self, packet_type, **kwargs):
         self.TYPE = packet_type
         self.kwargs = kwargs

@@ -10,6 +10,7 @@ USERNAME = "BotUsername"
 PASSWORD = "p455w0rd"
 
 CHANNEL = "ChannelName"
-handlers = Handlers(LoggingHandler(), EventHandler(), CommandHandler(CHANNEL), SpamHandler())
+handlers = Handlers(LoggingHandler(), EventHandler(),
+                    CommandHandler(CHANNEL), SpamHandler())
 
 SERVICE = BeamHandler(CHANNEL, handlers)
