@@ -47,7 +47,12 @@ class BeamChat(WebSocket):
 
     async def initialize(self, *auth):
         """Send an authentication packet."""
-        await self.send(self.channel, *auth, method="auth", id="auth")
+        if auth:
+            user_id, get_chat = auth
+            authkey = (await get_chat())["authkey"]
+            await self.send(self.channel, user_id, authkey, method="auth")
+        else:
+            await self.send(self.channel, method="auth")
 
     async def parse(self, packet):
         """Parse a chat packet."""

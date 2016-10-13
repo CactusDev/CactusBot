@@ -3,6 +3,7 @@
 import logging
 
 import asyncio
+from functools import partial
 
 from .api import BeamAPI
 from .chat import BeamChat
@@ -48,7 +49,8 @@ class BeamHandler:
         chat = await self.api.get_chat(channel["id"])
 
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
-        await self.chat.connect(user["id"], chat["authkey"])
+        await self.chat.connect(
+            user["id"], partial(self.api.get_chat, channel["id"]))
         asyncio.ensure_future(self.chat.read(self.handle_chat))
 
         self.constellation = BeamConstellation(channel["id"], user["id"])
