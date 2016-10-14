@@ -26,20 +26,24 @@ class Handlers(object):
                         "Exception in handler %s:", type(handler).__name__,
                         exc_info=1)
                 else:
-                    if isinstance(response, Packet):
-                        yield response
-                    elif isinstance(response, (tuple, list)):
-                        yield from response
-                    elif isinstance(response, str):
-                        yield MessagePacket(response)
-                    elif response is StopIteration:
-                        return
-                    elif response is None:
-                        pass
-                    else:
-                        self.logger.warning(
-                            "Invalid return type from %s: %s",
-                            type(handler).__name__, type(response).__name__)
+                    yield from self.translate(response, handler)
+
+    def translate(self, packet, handler):
+        """Translate handler responses to Packets."""
+        if isinstance(packet, Packet):
+            yield packet
+        elif isinstance(packet, (tuple, list)):
+            for component in packet:
+                yield from self.translate(component, handler)
+        elif isinstance(packet, str):
+            yield MessagePacket(packet)
+        elif packet is StopIteration:
+            return
+        elif packet is None:
+            pass
+        else:
+            self.logger.warning("Invalid return type from %s: %s",
+                                type(handler).__name__, type(packet).__name__)
 
 
 class Handler(object):
