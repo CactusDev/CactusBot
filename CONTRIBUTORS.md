@@ -12,3 +12,7 @@
 
 - [artdude543](https://github.com/artdude543), [@artdude543](https://twitter.com/artdude543)
 - [ProbablePrime](https://github.com/ProbablePrime), [@ProbablePrime](https://twitter.com/ProbablePrime)
+
+## Community Contributors
+
+- [MysticalMage](https://github.com/mysticalmage] Added follower caching
