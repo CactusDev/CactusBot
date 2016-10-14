@@ -7,25 +7,22 @@ import time
 __version__ = "v0.4-dev"
 
 
-# TODO: change to new logo
 CACTUS_ART = r"""CactusBot initialized!
 
-      ,`""',
-      ;' ` ;
-      ;`,',;
-      ;' ` ;
- ,,,  ;`,',;               _____           _
-;,` ; ;' ` ;   ,',        / ____|         | |
-;`,'; ;`,',;  ;,' ;      | |     __ _  ___| |_ _   _ ___
-;',`; ;` ' ; ;`'`';      | |    / _` |/ __| __| | | / __|
-;` '',''` `,',`',;       | |___| (_| | (__| |_| |_| \__ \
- `''`'; ', ;`'`'          \_____\__,_|\___|\__|\__,_|___/
-      ;' `';
-      ;` ' ;
-      ;' `';
-      ;` ' ;
-      ; ',';
-      ;,' ';  {version}
+         --`
+   `     /++/- `
+   o+:.  :+osy -/:.`
+   oo+o/ /osyy -+///`
+   /shh+ +oo+/ ./ooo`
+   //+o+ /+osy /soo+`
+   ++//- :oyhy /hyo+`
+   /+oo/ /+/// -+/++`
+    .:+/ ://++ :+///`
+         :+ooo :oo+-
+         +o++/ --`
+         +o+oo
+         -ohhy
+           `:+     CactusBot {version}
 
 Made by: 2Cubed, Innectic, and ParadigmShift3d
 """.format(version=__version__)
