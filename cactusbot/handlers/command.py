@@ -30,6 +30,7 @@ class CommandHandler(Handler):
     def __init__(self, channel):
         super().__init__()
 
+        self.channel = channel
         self.api = CactusAPI(channel)
         self.loop = asyncio.new_event_loop()  # HACK
 
@@ -48,7 +49,7 @@ class CommandHandler(Handler):
                 return response
             elif command in self.MAGICS:
                 response = self.loop.run_until_complete(
-                    self.MAGICS[command](*args)
+                    self.MAGICS[command](*args, channel=self.channel)
                 )  # HACK: until asynchronous generators
                 if packet.target:
                     response.target = packet.user

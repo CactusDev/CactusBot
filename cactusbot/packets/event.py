@@ -4,7 +4,7 @@ from ..packet import Packet
 
 
 class EventPacket(Packet):
-    
+
     TYPE = "event"
 
     def __init__(self, event_type, user, success=True):
