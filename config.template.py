@@ -12,18 +12,13 @@ PASSWORD = "BotPassword"
 
 CHANNEL = "TargetName"
 
-# Caches followers to remove chat spam (Default: False)
-CACHE_FOLLOWS = False
-
-# How long in minutes before resending message, 0 = never resend
-# Only matters if CACHE_FOLLOWS = True (Default: 0)
-CACHE_FOLLOWS_TIME = 0
-
-
-# Don't touch below this line (The code bites)
+# CACHE_FOLLOWS: Cache to remove chat spam (Default: False)
+# CACHE_FOLLOWS_TIME: How long in minutes before resending message
+#   Leave at 0 for no repeat follow messages
+#   Only matters if CACHE_FOLLOWS is enabled (Default: 0)
 CACHE_DATA = {
-                "CACHE_FOLLOWS":CACHE_FOLLOWS,
-                "CACHE_FOLLOWS_TIME":CACHE_FOLLOWS_TIME
+                "CACHE_FOLLOWS": False,
+                "CACHE_FOLLOWS_TIME": 0
                 }
 
 handlers = Handlers(LoggingHandler(), EventHandler(CACHE_DATA), 
