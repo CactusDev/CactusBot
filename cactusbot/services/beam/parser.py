@@ -6,6 +6,7 @@ from os import path
 
 class BeamParser:
 
+    # TODO: update with accurate values
     ROLES = {
         "Owner": 100,
         "Founder": 91,
@@ -16,7 +17,7 @@ class BeamParser:
         "Pro": 5,
         "User": 1,
         "Muted": 0,
-        "Banned": -1
+        "Banned": 0
     }
 
     with open(path.join(path.dirname(__file__), "emoji.json")) as file:

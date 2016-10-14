@@ -1,11 +1,12 @@
-from ..packet import Packet
+"""Message packet."""
 
 import re
 
+from ..packet import Packet
+
 
 class MessagePacket(Packet):
-
-    TYPE = "message"
+    """Message packet."""
 
     def __init__(self, *message, user="", role=1, action=False, target=""):
 
@@ -41,10 +42,12 @@ class MessagePacket(Packet):
 
     @property
     def text(self):
+        """Pure text representation of the packet."""
         return ''.join(chunk["text"] for chunk in self.message)
 
     @property
     def json(self):
+        """JSON representation of the packet."""
         return {
             "message": self.message,
             "user": self.user,
@@ -54,6 +57,7 @@ class MessagePacket(Packet):
         }
 
     def replace(self, **values):
+        """Replace text in packet."""
         for index, chunk in enumerate(self.message):
             if chunk["type"] == "text":
                 for old, new in values.items():
@@ -63,6 +67,7 @@ class MessagePacket(Packet):
         return self
 
     def sub(self, pattern, repl):
+        """Perform regex substitution on packet."""
         for index, chunk in enumerate(self.message):
             if chunk["type"] == "text":
                 self.message[index]["text"] = re.sub(

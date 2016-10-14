@@ -7,7 +7,6 @@ from difflib import get_close_matches
 
 from . import Command
 from ...packets import MessagePacket
-from ...services.beam.parser import BeamParser
 
 
 class Cube(Command):
