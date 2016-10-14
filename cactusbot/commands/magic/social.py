@@ -15,8 +15,6 @@ class Social(Command):
     @Command.subcommand(hidden=True)
     async def get(self, *args: False, channel: "channel"):
         """Get a social service if it's provived, or give it all."""
-        print(channel)
-        print(args)
 
         social_data = await (await aiohttp.get(
             "https://beam.pro/api/v1/channels/{}".format(channel)
