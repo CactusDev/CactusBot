@@ -15,4 +15,4 @@
 
 ## Community Contributors
 
-- [MysticalMage](https://github.com/mysticalmage] Added follower caching
+- [MysticalMage](https://github.com/mysticalmage) Added follower caching
