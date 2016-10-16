@@ -11,8 +11,6 @@ from ..api import CactusAPI
 class CommandHandler(Handler):
     """Command handler."""
 
-    BUILTINS = dict()
-
     def __init__(self, channel):
         super().__init__()
 
@@ -28,12 +26,7 @@ class CommandHandler(Handler):
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
-            if command in self.BUILTINS:
-                response = self.BUILTINS[command]
-                if packet.target:
-                    response.target = packet.user
-                return response
-            elif command in self.MAGICS:
+            if command in self.MAGICS:
                 response = self.loop.run_until_complete(
                     self.MAGICS[command](*args, channel=self.channel)
                 )  # HACK: until asynchronous generators
