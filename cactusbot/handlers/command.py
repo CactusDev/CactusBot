@@ -11,21 +11,7 @@ from ..api import CactusAPI
 class CommandHandler(Handler):
     """Command handler."""
 
-    BUILTINS = {
-        "cactus": MessagePacket(
-            ("text", "Hi! I'm CactusBot. "),
-            ("emoji", ":cactus:", "🌵")
-        ),
-        "test": MessagePacket(
-            ("text", "Test confirmed. "),
-            ("emoji", ":cactus:", "🌵")
-        ),
-        "help": MessagePacket(
-            ("text", "Check out my documentation at "),
-            ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
-            ("text", ".")
-        )
-    }
+    BUILTINS = dict()
 
     def __init__(self, channel):
         super().__init__()
