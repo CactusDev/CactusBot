@@ -1,10 +1,9 @@
 """Handle events"""
 
+import datetime
+
 from ..handler import Handler
-from ..packets import MessagePacket
 from ..cached import CacheUtils
-import time
-import calendar
 
 
 class EventHandler(Handler):
@@ -15,38 +14,35 @@ class EventHandler(Handler):
 
         self.cache = CacheUtils("caches/followers.json")
         self.cache_follows = cache_data["CACHE_FOLLOWS"]
-        self.follow_time = cache_data["CACHE_FOLLOWS_TIME"] * 60
+        self.follow_time = datetime.timedelta(
+            minutes=cache_data["CACHE_FOLLOWS_TIME"])
 
     def on_follow(self, packet):
         """Handle follow packets."""
-        def on_follow_return():
-            # TODO: Make configurable
-            return MessagePacket(
-                "Thanks for following, @{} !".format(packet.user)
-            )
+
+        # TODO: Make configurable
+        response = "Thanks for following, @{} !".format(packet.user)
 
         if packet.success:
             if self.cache_follows:
-                if self.cache.in_cache(packet.user):
-                    if self.follow_time > 0:
-                        cache_time = self.cache.return_data(packet.user)
-                        if cache_time + self.follow_time <= time.time():
-                            self.cache.cache_add(packet.user)
-                            return on_follow_return()
+                now = datetime.datetime.utcnow()
+                if packet.user in self.cache:
+                    cache_time = self.cache[packet.user]
+                    if cache_time + self.follow_time <= now:
+                        self.cache[packet.user] = now.isoformat()
+                        return response
                 else:
-                    self.cache.cache_add(packet.user)
-                    return on_follow_return()
+                    self.cache[packet.user] = now.isoformat()
+                    return response
             else:
-                return on_follow_return()
+                return response
 
     def on_subscribe(self, packet):
         """Handle subscription packets."""
         # TODO: Make configurable
-        return MessagePacket(
-            "Thanks for subscribing, @{} !".format(packet.user)
-        )
+        return "Thanks for subscribing, @{} !".format(packet.user)
 
     def on_host(self, packet):
         """Handle host packets."""
         # TODO: Make configurable
-        return MessagePacket("Thanks for hosting, @{} !".format(packet.user))
+        return "Thanks for hosting, @{} !".format(packet.user)

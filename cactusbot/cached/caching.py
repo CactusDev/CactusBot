@@ -1,5 +1,5 @@
 import json
-import time
+import dateutil.parser
 
 
 class CacheUtils:
@@ -8,21 +8,19 @@ class CacheUtils:
     def __init__(self, filename):
         self.filename = filename
 
-    def in_cache(self, user):
-        """ Returns if user is in the cache. """
-        with open(self.filename) as cache:
-            cachedata = json.load(cache)
-        return user in cachedata
+    def __iter__(self):
+        with open(self.filename) as file:
+            cache = json.load(file)
+        return cache.__iter__()
 
-    def cache_add(self, user):
-        """ Adds user to cache with newline at end. """
-        with open(self.filename, "r") as cache:
-            cachedata = json.load(cache)
-        cachedata[user] = time.time()
-        with open(self.filename, "w") as cache:
-            json.dump(cachedata, cache, indent=2)
+    def __getitem__(self, user):
+        with open(self.filename) as file:
+            cache = json.load(file)
+        return dateutil.parser.parse(cache[user])
 
-    def return_data(self, user):
-        with open(self.filename) as cache:
-            cachedata = json.load(cache)
-            return cachedata[user]
+    def __setitem__(self, user, value):
+        with open(self.filename) as file:
+            cache = json.load(file)
+        cache[user] = value
+        with open(self.filename, 'w') as file:
+            json.dump(cache, file, indent=2)
