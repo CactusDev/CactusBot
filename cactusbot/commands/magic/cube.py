@@ -25,7 +25,7 @@ class Cube(Command):
         if args == ('2',):
             return "8. Whoa, that's 2Cubed!"
         elif len(args) > 8:
-            return "Whoa, that's 2 many cubes"
+            return "Whoa, that's 2 many cubes!"
 
         return ' · '.join(self.cube(arg) for arg in args)
 
