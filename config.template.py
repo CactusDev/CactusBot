@@ -7,8 +7,7 @@ from cactusbot.handlers import (CommandHandler, LoggingHandler,
                                 SpamHandler, EventHandler)
 
 
-USERNAME = "BotUsername"
-PASSWORD = "BotPassword"
+AUTH = ("BotUsername", "BotPassword")
 
 CHANNEL = "ChannelName"
 
