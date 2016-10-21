@@ -11,7 +11,7 @@ class Packet:
 
     def __repr__(self):
         return '<{}: {}>'.format(
-            type(self).__name__.title(), json.dumps(self.json))
+            type(self).__name__, json.dumps(self.json))
 
     @property
     def json(self):
