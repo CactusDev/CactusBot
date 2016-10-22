@@ -1,7 +1,7 @@
 import json
 from os import path
 
-from ...packets import MessagePacket
+from ...packets import EditPacket, MessagePacket
 
 
 class DiscordParser:
@@ -34,6 +34,10 @@ class DiscordParser:
                 '*') and packet.content.endswith('*'),
             target=False  # TODO
         )
+
+    @classmethod
+    def parse_edit(cls, old, new):
+        return EditPacket(cls.parse_message(old), cls.parse_message(new))
 
     @classmethod
     def synthesize(cls, packet):
