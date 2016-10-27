@@ -1,14 +1,10 @@
 """The inner workings of the command system."""
 
-from inspect import signature
-
-from functools import wraps
-
-import re
-
 import logging
-
+import re
 from collections import OrderedDict
+from functools import wraps
+from inspect import signature
 
 
 class CommandMeta(type):
@@ -32,6 +28,7 @@ class Command(metaclass=CommandMeta):
     COMMAND = None
     DEFAULT = None
 
+    # TODO: service-specific
     REGEX = {
         "username": r'@?([A-Za-z0-9]{,32})',
         "command": r'!?(.+)'

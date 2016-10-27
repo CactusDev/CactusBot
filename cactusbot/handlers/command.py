@@ -28,7 +28,11 @@ class CommandHandler(Handler):
             command, *args = packet[1:].split()
             if command in self.MAGICS:
                 response = self.loop.run_until_complete(
-                    self.MAGICS[command](*args, channel=self.channel)
+                    self.MAGICS[command](
+                        *args,
+                        username=packet.user,
+                        channel=self.channel
+                    )
                 )  # HACK: until asynchronous generators
                 if packet.target:
                     response.target = packet.user
