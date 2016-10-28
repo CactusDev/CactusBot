@@ -54,3 +54,7 @@ class SpamHandler(Handler):
         """Check for links in the message."""
         return not self.ALLOW_LINKS and any(
             chunk["type"] == "link" for chunk in packet)
+
+    def check_banned_words(self, packet):
+        """Check for banned words in a message."""
+        pass
