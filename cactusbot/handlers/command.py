@@ -61,6 +61,7 @@ class CommandHandler(Handler):
 
         if match is not None:
             match = match.groups()
+            # FIXME: Make the replace ignore case
             if match[0] == "S":
                 if match[2].lower() == "upper":
                     args = ' '.join(
@@ -72,6 +73,9 @@ class CommandHandler(Handler):
                         arg.lower() for arg in args
                     )
                     packet.replace(**{"|lower": ''})
+                elif match[2].lower() == "title":
+                    args = ' '.join(args).title()
+                    packet.replace(**{"|title": ''})
         else:
             args = ' '.join(args)
 
