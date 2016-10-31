@@ -3,14 +3,21 @@
 import asyncio
 import re
 
+from ..api import CactusAPI
+from ..commands import COMMANDS
 from ..handler import Handler
 from ..packets import MessagePacket
-from ..commands import COMMANDS
-from ..api import CactusAPI
 
 
 class CommandHandler(Handler):
     """Command handler."""
+
+    ARGN_EXPR = r'%ARG(\d+)(?:=([^|]+))?(?:\|(\w+))?%'
+    ARGS_EXPR = r'%ARGS(?:=([^|]+))?(?:\|(\w+))?%'
+    FILTERS = {
+        "upper": str.upper,
+        "lower": str.lower
+    }
 
     def __init__(self, channel):
         super().__init__()
@@ -38,45 +45,44 @@ class CommandHandler(Handler):
                 # TODO: custom commands
                 return self.inject(MessagePacket(args[0]), *args[1:])  # XXX
 
-    @staticmethod
-    def inject(packet, *args, **data):
+    def inject(self, packet, *args, **data):
         """Inject targets into a packet."""
 
+        def sub_argn(match):
+            n, default, modifier = match.groups()
+            n = int(n)
+
+            if default is None:
+                result = args[n]
+            else:
+                result = args[n] if n < len(args) else default
+
+            if modifier is not None and modifier in self.FILTERS:
+                result = self.FILTERS[modifier](result)
+
+            return result
+
         try:
-            packet.sub(
-                r'%ARG(\d+)%',
-                lambda match: args[int(match.group(1))]
-            )
+            packet.sub(self.ARGN_EXPR, sub_argn)
         except IndexError:
-            return MessagePacket("Not enough arguments!")
+            return "Not enough arguments!"
 
-        try:
-            # FIXME: Packet text isn't containing anything after a space.
-            # This regex should be changed to '%ARG(\d+|S)(?:=([^ ]+))?(?: \| (\w+))?%'
-            # When this is fixed
-            match = re.match(
-                r'%ARG(\d+|S)(?:=([^ ]+))?(?:\|(\w+))?%', packet.text)
-        except AttributeError:
-            pass
+        def sub_args(match):
+            default, modifier = match.groups()
 
-        if match is not None:
-            match = match.groups()
-            if match[0] == "S":
-                if match[2].lower() == "upper":
-                    args = ' '.join(
-                        arg.upper() for arg in args
-                    )
-                    packet.replace(**{"|upper": ''})
-                elif match[2].lower() == "lower":
-                    args = ' '.join(
-                        arg.lower() for arg in args
-                    )
-                    packet.replace(**{"|lower": ''})
-        else:
-            args = ' '.join(args)
+            if not args[1:] and default is not None:
+                result = default
+            else:
+                result = ' '.join(args[1:])
+
+            if modifier is not None and modifier in self.FILTERS:
+                result = self.FILTERS[modifier](result)
+
+            return result
+
+        packet.sub(self.ARGS_EXPR, sub_args)
 
         packet.replace(**{
-            "%ARGS%": args,
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
