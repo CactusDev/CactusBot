@@ -16,7 +16,8 @@ class CommandHandler(Handler):
     ARGS_EXPR = r'%ARGS(?:=([^|]+))?(?:\|(\w+))?%'
     FILTERS = {
         "upper": str.upper,
-        "lower": str.lower
+        "lower": str.lower,
+        "title": str.title
     }
 
     def __init__(self, channel):
