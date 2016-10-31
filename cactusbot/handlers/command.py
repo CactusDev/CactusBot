@@ -1,6 +1,7 @@
 """Handle commands."""
 
 import asyncio
+import re
 
 from ..handler import Handler
 from ..packets import MessagePacket
@@ -49,8 +50,33 @@ class CommandHandler(Handler):
         except IndexError:
             return MessagePacket("Not enough arguments!")
 
+        try:
+            # FIXME: Packet text isn't containing anything after a space.
+            # This regex should be changed to '%ARG(\d+|S)(?:=([^ ]+))?(?: \| (\w+))?%'
+            # When this is fixed
+            match = re.match(
+                r'%ARG(\d+|S)(?:=([^ ]+))?(?:\|(\w+))?%', packet.text)
+        except AttributeError:
+            pass
+
+        if match is not None:
+            match = match.groups()
+            if match[0] == "S":
+                if match[2].lower() == "upper":
+                    args = ' '.join(
+                        arg.upper() for arg in args
+                    )
+                    packet.replace(**{"|upper": ''})
+                elif match[2].lower() == "lower":
+                    args = ' '.join(
+                        arg.lower() for arg in args
+                    )
+                    packet.replace(**{"|lower": ''})
+        else:
+            args = ' '.join(args)
+
         packet.replace(**{
-            "%ARGS%": ' '.join(args),
+            "%ARGS%": args,
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
