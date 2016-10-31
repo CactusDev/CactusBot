@@ -2,10 +2,10 @@
 
 import asyncio
 
+from ..api import CactusAPI
+from ..commands import COMMANDS
 from ..handler import Handler
 from ..packets import MessagePacket
-from ..commands import COMMANDS
-from ..api import CactusAPI
 
 
 class CommandHandler(Handler):
@@ -50,7 +50,7 @@ class CommandHandler(Handler):
             return MessagePacket("Not enough arguments!")
 
         packet.replace(**{
-            "%ARGS%": ' '.join(args),
+            "%ARGS%": ' '.join(args[1:]),
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
