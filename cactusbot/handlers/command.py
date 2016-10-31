@@ -59,23 +59,41 @@ class CommandHandler(Handler):
         except AttributeError:
             pass
 
-        if match is not None:
+        if match is not None and len(match.groups()) == 3:
             match = match.groups()
-            # FIXME: Make the replace ignore case
+
             if match[0] == "S":
                 if match[2].lower() == "upper":
                     args = ' '.join(
                         arg.upper() for arg in args
                     )
-                    packet.replace(**{"|upper": ''})
                 elif match[2].lower() == "lower":
                     args = ' '.join(
                         arg.lower() for arg in args
                     )
-                    packet.replace(**{"|lower": ''})
                 elif match[2].lower() == "title":
                     args = ' '.join(args).title()
-                    packet.replace(**{"|title": ''})
+                packet.replace(**{"|{}".format(match[2]): ''})
+            else:
+                try:
+                    int(match[0])
+                except ValueError:
+                    return
+                else:
+                    arg = int(match[0])
+                    if arg > len(args):
+                        return MessagePacket("Not enough arguments!")
+                    args = args[arg]
+
+                    if match[2].lower() == "upper":
+                        args = args.upper()
+                    elif match[2].lower() == "lower":
+                        args = args.lower()
+                    elif match[2].lower() == "title":
+                        args = args.title()
+
+                    packet.replace(**{"|{}".format(match[2]): ''})
+                    packet.replace(**{"%ARG{}%".format(arg): args})
         else:
             args = ' '.join(args)
 
