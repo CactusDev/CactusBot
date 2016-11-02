@@ -57,10 +57,7 @@ class BeamHandler:
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))
 
-        await self.send(MessagePacket(
-            ("text", "CactusBot activated. "),
-            ("emoji", ":cactus:", "🌵")
-        ))
+        await self.handle("start", None)
 
     async def handle_chat(self, packet):
         """Handle chat packets."""

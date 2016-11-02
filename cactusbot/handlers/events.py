@@ -4,6 +4,7 @@ import datetime
 
 from ..cached import CacheUtils
 from ..handler import Handler
+from ..packets import MessagePacket
 
 
 class EventHandler(Handler):
@@ -16,6 +17,12 @@ class EventHandler(Handler):
         self.cache_follows = cache_data["CACHE_FOLLOWS"]
         self.follow_time = datetime.timedelta(
             minutes=cache_data["CACHE_FOLLOWS_TIME"])
+
+    async def on_start(self, _):
+        return MessagePacket(
+            "CactusBot activated. ",
+            ("emoji", ":cactus:", ":cactus:")
+        )
 
     async def on_follow(self, packet):
         """Handle follow packets."""

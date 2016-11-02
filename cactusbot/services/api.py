@@ -1,9 +1,9 @@
 """Interact with a REST API."""
 
 import logging
-
 from urllib.parse import urljoin
-from aiohttp import ClientSession, ClientHttpProcessingError
+
+from aiohttp import ClientHttpProcessingError, ClientSession
 
 
 class API(ClientSession):
@@ -30,8 +30,7 @@ class API(ClientSession):
                 self.logger.error(error)
                 raise ClientHttpProcessingError(error)
             try:
-                response = await response.json()
-                return response
+                return await response.json()
             except ValueError:
                 self.logger.warning("Response was not JSON!")
                 raise ClientHttpProcessingError("Response was not JSON!")
