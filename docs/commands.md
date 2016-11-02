@@ -115,7 +115,7 @@ The `!spamprot` command changes spam protection options. It may only be run by u
 >     [2Cubed] !spamprot caps 20
 >     [CactusBot] Maximum capitals per message set to 20.
 
-- To update the maximum emoticons allowed in a message, use `!spamprot emotes <amount>`, where `<amount>` is the desired amount of emoticons. The default is 8.
+- To update the maximum emoji allowed in a message, use `!spamprot emotes <amount>`, where `<amount>` is the desired amount of emoji. The default is 8.
 
 >     [Innectic] !spamprot emotes 4
 >     [CactusBot] Maximum emotes per message set to 4.

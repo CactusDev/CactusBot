@@ -1,6 +1,6 @@
 """Interact with WebSockets safely."""
 
-from logging import getLogger
+import logging
 
 import asyncio
 
@@ -16,16 +16,22 @@ class WebSocket(ClientSession):
     def __init__(self, *endpoints):
         super().__init__()
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         assert len(endpoints), "An endpoint is required to connect."
 
         self.websocket = None
 
+        self._init_args = ()
+        self._init_kwargs = {}
+
         self._endpoint_cycle = itertools.cycle(endpoints)
 
     async def connect(self, *args, base=2, maximum=60, **kwargs):
         """Connect to a WebSocket."""
+
+        self._init_args = args
+        self._init_kwargs = kwargs
 
         _backoff_count = itertools.count()
         self.logger.debug("Connecting...")
@@ -66,7 +72,7 @@ class WebSocket(ClientSession):
                     asyncio.ensure_future(handle(packet))
             else:
                 self.logger.warning("Connection lost. Reconnecting.")
-                await self.connect()
+                await self.connect(*self._init_args, **self._init_kwargs)
 
     async def initialize(self):
         """Run initialization procedure."""

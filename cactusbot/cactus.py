@@ -1,54 +1,51 @@
 """CactusBot!"""
 
-from logging import getLogger
+import logging
 
 import time
 
 __version__ = "v0.4-dev"
 
 
-# TODO: change to new logo
 CACTUS_ART = r"""CactusBot initialized!
 
-      ,`""',
-      ;' ` ;
-      ;`,',;
-      ;' ` ;
- ,,,  ;`,',;               _____           _
-;,` ; ;' ` ;   ,',        / ____|         | |
-;`,'; ;`,',;  ;,' ;      | |     __ _  ___| |_ _   _ ___
-;',`; ;` ' ; ;`'`';      | |    / _` |/ __| __| | | / __|
-;` '',''` `,',`',;       | |___| (_| | (__| |_| |_| \__ \
- `''`'; ', ;`'`'          \_____\__,_|\___|\__|\__,_|___/
-      ;' `';
-      ;` ' ;
-      ;' `';
-      ;` ' ;
-      ; ',';
-      ;,' ';  {version}
+         --`
+   `     /++/- `
+   o+:.  :+osy -/:.`
+   oo+o/ /osyy -+///`
+   /shh+ +oo+/ ./ooo`
+   //+o+ /+osy /soo+`
+   ++//- :oyhy /hyo+`
+   /+oo/ /+/// -+/++`
+    .:+/ ://++ :+///`
+         :+ooo :oo+-
+         +o++/ --`
+         +o+oo
+         -ohhy
+           `:+     CactusBot {version}
 
 Made by: 2Cubed, Innectic, and ParadigmShift3d
 """.format(version=__version__)
 
 
-class Cactus(object):
+class Cactus:
     """Run CactusBot safely."""
 
-    def __init__(self, service, *, debug="INFO", quiet=False):
+    def __init__(self, service, *, debug="INFO"):
         super().__init__()
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         self.service = service
 
         self.debug = debug  # XXX: find purpose or remove
-        self.quiet = quiet  # TODO: implement
 
     async def run(self, username, password):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
 
+        # TODO: Add support for multiple services
         try:
             await self.service.run(username, password)
 

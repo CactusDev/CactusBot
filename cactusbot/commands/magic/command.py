@@ -15,23 +15,22 @@ class Meta(Command):
     }
 
     @Command.subcommand
-    async def add(self, name: r'!?([+$]?)(.+)', *response,
+    async def add(self, command: r'!?([+$]?)(.+)', *response,
                   added_by: "username"):
         """Add a command."""
 
-        permissions = ','.join(self.permissions[symbol] for symbol in name[0])
+        level, name = command
 
-        response = await self.api.add_command(
-            name[1], ' '.join(response), permissions=permissions,
+        permissions = ','.join(self.permissions[symbol] for symbol in level)
+
+        data = await self.api.add_command(
+            name, ' '.join(response), permissions=permissions,
             added_by=added_by
         )
-
-        # FIXME
-        if response.status == 201:
-            return "Added command !{}.".format(name[1])
-        if response.status == 202:
-            return "Updated command !{}.".format(name[1])
-        raise Exception
+        if data[0]["meta"].get("updated"):
+            return "Updated command !{}.".format(name)
+        elif data[0]["meta"].get("created"):
+            return "Added command !{}.".format(name)
 
     @Command.subcommand
     async def remove(self, name: "?command", *, removed_by: "username"):
@@ -45,8 +44,10 @@ class Meta(Command):
     async def list(self):
         """List all custom commands."""
         commands = await self.api.get_command()
+
         if commands:
-            return "Commands: {}.".format(
-                ', '.join(command["name"] for command in commands)
-            )
-        return "No commands added."
+            return "Commands: {}".format(', '.join(
+                command["data"]["attributes"]["name"] for
+                command in commands
+            ))
+        return "No commands added!"

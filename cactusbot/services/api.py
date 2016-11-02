@@ -1,9 +1,9 @@
 """Interact with a REST API."""
 
-from logging import getLogger
-
+import logging
 from urllib.parse import urljoin
-from aiohttp import ClientSession, ClientHttpProcessingError
+
+from aiohttp import ClientHttpProcessingError, ClientSession
 
 
 class API(ClientSession):
@@ -14,7 +14,7 @@ class API(ClientSession):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
     def _build(self, endpoint):
         return urljoin(self.URL, endpoint.lstrip('/'))

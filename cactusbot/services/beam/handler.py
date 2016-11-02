@@ -1,44 +1,41 @@
 """Handle data from Beam."""
 
-from logging import getLogger
-
 import asyncio
-import re
+import logging
+from functools import partial
 
-from .. import Handler
-
+from ...packets import BanPacket, MessagePacket
 from .api import BeamAPI
 from .chat import BeamChat
-from .liveloading import BeamLiveloading
+from .constellation import BeamConstellation
+from .parser import BeamParser
 
 
-class BeamHandler(Handler):
+class BeamHandler:
     """Handle data from Beam services."""
 
-    def __init__(self, channel):
-        super().__init__()
+    def __init__(self, channel, handlers):
 
-        self.logger = getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         self.api = BeamAPI()
+        self.parser = BeamParser()
+        self.handlers = handlers  # HACK, potentially
 
         self._channel = channel
         self.channel = ""
 
         self.chat = None
-        self.liveloading = None
+        self.constellation = None
 
         self.chat_events = {
-            "ChatMessage": self.on_message,
-            "UserJoin": self.on_join,
-            "UserLeave": self.on_leave
+            "ChatMessage": "message"
         }
 
-        self.liveloading_events = {
-            "channel": {
-                "followed": self.on_follow,
-                "subscribed": self.on_subscribe
-            }
+        self.constellation_events = {
+            "channel:followed": "follow",
+            "channel:subscribed": "subscribe",
+            "channel:hosted": "host"
         }
 
     async def run(self, *auth):
@@ -51,14 +48,16 @@ class BeamHandler(Handler):
         chat = await self.api.get_chat(channel["id"])
 
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
-        await self.chat.connect(user["id"], chat["authkey"])
+        await self.chat.connect(
+            user["id"], partial(self.api.get_chat, channel["id"]))
         asyncio.ensure_future(self.chat.read(self.handle_chat))
 
-        self.liveloading = BeamLiveloading(
-            channel["id"], channel["user"]["id"]
-        )
-        await self.liveloading.connect()
-        asyncio.ensure_future(self.liveloading.read(self.handle_liveloading))
+        self.constellation = BeamConstellation(channel["id"], user["id"])
+        await self.constellation.connect()
+        asyncio.ensure_future(
+            self.constellation.read(self.handle_constellation))
+
+        await self.handle("start", None)
 
     async def handle_chat(self, packet):
         """Handle chat packets."""
@@ -68,28 +67,50 @@ class BeamHandler(Handler):
             return
 
         event = packet.get("event")
+
         if event in self.chat_events:
-            await self.chat_events[event](data)
-        elif packet.get("id") == "auth":
-            if data.get("authenticated") is True:
-                await self.send("CactusBot activated. Enjoy! :cactus")
-            else:
-                self.logger.error("Chat authentication failure!")
+            event = self.chat_events[event]
 
-    async def handle_liveloading(self, packet):
-        """Handle liveloading packets."""
+            # HACK?
+            if getattr(self.parser, "parse_" + event):
+                data = getattr(self.parser, "parse_" + event)(data)
 
-        data = packet.get("data")
-        if not isinstance(data, list) or not isinstance(data[0], str):
+            await self.handle(event, data)
+
+    async def handle_constellation(self, packet):
+        """Handle constellation packets."""
+
+        if "data" not in packet:
             return
+        data = packet["data"]["payload"]
 
-        event = re.match(self.liveloading.INTERFACE_EXPR, data[0])
-        if event is None:
-            return
+        scope, _, event = packet["data"]["channel"].split(":")
+        event = scope + ':' + event
 
-        event = event.groups()
-        if event[1] in self.liveloading_events.get(event[0], {}):
-            await self.liveloading_events[event[0]][event[1]](data[1])
+        if event in self.constellation_events:
+            event = self.constellation_events[event]
+
+            # HACK
+            if getattr(self.parser, "parse_" + event):
+                data = getattr(self.parser, "parse_" + event)(data)
+
+            await self.handle(event, data)
+
+    async def handle(self, event, data):
+        for response in await self.handlers.handle(event, data):
+            if isinstance(response, MessagePacket):
+                args, kwargs = self.parser.synthesize(response)
+                await self.send(*args, **kwargs)
+
+            elif isinstance(response, BanPacket):
+                if response.duration:
+                    await self.send(
+                        response.user,
+                        response.duration,
+                        method="timeout"
+                    )
+                else:
+                    pass  # TODO: full ban
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""
@@ -98,32 +119,3 @@ class BeamHandler(Handler):
             raise ConnectionError("Chat not initialized.")
 
         await self.chat.send(*args, **kwargs)
-
-    async def on_message(self, data):
-        """Handle chat message packets from chat."""
-
-        parsed = ''.join([
-            chunk["text"] for chunk in data["message"]["message"]
-        ])
-
-        response = await super().on_message(parsed, data["user_name"])
-        if response is not None:
-            await self.send(response)
-
-    async def on_join(self, data):
-        """Handle user join packets from chat."""
-        await self.send(await super().on_join(data["username"]))
-
-    async def on_leave(self, data):
-        """Handle user leave packets from chat."""
-        if data["username"] is not None:
-            await self.send(await super().on_leave(data["username"]))
-
-    async def on_follow(self, data):
-        """Handle follow packets from liveloading."""
-        if data["following"]:
-            await self.send(await super().on_follow(data["user"]["username"]))
-
-    async def on_subscribe(self, data):
-        """Handle subscribe packets from liveloading."""
-        await self.send(await super().on_subscribe(data["user"]["username"]))
