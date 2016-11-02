@@ -1,13 +1,11 @@
-## What does this add?
 
-## What is the current behaviour?
-
-## What is the new behaviour?
+## What does this change?
 
 ## Does this break anything at all?
 
 ## Does your code follow the following:
 
- - [ ] No "swears" in commits, or actual code
- - [ ] Commit messages are descriptive and aren't things like "reitnarosgnrseiont" or "lolhi I made stuff"
+ - [ ] PG-Rating for all commtis and code
+ - [ ] Descriptive commit messages
  - [ ] Did you test your change?
+ - [ ] Does it break anything at all? (Even the simplest things like a logging statement count) 
