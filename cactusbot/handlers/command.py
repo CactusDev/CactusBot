@@ -1,7 +1,6 @@
 """Handle commands."""
 
 import asyncio
-import re
 
 from ..api import CactusAPI
 from ..commands import COMMANDS
@@ -17,7 +16,8 @@ class CommandHandler(Handler):
     FILTERS = {
         "upper": str.upper,
         "lower": str.lower,
-        "title": str.title
+        "title": str.title,
+        "reverse": lambda text: text[::-1]
     }
 
     def __init__(self, channel):
@@ -27,7 +27,7 @@ class CommandHandler(Handler):
         self.api = CactusAPI(channel)
         self.loop = asyncio.new_event_loop()  # HACK
 
-        self.MAGICS = dict((command.COMMAND, command(self.api))
+        self.magics = dict((command.COMMAND, command(self.api))
                            for command in COMMANDS)
 
     def on_message(self, packet):
@@ -35,9 +35,9 @@ class CommandHandler(Handler):
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
-            if command in self.MAGICS:
+            if command in self.magics:
                 response = self.loop.run_until_complete(
-                    self.MAGICS[command](*args, channel=self.channel)
+                    self.magics[command](*args, channel=self.channel)
                 )  # HACK: until asynchronous generators
                 if packet.target:
                     response.target = packet.user
@@ -50,13 +50,15 @@ class CommandHandler(Handler):
         """Inject targets into a packet."""
 
         def sub_argn(match):
-            n, default, modifier = match.groups()
-            n = int(n)
+            """Substitute an argument in place of an ARGN target."""
+
+            argn, default, modifier = match.groups()
+            argn = int(argn)
 
             if default is None:
-                result = args[n]
+                result = args[argn]
             else:
-                result = args[n] if n < len(args) else default
+                result = args[argn] if argn < len(args) else default
 
             if modifier is not None and modifier in self.FILTERS:
                 result = self.FILTERS[modifier](result)
@@ -69,6 +71,8 @@ class CommandHandler(Handler):
             return "Not enough arguments!"
 
         def sub_args(match):
+            """Substitute all arguments in place of the ARGS target."""
+
             default, modifier = match.groups()
 
             if not args[1:] and default is not None:
