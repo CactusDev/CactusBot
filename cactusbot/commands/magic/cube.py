@@ -1,8 +1,8 @@
 """Cube things."""
 
+import random
 import re
 from difflib import get_close_matches
-from random import choice
 
 from . import Command
 from ...packets import MessagePacket
@@ -81,7 +81,7 @@ class Temmie(Command):
                 ' '.join(query).lower(), quotes.keys(), n=1, cutoff=0)[0]
             quote, action = quotes[lowered]
         else:
-            quote, action = choice(self.QUOTES)
+            quote, action = random.choice(self.QUOTES)
 
         return MessagePacket(quote, action=action)
 

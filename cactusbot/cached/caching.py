@@ -1,5 +1,5 @@
+import datetime
 import json
-import dateutil.parser
 
 
 class CacheUtils:
@@ -16,7 +16,7 @@ class CacheUtils:
     def __getitem__(self, user):
         with open(self.filename) as file:
             cache = json.load(file)
-        return dateutil.parser.parse(cache[user])
+        return datetime.datetime.strptime(cache[user], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     def __setitem__(self, user, value):
         with open(self.filename) as file:
