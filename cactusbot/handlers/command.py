@@ -17,7 +17,8 @@ class CommandHandler(Handler):
         "upper": str.upper,
         "lower": str.lower,
         "title": str.title,
-        "reverse": lambda text: text[::-1]
+        "reverse": lambda text: text[::-1],
+        "tag": lambda tag: tag[1:] if tag[0] == '@' and len(tag) > 1 else tag
     }
 
     def __init__(self, channel):
