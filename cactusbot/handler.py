@@ -14,7 +14,7 @@ class Handlers(object):
 
         self.handlers = handlers
 
-    def handle(self, event, packet):
+    async def handle(self, event, packet):
         """Handle incoming data."""
 
         result = []
@@ -22,7 +22,7 @@ class Handlers(object):
         for handler in self.handlers:
             if hasattr(handler, "on_" + event):
                 try:
-                    response = getattr(handler, "on_" + event)(packet)
+                    response = await getattr(handler, "on_" + event)(packet)
                 except Exception:
                     self.logger.warning(
                         "Exception in handler %s:", type(handler).__name__,

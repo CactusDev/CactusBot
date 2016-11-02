@@ -12,7 +12,7 @@ class SpamHandler(Handler):
     ALLOW_LINKS = False
     # TODO: Make configurable
 
-    def on_message(self, packet):
+    async def on_message(self, packet):
         """Handle message events."""
 
         if packet.role >= 50:  # FIXME: Replace with actual value

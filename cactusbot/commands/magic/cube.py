@@ -1,9 +1,8 @@
 """Cube things."""
 
 import re
-
-from random import choice
 from difflib import get_close_matches
+from random import choice
 
 from . import Command
 from ...packets import MessagePacket

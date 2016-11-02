@@ -78,20 +78,7 @@ class BeamHandler:
             if getattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
-            for response in self.handlers.handle(event, data):
-                if isinstance(response, MessagePacket):
-                    args, kwargs = self.parser.synthesize(response)
-                    await self.send(*args, **kwargs)
-
-                elif isinstance(response, BanPacket):
-                    if response.duration:
-                        await self.send(
-                            response.user,
-                            response.duration,
-                            method="timeout"
-                        )
-                    else:
-                        pass  # TODO: full ban
+            await self.handle(event, data)
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""
@@ -110,8 +97,23 @@ class BeamHandler:
             if getattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
-            for response in self.handlers.handle(event, data):
-                await self.send(response.text)  # HACK
+            await self.handle(event, data)
+
+    async def handle(self, event, data):
+        for response in await self.handlers.handle(event, data):
+            if isinstance(response, MessagePacket):
+                args, kwargs = self.parser.synthesize(response)
+                await self.send(*args, **kwargs)
+
+            elif isinstance(response, BanPacket):
+                if response.duration:
+                    await self.send(
+                        response.user,
+                        response.duration,
+                        method="timeout"
+                    )
+                else:
+                    pass  # TODO: full ban
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""

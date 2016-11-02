@@ -21,15 +21,14 @@ class CommandHandler(Handler):
         self.MAGICS = dict((command.COMMAND, command(self.api))
                            for command in COMMANDS)
 
-    def on_message(self, packet):
+    async def on_message(self, packet):
         """Handle message events."""
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
             if command in self.MAGICS:
-                response = self.loop.run_until_complete(
-                    self.MAGICS[command](*args, channel=self.channel)
-                )  # HACK: until asynchronous generators
+                response = await self.MAGICS[command](
+                    *args, username=packet.user, channel=self.channel)
                 if packet.target:
                     response.target = packet.user
                 return response
