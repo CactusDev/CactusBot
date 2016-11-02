@@ -9,22 +9,23 @@ class Meta(Command):
 
     COMMAND = "command"
 
-    permissions = {
+    modifiers = {
         '+': "Mod",
-        '$': "Subscriber"
+        '$': "Subscriber",
+        "%": "Whisper"
     }
 
     @Command.subcommand
-    async def add(self, command: r'!?([+$]?)(.+)', *response,
+    async def add(self, command: r'!?([+$%]?)(.+)', *response,
                   added_by: "username"):
         """Add a command."""
 
         level, name = command
 
-        permissions = ','.join(self.permissions[symbol] for symbol in level)
+        modifiers = ','.join(self.modifiers[symbol] for symbol in level)
 
         data = await self.api.add_command(
-            name, ' '.join(response), permissions=permissions,
+            name, ' '.join(response), permissions=modifiers,
             added_by=added_by
         )
         if data[0]["meta"].get("updated"):
