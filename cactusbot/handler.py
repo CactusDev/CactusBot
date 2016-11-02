@@ -17,6 +17,8 @@ class Handlers(object):
     def handle(self, event, packet):
         """Handle incoming data."""
 
+        result = []
+
         for handler in self.handlers:
             if hasattr(handler, "on_" + event):
                 try:
@@ -26,7 +28,14 @@ class Handlers(object):
                         "Exception in handler %s:", type(handler).__name__,
                         exc_info=1)
                 else:
-                    yield from self.translate(response, handler)
+                    for packet in self.translate(response, handler):
+                        if packet is StopIteration:
+                            return result
+                        result.append(packet)
+                        # TODO: In Python 3.6, with asynchronous generators:
+                        # yield packet
+
+        return result
 
     def translate(self, packet, handler):
         """Translate handler responses to Packets."""
@@ -38,7 +47,7 @@ class Handlers(object):
         elif isinstance(packet, str):
             yield MessagePacket(packet)
         elif packet is StopIteration:
-            return
+            yield packet
         elif packet is None:
             pass
         else:

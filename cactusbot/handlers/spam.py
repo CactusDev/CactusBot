@@ -1,7 +1,7 @@
 """Handle incoming spam messages."""
 
 from ..handler import Handler
-from ..packets import MessagePacket, BanPacket
+from ..packets import BanPacket, MessagePacket
 
 
 class SpamHandler(Handler):
@@ -28,15 +28,18 @@ class SpamHandler(Handler):
         if exceeds_caps:
             return (MessagePacket("Please do not spam capital letters.",
                                   target=packet.user),
-                    BanPacket(packet.user, 1))
+                    BanPacket(packet.user, 1),
+                    StopIteration)
         elif exceeds_emoji:
             return (MessagePacket("Please do not spam emoji.",
                                   target=packet.user),
-                    BanPacket(packet.user, 1))
+                    BanPacket(packet.user, 1),
+                    StopIteration)
         elif contains_links:
             return (MessagePacket("Please do not post links.",
                                   target=packet.user),
-                    BanPacket(packet.user, 5))
+                    BanPacket(packet.user, 5),
+                    StopIteration)
         else:
             return None
 
