@@ -10,7 +10,7 @@ class BanPacket(Packet):
         self.duration = duration
 
     def __str__(self):
-        if self.time:
+        if self.duration:
             return "<Ban: {}, {} seconds>".format(self.user, self.duration)
         return "<Ban: {}>".format(self.user)
 

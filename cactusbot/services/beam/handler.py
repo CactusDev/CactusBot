@@ -1,15 +1,14 @@
 """Handle data from Beam."""
 
-import logging
-
 import asyncio
+import logging
 from functools import partial
 
+from ...packets import BanPacket, MessagePacket
 from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
-from ...packets import MessagePacket, BanPacket
 
 
 class BeamHandler:
@@ -85,10 +84,10 @@ class BeamHandler:
                     await self.send(*args, **kwargs)
 
                 elif isinstance(response, BanPacket):
-                    if response.time:
+                    if response.duration:
                         await self.send(
                             response.user,
-                            response.time,
+                            response.duration,
                             method="timeout"
                         )
                     else:
