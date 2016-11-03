@@ -1,6 +1,5 @@
 """Uptime command."""
 
-import re
 from datetime import datetime
 
 from . import Command
@@ -14,8 +13,8 @@ class Uptime(Command):
     @Command.subcommand
     async def get(self, *, channel: "channel"):
         data = await (await aiohttp.get(
-            "https://beam.pro/api/v1/channels/{channel}/manifest.light2".format(
-                channel=channel))).json()
+            "https://beam.pro/api/v1/channels/{channel}/manifest.light2"
+            .format(channel=channel))).json()
 
         if "startedAt" in data:
             time = datetime.utcnow() - datetime.strptime(
