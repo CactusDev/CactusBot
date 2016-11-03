@@ -16,9 +16,8 @@ class CommandHandler(Handler):
 
         self.channel = channel
         self.api = CactusAPI(channel)
-        self.loop = asyncio.new_event_loop()  # HACK
 
-        self.MAGICS = dict((command.COMMAND, command(self.api))
+        self.magics = dict((command.COMMAND, command(self.api))
                            for command in COMMANDS)
 
     async def on_message(self, packet):
@@ -26,8 +25,8 @@ class CommandHandler(Handler):
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
-            if command in self.MAGICS:
-                response = await self.MAGICS[command](
+            if command in self.magics:
+                response = await self.magics[command](
                     *args, username=packet.user, channel=self.channel)
                 if packet.target:
                     response.target = packet.user
@@ -46,6 +45,9 @@ class CommandHandler(Handler):
                 lambda match: args[int(match.group(1))]
             )
         except IndexError:
+            return MessagePacket("Not enough arguments!")
+
+        if "%ARGS%" in packet and len(args) < 2:
             return MessagePacket("Not enough arguments!")
 
         packet.replace(**{

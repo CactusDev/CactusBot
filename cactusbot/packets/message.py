@@ -37,6 +37,12 @@ class MessagePacket(Packet):
     def __getitem__(self, key):
         return self.text[key]
 
+    def __contains__(self, item):
+        for chunk in self.message:
+            if chunk["type"] == "text" and item in chunk["text"]:
+                return True
+        return False
+
     def __iter__(self):
         return self.message.__iter__()
 
