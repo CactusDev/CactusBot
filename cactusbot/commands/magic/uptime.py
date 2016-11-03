@@ -5,9 +5,8 @@ from datetime import datetime
 
 from . import Command
 
-from ...packets import MessagePacket
-
 import aiohttp
+
 
 class Uptime(Command):
     """Uptime command."""
@@ -15,9 +14,9 @@ class Uptime(Command):
     @Command.subcommand()
     async def get(self, *args: False, channel: "channel"):
         data = await (await aiohttp.get(
-            "https://beam.pro/api/v1/channels/160788/manifest.light2".format(channel)
-        )).json()
-        
+            "https://beam.pro/api/v1/channels/160788/manifest.light2".format(
+                channel))).json()
+
         if data.get("startedAt") is not None:
             return "Channel has been live for {}.".format(
                 re.match(
