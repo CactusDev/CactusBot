@@ -15,7 +15,7 @@ class Meta(Command):
     }
 
     @Command.subcommand
-    async def add(self, command: r'!?([+$%]?)(.+)', *response,
+    async def add(self, command: r'!?([+$]?)(.+)', *response,
                   added_by: "username"):
         """Add a command."""
 

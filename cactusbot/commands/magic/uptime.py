@@ -11,19 +11,17 @@ import aiohttp
 class Uptime(Command):
     """Uptime command."""
 
-    @Command.subcommand()
-    async def get(self, *args: False, channel: "channel"):
+    @Command.subcommand
+    async def get(self, *, channel: "channel"):
         data = await (await aiohttp.get(
-            "https://beam.pro/api/v1/channels/160788/manifest.light2".format(
-                channel))).json()
+            "https://beam.pro/api/v1/channels/{channel}/manifest.light2".format(
+                channel=channel))).json()
 
-        if data.get("startedAt") is not None:
-            return "Channel has been live for {}.".format(
-                re.match(
-                    r"(.+)\.\d{6}",
-                    str(datetime.utcnow() - datetime.strptime(
-                        data["startedAt"][:-5], "%Y-%m-%dT%H:%M:%S"))
-                ).group(1))
+        if "startedAt" in data:
+            time = datetime.utcnow() - datetime.strptime(
+                        data["startedAt"], "%Y-%m-%dT%H:%M:%S.%f")
+            time -= datetime.timedelta(microseconds=time.microseconds)
+            return "Channel has been live for {}.".format(time)
 
         return "Channel is offline."
 
