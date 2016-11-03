@@ -13,7 +13,7 @@ class CactusAPI(API):
 
         self.channel = channel
 
-    async def add_command(self, name, response, *, modifiers={},
+    async def add_command(self, name, response, *, permissions={},
                           added_by=None):
         """Add a command."""
 

@@ -9,10 +9,9 @@ class Meta(Command):
 
     COMMAND = "command"
 
-    modifiers = {
+    permissions = {
         '+': "Mod",
-        '$': "Subscriber",
-        "%": "Whisper"
+        '$': "Subscriber"
     }
 
     @Command.subcommand
@@ -22,10 +21,10 @@ class Meta(Command):
 
         level, name = command
 
-        modifiers = ','.join(self.modifiers[symbol] for symbol in level)
+        permissions = ','.join(self.permissions[symbol] for symbol in level)
 
         data = await self.api.add_command(
-            name, ' '.join(response), permissions=modifiers,
+            name, ' '.join(response), permissions=permissions,
             added_by=added_by
         )
         if data[0]["meta"].get("updated"):
