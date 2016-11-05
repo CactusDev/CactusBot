@@ -11,9 +11,9 @@ from ..packets import MessagePacket
 class CommandHandler(Handler):
     """Command handler."""
 
-    ARGN_EXPR = r'%ARG(\d+)(?:=([^|]+))?(?:\|(\w+))?%'
-    ARGS_EXPR = r'%ARGS(?:=([^|]+))?(?:\|(\w+))?%'
-    FILTERS = {
+    ARGN_EXPR = r'%ARG(\d+)(?:=([^|]+))?(?:((?:\|\w+)+))?%'
+    ARGS_EXPR = r'%ARGS(?:=([^|]+))?(?:((?:\|\w+)+))?%'
+    MODIFIERS = {
         "upper": str.upper,
         "lower": str.lower,
         "title": str.title,
@@ -53,7 +53,7 @@ class CommandHandler(Handler):
         def sub_argn(match):
             """Substitute an argument in place of an ARGN target."""
 
-            argn, default, modifier = match.groups()
+            argn, default, modifiers = match.groups()
             argn = int(argn)
 
             if default is None:
@@ -61,8 +61,8 @@ class CommandHandler(Handler):
             else:
                 result = args[argn] if argn < len(args) else default
 
-            if modifier is not None and modifier in self.FILTERS:
-                result = self.FILTERS[modifier](result)
+            if modifiers is not None:
+                result = self.modify(result, *modifiers.split('|')[1:])
 
             return result
 
@@ -74,15 +74,15 @@ class CommandHandler(Handler):
         def sub_args(match):
             """Substitute all arguments in place of the ARGS target."""
 
-            default, modifier = match.groups()
+            default, modifiers = match.groups()
 
             if not args[1:] and default is not None:
                 result = default
             else:
                 result = ' '.join(args[1:])
 
-            if modifier is not None and modifier in self.FILTERS:
-                result = self.FILTERS[modifier](result)
+            if modifiers is not None:
+                result = self.modify(result, *modifiers.split('|')[1:])
 
             return result
 
@@ -95,3 +95,12 @@ class CommandHandler(Handler):
         })
 
         return packet
+
+    def modify(self, argument, *modifiers):
+        """Apply modifiers to an argument."""
+
+        for modifier in modifiers:
+            if modifier in self.MODIFIERS:
+                argument = self.MODIFIERS[modifier](argument)
+
+        return argument
