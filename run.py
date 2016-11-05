@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.5
+
 """Run CactusBot."""
 
 from asyncio import get_event_loop
