@@ -1,7 +1,7 @@
-from ...packets import MessagePacket, EventPacket
-
 import json
 from os import path
+
+from ...packets import EventPacket, MessagePacket
 
 
 class BeamParser:
@@ -87,6 +87,8 @@ class BeamParser:
         for component in packet:
             if component["type"] == "emoji":
                 message += emoji.get(component["data"], component["text"])
+            elif component["type"] == "tag":
+                message += '@' + component["text"] + ' '
             else:
                 message += component["text"]
 

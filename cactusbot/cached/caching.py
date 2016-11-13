@@ -16,7 +16,7 @@ class CacheUtils:
     def __getitem__(self, user):
         with open(self.filename) as file:
             cache = json.load(file)
-        return datetime.datetime.strptime(cache[user], "%Y-%m-%dT%H:%M:%S.%fZ")
+        return datetime.datetime.strptime(cache[user], "%Y-%m-%dT%H:%M:%S.%f")
 
     def __setitem__(self, user, value):
         with open(self.filename) as file:
