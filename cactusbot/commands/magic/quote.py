@@ -3,6 +3,7 @@
 from aiohttp import get
 
 from . import Command
+from ...packets import MessagePacket
 
 
 class Quote(Command):
@@ -42,7 +43,11 @@ class Quote(Command):
                 params=dict(method="getQuote", lang="en", format="json")
             )).json()
         except Exception:
-            return "Unable to get an inspirational quote."
+            return MessagePacket(
+                "Unable to get an inspirational quote. Have a ",
+                ("emote", ":hamster:", ":hamster"),
+                " instead."
+            )
         else:
             return "\"{quote}\" -{author}".format(
                 quote=data["quoteText"].strip(),

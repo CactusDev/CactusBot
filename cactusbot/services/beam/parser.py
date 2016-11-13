@@ -1,7 +1,7 @@
-from ...packets import MessagePacket, EventPacket
-
 import json
 from os import path
+
+from ...packets import EventPacket, MessagePacket
 
 
 class BeamParser:
@@ -41,7 +41,7 @@ class BeamParser:
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
-                chunk["data"] = component["username"]
+                chunk["data"] = str(component["id"])
                 message.append(chunk)
             elif component["text"]:
                 chunk["data"] = component["text"]

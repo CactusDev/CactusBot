@@ -1,15 +1,14 @@
 """Handle data from Beam."""
 
-import logging
-
 import asyncio
+import logging
 from functools import partial
 
+from ...packets import BanPacket, MessagePacket
 from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
-from ...packets import MessagePacket, BanPacket
 
 
 class BeamHandler:
@@ -58,10 +57,7 @@ class BeamHandler:
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))
 
-        await self.send(MessagePacket(
-            ("text", "CactusBot activated. "),
-            ("emoji", ":cactus:", "🌵")
-        ))
+        await self.handle("start", None)
 
     async def handle_chat(self, packet):
         """Handle chat packets."""
@@ -79,20 +75,7 @@ class BeamHandler:
             if getattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
-            for response in self.handlers.handle(event, data):
-                if isinstance(response, MessagePacket):
-                    args, kwargs = self.parser.synthesize(response)
-                    await self.send(*args, **kwargs)
-
-                elif isinstance(response, BanPacket):
-                    if response.time:
-                        await self.send(
-                            response.user,
-                            response.time,
-                            method="timeout"
-                        )
-                    else:
-                        pass  # TODO: full ban
+            await self.handle(event, data)
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""
@@ -111,8 +94,23 @@ class BeamHandler:
             if getattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
-            for response in self.handlers.handle(event, data):
-                await self.send(response.text)  # HACK
+            await self.handle(event, data)
+
+    async def handle(self, event, data):
+        for response in await self.handlers.handle(event, data):
+            if isinstance(response, MessagePacket):
+                args, kwargs = self.parser.synthesize(response)
+                await self.send(*args, **kwargs)
+
+            elif isinstance(response, BanPacket):
+                if response.duration:
+                    await self.send(
+                        response.user,
+                        response.duration,
+                        method="timeout"
+                    )
+                else:
+                    pass  # TODO: full ban
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""

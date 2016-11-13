@@ -1,7 +1,5 @@
 """Handle commands."""
 
-import asyncio
-
 from ..api import CactusAPI
 from ..commands import COMMANDS
 from ..handler import Handler
@@ -26,20 +24,18 @@ class CommandHandler(Handler):
 
         self.channel = channel
         self.api = CactusAPI(channel)
-        self.loop = asyncio.new_event_loop()  # HACK
 
         self.magics = dict((command.COMMAND, command(self.api))
                            for command in COMMANDS)
 
-    def on_message(self, packet):
+    async def on_message(self, packet):
         """Handle message events."""
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
             command, *args = packet[1:].split()
-            if command in self.magics:
-                response = self.loop.run_until_complete(
-                    self.magics[command](*args, channel=self.channel)
-                )  # HACK: until asynchronous generators
+            if command in self.MAGICS:
+                response = await self.MAGICS[command](
+                    *args, username=packet.user, channel=self.channel)
                 if packet.target:
                     response.target = packet.user
                 return response
