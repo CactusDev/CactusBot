@@ -1,4 +1,5 @@
 import json
+import re
 from os import path
 
 from ...packets import EditPacket, MessagePacket
@@ -9,22 +10,45 @@ class DiscordParser:
     # TODO: roles
     ROLES = {}
 
+    MESSAGE_EXPR = {
+        "tag": r'<@(\d{17})>',
+        "channel": r'<#(\d{18})>',
+        "url": r'(https?://\w[^ ]+)',
+        "emoji": u'([\U0001f600-\U0001f650])'
+    }
+
     with open(path.join(path.dirname(__file__), "emoji.json")) as file:
         EMOJI = json.load(file)
 
     @classmethod
     def parse_message(cls, packet):
 
-        message = []
-        for component in [packet.content]:
-            chunk = {
-                "type": "text",
-                "data": "",
-                "text": component
-            }
-            message.append(chunk)
-            break  # HACK
-            # TODO: parsing
+        message = (packet.content,)
+        for kind, expr in cls.MESSAGE_EXPR.items():
+            message = cls._parse_message_expr(expr, kind, *message)
+        message = list(message)
+
+        for index, component in enumerate(message):
+            if isinstance(component, str):
+                message[index] = {
+                    "type": "text",
+                    "data": component,
+                    "text": component
+                }
+
+        details = {
+            "tag": ('@', packet.mentions),
+            "channel": ('#', packet.channel_mentions)
+        }
+
+        for kind, (prefix, data) in details.items():
+            index = 0
+            for component in message:
+                if component["type"] == kind:
+                    component["text"] = prefix + data[index].name
+                    index += 1
+
+        # TODO: emoji conversion
 
         return MessagePacket(
             *message,
@@ -32,8 +56,24 @@ class DiscordParser:
             role=1,  # TODO
             action=packet.content.startswith(
                 '*') and packet.content.endswith('*'),
-            target=False  # TODO
+            target=packet.channel.is_private
         )
+
+    @classmethod
+    def _parse_message_expr(cls, expr, kind, *data):
+        for chunk in data:
+            if isinstance(chunk, str):
+                for index, value in enumerate(re.split(expr, chunk)):
+                    if index % 2 == 1:
+                        yield {
+                            "type": kind,
+                            "data": value,
+                            "text": value
+                        }
+                    elif value:
+                        yield value
+            else:
+                yield chunk
 
     @classmethod
     def parse_edit(cls, old, new):
@@ -47,7 +87,7 @@ class DiscordParser:
         for component in packet:
             if component["type"] == "emoji":
                 message += emoji.get(component["data"], component["text"])
-            elif component["type"] == "link":
+            elif component["type"] == "url":
                 message += component["data"]
             else:
                 message += component["text"]
