@@ -10,12 +10,13 @@ class DiscordParser:
     # TODO: roles
     ROLES = {}
 
-    MESSAGE_EXPR = {
-        "tag": r'<@(\d{17})>',
-        "channel": r'<#(\d{18})>',
-        "url": r'(https?://\w[^ ]+)',
-        "emoji": u'([\U0001f600-\U0001f650])'
-    }
+    MESSAGE_EXPR = [
+        ("tag", r'<@(\d{17})>'),
+        ("channel", r'<#(\d{18})>'),
+        ("url", r'(https?://\w[^ ]+)'),
+        ("emoji", u'([\U0001f600-\U0001f650])'),
+        ("emoji", r'<(:\w{2,32}:)\d{18}>')
+    ]
 
     with open(path.join(path.dirname(__file__), "emoji.json")) as file:
         EMOJI = json.load(file)
@@ -24,7 +25,7 @@ class DiscordParser:
     def parse_message(cls, packet):
 
         message = (packet.content,)
-        for kind, expr in cls.MESSAGE_EXPR.items():
+        for kind, expr in cls.MESSAGE_EXPR:
             message = cls._parse_message_expr(expr, kind, *message)
         message = list(message)
 
