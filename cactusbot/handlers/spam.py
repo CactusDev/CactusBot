@@ -1,7 +1,7 @@
 """Handle incoming spam messages."""
 
 from ..handler import Handler
-from ..packets import MessagePacket, BanPacket
+from ..packets import BanPacket, MessagePacket
 
 
 class SpamHandler(Handler):
@@ -53,4 +53,4 @@ class SpamHandler(Handler):
     def check_links(self, packet):
         """Check for links in the message."""
         return not self.ALLOW_LINKS and any(
-            chunk["type"] == "link" for chunk in packet)
+            chunk["type"] == "url" for chunk in packet)

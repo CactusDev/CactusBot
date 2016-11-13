@@ -21,7 +21,7 @@ class Cactus(Command):
     async def docs(self):
         return MessagePacket(
             ("text", "Check out my documentation at "),
-            ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
+            ("url", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
             ("text", ".")
         )
 
@@ -29,7 +29,7 @@ class Cactus(Command):
     async def twitter(self):
         return MessagePacket(
             ("text", "You can follow the team behind CactusBot at: "),
-            ("link", "https://twitter.com/CactusDevTeam",
+            ("url", "https://twitter.com/CactusDevTeam",
              "twitter.com/CactusDevTeam")
         )
 

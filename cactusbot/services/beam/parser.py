@@ -1,7 +1,7 @@
-from ...packets import MessagePacket, EventPacket
-
 import json
 from os import path
+
+from ...packets import EventPacket, MessagePacket
 
 
 class BeamParser:
@@ -37,7 +37,7 @@ class BeamParser:
                 chunk["type"] = "emoji"
                 chunk["data"] = cls.EMOJI.get(component["text"], "")
                 message.append(chunk)
-            elif component["type"] == "link":
+            elif component["type"] == "url":
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
@@ -52,8 +52,7 @@ class BeamParser:
             user=packet["user_name"],
             role=cls.ROLES[packet["user_roles"][0]],
             action=packet["message"]["meta"].get("me", False),
-            target=packet["message"]["meta"].get(
-                "whisper", "") and packet["target"]
+            target=packet["message"]["meta"].get("whisper", False)
         )
 
     @classmethod
