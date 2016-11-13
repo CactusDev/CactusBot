@@ -10,6 +10,7 @@ class TestSpamHandler:
 
     @pytest.mark.asyncio
     async def test_on_message(self):
+
         assert (await self.spam_handler.on_message(
             MessagePacket("THIS CONTAINS EXCESSIVE CAPITAL LETTERS.")
         ))[0].text == "Please do not spam capital letters."
@@ -30,7 +31,9 @@ class TestSpamHandler:
         ) is None
 
     def test_check_caps(self):
+
         assert not self.spam_handler.check_caps("")
+        assert not self.spam_handler.check_caps("X")
         assert not self.spam_handler.check_caps("3.14159265358979")
 
         assert not self.spam_handler.check_caps(
@@ -43,6 +46,7 @@ class TestSpamHandler:
             "THAT was SO COOL! OMG WOW FANTASTIC!")
 
     def test_check_emoji(self):
+
         assert not self.spam_handler.check_emoji(MessagePacket(
             "This message contains no emoji."
         ))
@@ -84,6 +88,7 @@ class TestSpamHandler:
         ))
 
     def test_check_links(self):
+
         assert not self.spam_handler.check_links(MessagePacket(
             "This message contains no links."
         ))
