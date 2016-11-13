@@ -8,6 +8,14 @@ class TestCommandHandler:
 
     command_handler = CommandHandler("TestChannel")
 
+    def verify(self, message, expected, *args, **kwargs):
+        """Verify target substitutions."""
+        actual = self.command_handler.inject(
+            MessagePacket(message),
+            *args, **kwargs
+        ).text
+        assert actual == expected
+
     @pytest.mark.asyncio
     async def test_on_message(self):
         assert (await self.command_handler.on_message(
@@ -15,58 +23,72 @@ class TestCommandHandler:
         )).text == "Ohai! I'm CactusBot! :cactus:"
 
     def test_inject_argn(self):
-        assert self.command_handler.inject(
-            MessagePacket("Let's raid %ARG1%!"),
+
+        self.verify(
+            "Let's raid %ARG1%!",
+            "Let's raid GreatStreamer!",
             "raid", "GreatStreamer"
-        ).text == "Let's raid GreatStreamer!"
+        )
 
-        assert self.command_handler.inject(
-            MessagePacket("Let's raid %ARG1%! #%ARG2%"),
+        self.verify(
+            "Let's raid %ARG1%! #%ARG2%",
+            "Let's raid GreatStreamer! #ChannelRaid",
             "raid", "GreatStreamer", "ChannelRaid"
-        ).text == "Let's raid GreatStreamer! #ChannelRaid"
+        )
 
-        assert self.command_handler.inject(
-            MessagePacket("Let's raid %ARG1%!"),
+        self.verify(
+            "Let's raid %ARG1%!",
+            "Not enough arguments!",
             "raid"
-        ).text == "Not enough arguments!"
+        )
 
-        assert self.command_handler.inject(
-            MessagePacket("This is the !%ARG0% command."),
+        self.verify(
+            "This is the !%ARG0% command.",
+            "This is the !test command.",
             "test", "arg1", "arg2"
-        ).text == "This is the !test command."
+        )
 
     def test_inject_args(self):
-        assert self.command_handler.inject(
-            MessagePacket("Have some %ARGS%!"),
-            "gift", *"hamster-powered floofle waffles".split()
-        ).text == "Have some hamster-powered floofle waffles!"
 
-        assert self.command_handler.inject(
-            MessagePacket("Have some %ARGS%."),
+        self.verify(
+            "Have some %ARGS%!",
+            "Have some hamster-powered floofle waffles!",
+            "gift", *"hamster-powered floofle waffles".split()
+        )
+
+        self.verify(
+            "Have some %ARGS%.",
+            "Not enough arguments!",
             "give"
-        ).text == "Not enough arguments!"
+        )
 
     def test_inject_user(self):
-        assert self.command_handler.inject(
-            MessagePacket("Ohai, %USER%!"),
-            "ohai", username="SomeUser"
-        ).text == "Ohai, SomeUser!"
 
-        assert self.command_handler.inject(
-            MessagePacket("Ohai, %USER%!"),
+        self.verify(
+            "Ohai, %USER%!",
+            "Ohai, SomeUser!",
+            "ohai", username="SomeUser"
+        )
+
+        self.verify(
+            "Ohai, %USER%!",
+            "Ohai, %USER%!",
             "ohai"
-        ).text == "Ohai, %USER%!"
+        )
 
     def test_inject_count(self):
         pass
 
     def test_inject_channel(self):
-        assert self.command_handler.inject(
-            MessagePacket("Welcome to %CHANNEL%'s stream'!"),
-            "welcome", channel="GreatStreamer"
-        ).text == "Welcome to GreatStreamer's stream'!"
 
-        assert self.command_handler.inject(
-            MessagePacket("Welcome to %CHANNEL%'s stream'!"),
-            "welcome",
-        ).text == "Welcome to %CHANNEL%'s stream'!"
+        self.verify(
+            "Welcome to %CHANNEL%'s stream!",
+            "Welcome to GreatStreamer's stream!",
+            "welcome", channel="GreatStreamer"
+        )
+
+        self.verify(
+            "Welcome to %CHANNEL%'s stream!",
+            "Welcome to %CHANNEL%'s stream!",
+            "welcome"
+        )
