@@ -1,11 +1,9 @@
 """Interact with Beam chat."""
 
 
-import logging
-
-import json
-
 import itertools
+import json
+import logging
 
 from .. import WebSocket
 

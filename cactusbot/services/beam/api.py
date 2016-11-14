@@ -15,18 +15,16 @@ class BeamAPI(API):
             "password": password,
             "code": code
         }
-        return await self.post("/users/login", data=data)
+        response = await self.post("/users/login", data=data)
+        return await response.json()
 
     async def get_channel(self, channel, **params):
         """Get channel data by username or ID."""
-        return await self.get(
-            "/channels/{channel}".format(channel=channel), params=params)
+        response = await self.get("/channels/{channel}".format(
+            channel=channel), params=params)
+        return await response.json()
 
     async def get_chat(self, chat):
         """Get required data for connecting to a chat server by channel ID."""
-        return await self.get("/chats/{chat}".format(chat=chat))
-
-    async def remove_message(self, chat, message):
-        """Remove a message from chat by ID."""
-        return await self.delete("/chats/{chat}/message/{message}".format(
-            chat=chat, message=message))
+        response = await self.get("/chats/{chat}".format(chat=chat))
+        return await response.json()
