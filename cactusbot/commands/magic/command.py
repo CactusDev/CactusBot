@@ -15,8 +15,7 @@ class Meta(Command):
     }
 
     @Command.subcommand
-    async def add(self, command: r'!?([+$]?)(.+)', *response,
-                  added_by: "username"):
+    async def add(self, command: r'!?([+$]?)(.+)', *response):
         """Add a command."""
 
         symbol, name = command
@@ -33,19 +32,20 @@ class Meta(Command):
             return "Added command !{}.".format(name)
 
     @Command.subcommand
-    async def remove(self, name: "?command", *, removed_by: "username"):
+    async def remove(self, name: "?command"):
         """Remove a command."""
-        removed = await self.api.remove_command(name, removed_by=removed_by)
-        if removed:
+        response = await self.api.remove_command(name)
+        if response.status == 200:
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
     @Command.subcommand
     async def list(self):
         """List all custom commands."""
-        commands = await self.api.get_command()
+        response = await self.api.get_command()
 
-        if commands:
+        if response.status == 200:
+            commands = await response.json()
             return "Commands: {}".format(', '.join(
                 command["data"]["attributes"]["name"] for
                 command in commands
