@@ -9,9 +9,9 @@ class Meta(Command):
 
     COMMAND = "command"
 
-    permissions = {
-        '+': "Mod",
-        '$': "Subscriber"
+    ROLES = {
+        '+': 50,
+        '$': 20
     }
 
     @Command.subcommand
@@ -19,17 +19,17 @@ class Meta(Command):
                   added_by: "username"):
         """Add a command."""
 
-        level, name = command
+        symbol, name = command
 
-        permissions = ','.join(self.permissions[symbol] for symbol in level)
+        user_level = self.ROLES.get(symbol, 0)
 
-        data = await self.api.add_command(
-            name, ' '.join(response), permissions=permissions,
-            added_by=added_by
-        )
-        if data[0]["meta"].get("updated"):
+        response = await self.api.add_command(
+            name, ' '.join(response), user_level=user_level)
+        data = await response.json()
+
+        if data["meta"].get("updated"):
             return "Updated command !{}.".format(name)
-        elif data[0]["meta"].get("created"):
+        elif data["meta"].get("created"):
             return "Added command !{}.".format(name)
 
     @Command.subcommand
