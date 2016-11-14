@@ -15,6 +15,16 @@ class CactusAPI(API):
 
         self.channel = channel
 
+    async def get_command(self, name=None):
+        """Get a command."""
+
+        if name is not None:
+            return await self.get(
+                "/user/{channel}/command/{command}".format(
+                    channel=self.channel, command=name))
+        return await self.get("/user/{channel}/command".format(
+            channel=self.channel))
+
     async def add_command(self, name, response, *, user_level=0):
         """Add a command."""
 
@@ -32,30 +42,29 @@ class CactusAPI(API):
             }
         )
 
-    async def remove_command(self, name, *, removed_by=None):
+    async def remove_command(self, name):
         """Remove a command."""
-        data = {
-            "removedBy": removed_by
-        }
         return await self.delete("/user/{channel}/command/{command}".format(
-            channel=self.channel, command=name), data=data)
+            channel=self.channel, command=name))
 
-    async def get_command(self, name=None):
-        """Get a command."""
-        if name is not None:
-            return await self.get(
-                "/user/{channel}/command/{command}".format(
-                    channel=self.channel, command=name))
-        return await self.get(
-            "/user/{channel}/command".format(channel=self.channel))
+    async def get_quote(self, quote_id=None):
+        """Get a quote."""
 
-    async def add_quote(self, quote, *, added_by=None):
+        if quote_id is not None:
+            return await self.get("/user/{channel}/quote/{id}".format(
+                channel=self.channel, id=quote_id))
+        return await self.get("/user/{channel}/quote/random".format(
+            channel=self.channel))
+
+    async def add_quote(self, quote):
         """Add a quote."""
-        return "In development."
+        return await self.patch("/user/{channel}/quote/{quote}".format(
+            channel=self.channel, quote=quote))
 
     async def remove_quote(self, quote_id):
         """Remove a quote."""
-        return "In development."
+        return await self.delete("/user/{channel}/quote/{id}".format(
+            channel=self.channel, id=quote_id))
 
     async def get_friend(self, name=None):
         """Get a list of friends."""
