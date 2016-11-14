@@ -1,5 +1,7 @@
 """Interact with CactusAPI."""
 
+import json
+
 from .services.api import API
 
 
@@ -13,16 +15,22 @@ class CactusAPI(API):
 
         self.channel = channel
 
-    async def add_command(self, name, response, *, permissions={},
-                          added_by=None):
+    async def add_command(self, name, response, *, user_level=0):
         """Add a command."""
 
         data = {
             "response": response,
+            "userLevel": user_level  # TODO
         }
 
-        return await self.patch("/user/{channel}/command/{command}".format(
-            channel=self.channel, command=name), data=data)
+        return await self.patch(
+            "/user/{channel}/command/{command}".format(
+                channel=self.channel, command=name),
+            data=json.dumps(data),
+            headers={
+                "Content-Type": "application/json"  # FIXME
+            }
+        )
 
     async def remove_command(self, name, *, removed_by=None):
         """Remove a command."""
