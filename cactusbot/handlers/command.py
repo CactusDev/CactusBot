@@ -32,16 +32,36 @@ class CommandHandler(Handler):
         """Handle message events."""
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
+
             command, *args = packet[1:].split()
-            if command in self.MAGICS:
-                response = await self.MAGICS[command](
-                    *args, username=packet.user, channel=self.channel)
+
+            data = {
+                "username": packet.user,
+                "channel": self.channel
+            }
+
+            if command in self.magics:
+
+                response = await self.magics[command](*args, **data)
+
                 if packet.target:
                     response.target = packet.user
+
                 return response
+
             else:
-                # TODO: custom commands
-                return self.inject(MessagePacket(args[0]), *args[1:])  # XXX
+
+                response = await self.api.get_command(command)
+
+                if response.status == 404:
+                    return MessagePacket("Command not found.",
+                                         target=packet.user)
+                    # TODO: make configurable
+
+                return self.inject(MessagePacket(
+                    (await response.json())["data"]["attributes"]["response"],
+                    target=(packet.target and packet.user)
+                ), *args, **data)
 
     def inject(self, packet, *args, **data):
         """Inject targets into a packet."""
