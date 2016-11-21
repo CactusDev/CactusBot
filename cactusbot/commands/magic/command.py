@@ -21,7 +21,8 @@ class Meta(Command):
 
         user_level = self.ROLES.get(symbol, 0)
 
-        raw.role = ''  # HACK
+        raw.role = user_level  # HACK
+        raw.target = None
         response = await self.api.add_command(
             name, raw.split(maximum=3)[-1].json, user_level=user_level)
         data = await response.json()
