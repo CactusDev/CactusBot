@@ -37,7 +37,8 @@ class CommandHandler(Handler):
 
             data = {
                 "username": packet.user,
-                "channel": self.channel
+                "channel": self.channel,
+                "packet": packet
             }
 
             if command in self.magics:
@@ -58,12 +59,12 @@ class CommandHandler(Handler):
                                          target=packet.user)
                     # TODO: make configurable
 
-                return self.inject(MessagePacket(
-                    (await response.json())["data"]["attributes"]["response"],
+                return self._inject(MessagePacket(
+                    *(await response.json())["data"]["attributes"]["response"]["message"],
                     target=(packet.target and packet.user)
                 ), *args, **data)
 
-    def inject(self, packet, *args, **data):
+    def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""
 
         def sub_argn(match):
@@ -83,7 +84,7 @@ class CommandHandler(Handler):
             return result
 
         try:
-            packet.sub(self.ARGN_EXPR, sub_argn)
+            _packet.sub(self.ARGN_EXPR, sub_argn)
         except IndexError:
             return "Not enough arguments!"
 
@@ -102,15 +103,15 @@ class CommandHandler(Handler):
 
             return result
 
-        packet.sub(self.ARGS_EXPR, sub_args)
+        _packet.sub(self.ARGS_EXPR, sub_args)
 
-        packet.replace(**{
+        _packet.replace(**{
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
         })
 
-        return packet
+        return _packet
 
     def modify(self, argument, *modifiers):
         """Apply modifiers to an argument."""

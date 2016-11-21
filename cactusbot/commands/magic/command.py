@@ -15,15 +15,16 @@ class Meta(Command):
     }
 
     @Command.subcommand
-    async def add(self, command: r'!?([+$]?)(.+)', *response):
+    async def add(self, command: r'!?([+$]?)(.+)', *response, raw: "packet"):
         """Add a command."""
 
         symbol, name = command
 
         user_level = self.ROLES.get(symbol, 0)
 
+        raw.role = ''  # HACK
         response = await self.api.add_command(
-            name, ' '.join(response), user_level=user_level)
+            name, raw.json, user_level=user_level)
         data = await response.json()
 
         if data["meta"].get("updated"):

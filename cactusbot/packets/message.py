@@ -8,7 +8,7 @@ from ..packet import Packet
 class MessagePacket(Packet):
     """Message packet."""
 
-    def __init__(self, *message, user="", role=1, action=False, target=""):
+    def __init__(self, *message, user="", role=1, action=False, target=None):
 
         message = list(message)
         for index, chunk in enumerate(message):
