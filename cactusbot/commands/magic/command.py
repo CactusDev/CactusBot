@@ -1,6 +1,5 @@
 """Manage commands."""
 
-
 from . import Command
 
 
@@ -24,7 +23,7 @@ class Meta(Command):
 
         raw.role = ''  # HACK
         response = await self.api.add_command(
-            name, raw.json, user_level=user_level)
+            name, raw.split(maximum=3)[-1].json, user_level=user_level)
         data = await response.json()
 
         if data["meta"].get("updated"):
