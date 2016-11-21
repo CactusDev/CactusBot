@@ -45,7 +45,9 @@ class CommandHandler(Handler):
 
                 response = await self.magics[command](*args, **data)
 
-                if packet.target:
+                if packet.target and response:
+                    if not isinstance(response, MessagePacket):
+                        response = MessagePacket(response)
                     response.target = packet.user
 
                 return response

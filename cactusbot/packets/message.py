@@ -55,13 +55,11 @@ class MessagePacket(Packet):
                 if component["type"] == "text":
                     if len(component["text"]) <= count:
                         count -= len(component["text"])
-                        print("pop!", component["text"])
                         message.pop(0)
                     else:
                         while count > 0:
                             component["text"] = component["text"][1:]
                             component["data"] = component["data"][1:]
-                            print("[1:]", component["text"])
                             count -= 1
                 else:
                     message.pop(0)
