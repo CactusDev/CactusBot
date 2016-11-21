@@ -33,7 +33,7 @@ class CommandHandler(Handler):
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
 
-            command, *args = packet[1:].split()
+            command, *args = packet[1:].text.split()
 
             data = {
                 "username": packet.user,

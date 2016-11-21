@@ -122,3 +122,45 @@ class MessagePacket(Packet):
                 self.message[index]["text"] = re.sub(
                     pattern, repl, chunk["text"])
         return self
+
+    def split(self, seperator=' ', maximum=None):
+        """Split into multiple MessagePackets, based on a separator."""
+
+        result = []
+        components = []
+
+        if maximum is None:
+            maximum = float('inf')
+
+        for component in self:
+
+            if len(result) == maximum:
+                components.append(component)
+                continue
+
+            is_text = component["type"] == "text"
+            if not is_text or seperator not in component["text"]:
+                components.append(component)
+                continue
+
+            new = {"type": "text", "text": "", "data": ""}
+
+            for index, character in enumerate(component["text"]):
+                if len(result) == maximum:
+                    new["data"] = new["text"] = \
+                        new["text"] + component["text"][index:]
+                    break
+
+                if character == seperator:
+                    components.append(new.copy())
+                    result.append(components.copy())
+                    components.clear()
+                    new["data"] = new["text"] = ""
+                else:
+                    new["data"] = new["text"] = new["text"] + character
+
+            components.append(new)
+
+        result.append(components)
+
+        return [self.copy(*message) for message in result]
