@@ -9,6 +9,7 @@ class MessagePacket(Packet):
     """Message packet."""
 
     def __init__(self, *message, user="", role=1, action=False, target=None):
+        super().__init__()
 
         message = list(message)
         for index, chunk in enumerate(message):
@@ -29,13 +30,46 @@ class MessagePacket(Packet):
         return "<Message: {} - \"{}\">".format(self.user, self.text)
 
     def __len__(self):
-        total = 0
-        for chunk in self.message:
-            total += 1 if chunk["type"] == "emoji" else len(chunk["text"])
-        return total
+        return len(''.join(
+            chunk["text"] for chunk in self.message
+            if chunk["type"] == "text"
+        ))
 
     def __getitem__(self, key):
-        return self.text[key]
+
+        if isinstance(key, int):
+            return ''.join(
+                chunk["text"] for chunk in self.message
+                if chunk["type"] == "text"
+            )[key]
+
+        elif isinstance(key, slice):
+
+            if key.stop is not None or key.step is not None:
+                raise NotImplementedError  # TODO
+
+            count = key.start or 0
+            message = self.message.copy()
+
+            for component in message.copy():
+                if component["type"] == "text":
+                    if len(component["text"]) <= count:
+                        count -= len(component["text"])
+                        print("pop!", component["text"])
+                        message.pop(0)
+                    else:
+                        while count > 0:
+                            component["text"] = component["text"][1:]
+                            component["data"] = component["data"][1:]
+                            print("[1:]", component["text"])
+                            count -= 1
+                else:
+                    message.pop(0)
+                if count == 0:
+                    return self.copy(*message)
+            return self.copy(*message)
+
+        raise TypeError
 
     def __iter__(self):
         return self.message.__iter__()
@@ -55,6 +89,21 @@ class MessagePacket(Packet):
             "action": self.action,
             "target": self.target
         }
+
+    def copy(self, *args, **kwargs):
+        """Return a copy."""
+
+        _args = args or self.message
+
+        _kwargs = {
+            "user": self.user,
+            "role": self.role,
+            "action": self.action,
+            "target": self.target
+        }
+        _kwargs.update(kwargs)
+
+        return MessagePacket(*_args, **_kwargs)
 
     def replace(self, **values):
         """Replace text in packet."""
