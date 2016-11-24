@@ -23,7 +23,7 @@ class CommandHandler(Handler):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel)
+        self.api = CactusAPI(channel.lower())  # FIXME
 
         self.magics = dict((command.COMMAND, command(self.api))
                            for command in COMMANDS)
@@ -61,9 +61,14 @@ class CommandHandler(Handler):
                                          target=packet.user)
                     # TODO: make configurable
 
+                json = (await response.json()
+                        )["data"]["attributes"]["response"]
                 return self._inject(MessagePacket(
-                    *(await response.json())["data"]["attributes"]["response"]["message"],
-                    target=(packet.target and packet.user)
+                    *json.pop("message"),
+                    **{
+                        **json,
+                        "target": packet.user if packet.target else None
+                    }
                 ), *args, **data)
 
     def _inject(self, _packet, *args, **data):
