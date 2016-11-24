@@ -15,6 +15,16 @@ class CactusAPI(API):
 
         self.channel = channel
 
+    async def request(self, method, endpoints, **kwargs):
+        """Send HTTP request to endpoint."""
+
+        if "headers" in kwargs:
+            kwargs["headers"]["Content-Type"] = "application/json"
+        else:
+            kwargs["headers"] = {"Content-Type": "application/json"}
+
+        return await super().request(method, endpoints, **kwargs)
+
     async def get_command(self, name=None):
         """Get a command."""
 
@@ -36,10 +46,7 @@ class CactusAPI(API):
         return await self.patch(
             "/user/{channel}/command/{command}".format(
                 channel=self.channel, command=name),
-            data=json.dumps(data),
-            headers={
-                "Content-Type": "application/json"  # FIXME
-            }
+            data=json.dumps(data)
         )
 
     async def remove_command(self, name):
@@ -53,13 +60,29 @@ class CactusAPI(API):
         if quote_id is not None:
             return await self.get("/user/{channel}/quote/{id}".format(
                 channel=self.channel, id=quote_id))
-        return await self.get("/user/{channel}/quote/random".format(
-            channel=self.channel))
+        return await self.get("/user/{channel}/quote".format(
+            channel=self.channel), params={"random": True})
 
     async def add_quote(self, quote):
         """Add a quote."""
-        return await self.patch("/user/{channel}/quote/{quote}".format(
-            channel=self.channel, quote=quote))
+
+        data = {"quote": quote}
+
+        return await self.post(
+            "/user/{channel}/quote".format(channel=self.channel),
+            data=json.dumps(data)
+        )
+
+    async def edit_quote(self, quote_id, quote):
+        """Edit a quote."""
+
+        data = {"quote": quote}
+
+        return await self.patch(
+            "/user/{channel}/quote/{quote_id}".format(
+                channel=self.channel, quote_id=quote_id),
+            data=json.dumps(data)
+        )
 
     async def remove_quote(self, quote_id):
         """Remove a quote."""

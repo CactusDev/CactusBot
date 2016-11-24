@@ -14,25 +14,41 @@ class Quote(Command):
     @Command.subcommand(hidden=True)
     async def get(self, quote_id: r'[1-9]\d*'=None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
+
         if quote_id is None:
-            return self.api.get_quote()
-        return self.api.get_quote(quote_id)
+            response = await self.api.get_quote()
+            if response.status == 404:
+                return "No quotes have been added!"
+            return (await response.json())["data"][0]["attributes"]["quote"]
+        else:
+            response = await self.api.get_quote(quote_id)
+            if response.status == 404:
+                return "Quote {} does not exist!".format(quote_id)
+            return (await response.json())["data"]["attributes"]["quote"]
 
     @Command.subcommand
-    async def add(self, *quote, added_by: "username"):
+    async def add(self, *quote):
         """Add a quote."""
-        response = await self.api.add_quote(' '.join(quote), added_by=added_by)
-        return "Added quote with ID {}.".format(response["data"]["id"])
+        response = await self.api.add_quote(' '.join(quote))
+        data = await response.json()
+        return "Added quote with ID {}.".format(
+            data["data"]["attributes"]["quoteId"])
+
+    @Command.subcommand
+    async def edit(self, quote_id: r'[1-9]\d*', *quote):
+        """Edit a quote based on ID."""
+        response = await self.api.edit_quote(quote_id, ' '.join(quote))
+        if response.status == 201:
+            return "Added quote with ID {}.".format(quote_id)
+        return "Edited quote with ID {}.".format(quote_id)
 
     @Command.subcommand
     async def remove(self, quote_id: r'[1-9]\d*'):
         """Remove a quote."""
-        try:
-            self.api.remove_quote(quote_id)
-        except Exception:  # FIXME: data, not exceptions
+        response = await self.api.remove_quote(quote_id)
+        if response.status == 404:
             return "Quote {} does not exist!".format(quote_id)
-        else:
-            return "Removed quote with ID {}.".format(quote_id)
+        return "Removed quote with ID {}.".format(quote_id)
 
     @Command.subcommand  # FIXME: make secret
     async def inspirational(self):
@@ -45,7 +61,7 @@ class Quote(Command):
         except Exception:
             return MessagePacket(
                 "Unable to get an inspirational quote. Have a ",
-                ("emote", ":hamster:", ":hamster"),
+                ("emoji", ":hamster:", ":hamster"),
                 " instead."
             )
         else:
