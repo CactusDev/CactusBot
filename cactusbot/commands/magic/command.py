@@ -3,6 +3,7 @@
 from . import Command
 
 
+@Command.command()
 class Meta(Command):
     """Manage commands."""
 
@@ -13,7 +14,7 @@ class Meta(Command):
         '$': 20
     }
 
-    @Command.subcommand
+    @Command.command()
     async def add(self, command: r'!?([+$]?)(.+)', *response, raw: "packet"):
         """Add a command."""
 
@@ -32,7 +33,7 @@ class Meta(Command):
         elif data["meta"].get("created"):
             return "Added command !{}.".format(name)
 
-    @Command.subcommand
+    @Command.command()
     async def remove(self, name: "?command"):
         """Remove a command."""
         response = await self.api.remove_command(name)
@@ -40,7 +41,7 @@ class Meta(Command):
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.subcommand
+    @Command.command()
     async def list(self):
         """List all custom commands."""
         response = await self.api.get_command()

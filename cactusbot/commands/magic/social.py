@@ -3,17 +3,17 @@
 import aiohttp
 
 from . import Command
-
 from ...packets import MessagePacket
 
 
+@Command.command()
 class Social(Command):
     """Get social data."""
 
     COMMAND = "social"
 
-    @Command.subcommand(hidden=True)
-    async def get(self, *args: False, channel: "channel"):
+    @Command.command(hidden=True)
+    async def default(self, *args: False, channel: "channel"):
         """Get a social service if it's provived, or give it all."""
 
         social_data = await (await aiohttp.get(
@@ -42,5 +42,3 @@ class Social(Command):
                 "The service{s} {services} don't exist.".format(
                     services=', '.join(selected.difference(available)),
                     s='s' if len(selected.difference(available) > 1) else ''))
-
-    DEFAULT = get

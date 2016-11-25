@@ -8,6 +8,7 @@ from . import Command
 from ...packets import MessagePacket
 
 
+@Command.command()
 class Cube(Command):
     """Cube things."""
 
@@ -15,8 +16,8 @@ class Cube(Command):
 
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
-    @Command.subcommand(hidden=True)
-    async def run(self, *args: False, username: "username") -> "cube":
+    @Command.command(hidden=True)
+    async def default(self, *args: False, username: "username"):
         """Cube things!"""
 
         if not args:
@@ -38,8 +39,6 @@ class Cube(Command):
         if match is not None:
             return '{:.4g}'.format(float(match.string)**3)
         return '({})³'.format(value)
-
-    DEFAULT = run
 
 
 class Temmie(Command):
@@ -70,8 +69,8 @@ class Temmie(Command):
         ("You say hello to Temmie.", True)
     )
 
-    @Command.subcommand(hidden=True)
-    async def get(self, *query: False):
+    @Command.command(hidden=True)
+    async def default(self, *query: False):
         """hOI!!!!!!"""
 
         if query:
@@ -84,5 +83,3 @@ class Temmie(Command):
             quote, action = random.choice(self.QUOTES)
 
         return MessagePacket(quote, action=action)
-
-    DEFAULT = get
