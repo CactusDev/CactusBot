@@ -25,8 +25,9 @@ class CommandHandler(Handler):
         self.channel = channel
         self.api = CactusAPI(channel.lower())  # FIXME
 
-        self.magics = dict((command.COMMAND, command(self.api))
-                           for command in COMMANDS)
+        self.magics = {command.COMMAND: command for command in COMMANDS}
+        for command in self.magics.values():
+            command.api = self.api
 
     async def on_message(self, packet):
         """Handle message events."""

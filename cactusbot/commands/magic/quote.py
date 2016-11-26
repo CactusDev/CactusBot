@@ -6,13 +6,14 @@ from . import Command
 from ...packets import MessagePacket
 
 
+@Command.command()
 class Quote(Command):
     """Manage quotes."""
 
     COMMAND = "quote"
 
-    @Command.subcommand(hidden=True)
-    async def get(self, quote_id: r'[1-9]\d*'=None):
+    @Command.command(hidden=True)
+    async def default(self, quote_id: r'[1-9]\d*'=None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
 
         if quote_id is None:
@@ -26,7 +27,7 @@ class Quote(Command):
                 return "Quote {} does not exist!".format(quote_id)
             return (await response.json())["data"]["attributes"]["quote"]
 
-    @Command.subcommand
+    @Command.command()
     async def add(self, *quote):
         """Add a quote."""
         response = await self.api.add_quote(' '.join(quote))
@@ -34,7 +35,7 @@ class Quote(Command):
         return "Added quote with ID {}.".format(
             data["data"]["attributes"]["quoteId"])
 
-    @Command.subcommand
+    @Command.command()
     async def edit(self, quote_id: r'[1-9]\d*', *quote):
         """Edit a quote based on ID."""
         response = await self.api.edit_quote(quote_id, ' '.join(quote))
@@ -42,7 +43,7 @@ class Quote(Command):
             return "Added quote with ID {}.".format(quote_id)
         return "Edited quote with ID {}.".format(quote_id)
 
-    @Command.subcommand
+    @Command.command()
     async def remove(self, quote_id: r'[1-9]\d*'):
         """Remove a quote."""
         response = await self.api.remove_quote(quote_id)
@@ -50,7 +51,7 @@ class Quote(Command):
             return "Quote {} does not exist!".format(quote_id)
         return "Removed quote with ID {}.".format(quote_id)
 
-    @Command.subcommand  # FIXME: make secret
+    @Command.command(hidden=True)
     async def inspirational(self):
         """Retrieve an inspirational quote."""
         try:
@@ -69,5 +70,3 @@ class Quote(Command):
                 quote=data["quoteText"].strip(),
                 author=data["quoteAuthor"].strip() or "Unknown"
             )
-
-    DEFAULT = get
