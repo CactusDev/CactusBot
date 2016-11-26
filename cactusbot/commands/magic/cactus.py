@@ -35,6 +35,34 @@ class Cactus(Command):
         )
 
     @Command.command()
+    async def github(self, project=None):
+        if project is None or project.lower() in ("bot", "cactusbot"):
+            return MessagePacket(
+                "Check out my GitHub repository at: ",
+                ("url", "https://github.com/CactusDev/CactusBot",
+                 "github.com/CactusDev/CactusBot")
+            )
+        elif project.lower() == "issue":
+            return MessagePacket(
+                "Create a GitHub issue at: ",
+                ("url", "https://github.com/CactusDev/CactusBot/issues",
+                 "github.com/CactusDev/CactusBot/issues")
+            )
+        elif project.lower() in ("api", "cactusapi"):
+            return MessagePacket(
+                "Check out the GitHub repository for CactusAPI at: ",
+                ("url", "https://github.com/CactusDev/CactusAPI",
+                 "github.com/CactusDev/CactusAPI")
+            )
+        elif project.lower() == "sepal":
+            return MessagePacket(
+                "Check out the GitHub repository for Sepal at: ",
+                ("url", "https://github.com/CactusDev/Sepal",
+                 "github.com/CactusDev/Sepal")
+            )
+        return MessagePacket("Unknown project '{0}'.".format(project))
+
+    @Command.command()
     async def help(self):
         return ("Try our docs (!cactus docs). If that doesn't help, tweet at"
                 " us (!cactus twitter)!")
