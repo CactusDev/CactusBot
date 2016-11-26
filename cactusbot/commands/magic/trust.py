@@ -2,6 +2,7 @@
 
 from ..command import Command
 
+
 class Trust(Command):
     """Trust command."""
 

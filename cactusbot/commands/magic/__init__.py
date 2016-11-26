@@ -9,9 +9,7 @@ from .social import Social
 from .trust import Trust
 from .uptime import Uptime
 
-from.cactus import Cactus
-
-COMMANDS = (Meta, Quote, Cube, Temmie, Social, Trust, Cactus, Uptime)
+COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime)
 
 __all__ = ["Command", "Meta", "Quote", "Cube",
            "Social", "Trust", "Cactus", "Uptime"]

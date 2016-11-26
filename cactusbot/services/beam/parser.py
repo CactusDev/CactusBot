@@ -53,7 +53,7 @@ class BeamParser:
             role=cls.ROLES[packet["user_roles"][0]],
             action=packet["message"]["meta"].get("me", False),
             target=packet["message"]["meta"].get(
-                "whisper", "") and packet["target"]
+                "whisper", None) and packet["target"]
         )
 
     @classmethod

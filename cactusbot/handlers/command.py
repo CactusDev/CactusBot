@@ -23,27 +23,56 @@ class CommandHandler(Handler):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel)
+        self.api = CactusAPI(channel.lower())  # FIXME
 
-        self.magics = dict((command.COMMAND, command(self.api))
-                           for command in COMMANDS)
+        self.magics = {command.COMMAND: command for command in COMMANDS}
+        for command in self.magics.values():
+            command.api = self.api
 
     async def on_message(self, packet):
         """Handle message events."""
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
-            command, *args = packet[1:].split()
-            if command in self.MAGICS:
-                response = await self.MAGICS[command](
-                    *args, username=packet.user, channel=self.channel)
-                if packet.target:
-                    response.target = packet.user
-                return response
-            else:
-                # TODO: custom commands
-                return self.inject(MessagePacket(args[0]), *args[1:])  # XXX
 
-    def inject(self, packet, *args, **data):
+            command, *args = packet[1:].text.split()
+
+            data = {
+                "username": packet.user,
+                "channel": self.channel,
+                "packet": packet
+            }
+
+            if command in self.magics:
+
+                response = await self.magics[command](*args, **data)
+
+                if packet.target and response:
+                    if not isinstance(response, MessagePacket):
+                        response = MessagePacket(response)
+                    response.target = packet.user
+
+                return response
+
+            else:
+
+                response = await self.api.get_command(command)
+
+                if response.status == 404:
+                    return MessagePacket("Command not found.",
+                                         target=packet.user)
+                    # TODO: make configurable
+
+                json = (await response.json()
+                        )["data"]["attributes"]["response"]
+                return self._inject(MessagePacket(
+                    *json.pop("message"),
+                    **{
+                        **json,
+                        "target": packet.user if packet.target else None
+                    }
+                ), *args, **data)
+
+    def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""
 
         def sub_argn(match):
@@ -63,7 +92,7 @@ class CommandHandler(Handler):
             return result
 
         try:
-            packet.sub(self.ARGN_EXPR, sub_argn)
+            _packet.sub(self.ARGN_EXPR, sub_argn)
         except IndexError:
             return "Not enough arguments!"
 
@@ -82,15 +111,15 @@ class CommandHandler(Handler):
 
             return result
 
-        packet.sub(self.ARGS_EXPR, sub_args)
+        _packet.sub(self.ARGS_EXPR, sub_args)
 
-        packet.replace(**{
+        _packet.replace(**{
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
         })
 
-        return packet
+        return _packet
 
     def modify(self, argument, *modifiers):
         """Apply modifiers to an argument."""
