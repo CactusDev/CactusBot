@@ -42,9 +42,7 @@ class Command:
                     else:
                         return "Too many arguments."
 
-        print("ARGS", args)
         if self.default is not None:
-            print("DEFAULT")
             try:
                 return await self._run_safe(self.default, *args, **meta)
             except IndexError:
