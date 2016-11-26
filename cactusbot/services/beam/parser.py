@@ -38,6 +38,7 @@ class BeamParser:
                 chunk["data"] = cls.EMOJI.get(component["text"], "")
                 message.append(chunk)
             elif component["type"] == "link":
+                chunk["type"] = "url"
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":

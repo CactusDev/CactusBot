@@ -9,7 +9,7 @@ class SpamHandler(Handler):
 
     MAX_SCORE = 16
     MAX_EMOJI = 6
-    ALLOW_LINKS = False
+    ALLOW_URLS = False
     # TODO: Make configurable
 
     async def on_message(self, packet):
@@ -23,7 +23,7 @@ class SpamHandler(Handler):
             chunk["type"] == "text"
         ))
         exceeds_emoji = self.check_emoji(packet)
-        contains_links = self.check_links(packet)
+        contains_urls = self.contains_urls(packet)
 
         if exceeds_caps:
             return (MessagePacket("Please do not spam capital letters.",
@@ -35,8 +35,8 @@ class SpamHandler(Handler):
                                   target=packet.user),
                     BanPacket(packet.user, 1),
                     StopIteration)
-        elif contains_links:
-            return (MessagePacket("Please do not post links.",
+        elif contains_urls:
+            return (MessagePacket("Please do not post URLs.",
                                   target=packet.user),
                     BanPacket(packet.user, 5),
                     StopIteration)
@@ -53,10 +53,10 @@ class SpamHandler(Handler):
         return sum(chunk["type"] == "emoji" for
                    chunk in packet) > self.MAX_EMOJI
 
-    def check_links(self, packet):
-        """Check for links in the message."""
-        return not self.ALLOW_LINKS and any(
-            chunk["type"] == "link" for chunk in packet)
+    def contains_urls(self, packet):
+        """Check for URLs in the message."""
+        return not self.ALLOW_URLS and any(
+            chunk["type"] == "url" for chunk in packet)
 
     def check_banned_words(self, packet):
         """Check for banned words in a message."""
