@@ -161,4 +161,5 @@ class MessagePacket(Packet):
 
         result.append(components)
 
-        return [self.copy(*message) for message in result]
+        return [self.copy(*filter(lambda c: c["text"], message))
+                for message in result]
