@@ -16,4 +16,4 @@ env:
 script:
   - nosetests
   - flake8 run.py config.template.py cactusbot/
-  - pytest tests/
+  - python -m pytest tests/
