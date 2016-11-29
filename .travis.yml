@@ -8,7 +8,7 @@ branches:
     - /^release-v(\d+.){0,2}\d+$/
 before_install:
     - pip install flake8
-    - pip install pytest pytest-asyncio
+    - pip install pytest pytest-asyncio --upgrade
 install:
   - pip install -r requirements.txt
 env:
