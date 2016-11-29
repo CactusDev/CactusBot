@@ -11,7 +11,8 @@ class TestCommandHandler:
     def verify(self, message, expected, *args, **kwargs):
         """Verify target substitutions."""
         actual = self.command_handler._inject(
-            MessagePacket(message),
+            MessagePacket(
+                *message if isinstance(message, list) else (message,)),
             *args, **kwargs
         ).text
         assert actual == expected
@@ -46,6 +47,24 @@ class TestCommandHandler:
             "This is the !%ARG0% command.",
             "This is the !test command.",
             "test", "arg1", "arg2"
+        )
+
+        self.verify(
+            "%ARG1|upper% IS AMAZING!",
+            "SALAD IS AMAZING!",
+            "amazing", "salad", "taco"
+        )
+
+        self.verify(
+            "If you reverse %ARG1%, you get %ARG1|reverse%!",
+            "If you reverse potato, you get otatop!",
+            "reverse", "potato"
+        )
+
+        self.verify(
+            ["Let's raid %ARG1%! ", ("link", "beam.pro/%ARG1|tag%")],
+            "Let's raid @Streamer! beam.pro/Streamer",
+            "raid", "@Streamer"
         )
 
     def test_inject_args(self):

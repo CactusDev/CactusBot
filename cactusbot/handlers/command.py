@@ -1,5 +1,7 @@
 """Handle commands."""
 
+import random
+
 from ..api import CactusAPI
 from ..commands import COMMANDS
 from ..handler import Handler
@@ -16,7 +18,8 @@ class CommandHandler(Handler):
         "lower": str.lower,
         "title": str.title,
         "reverse": lambda text: text[::-1],
-        "tag": lambda tag: tag[1:] if tag[0] == '@' and len(tag) > 1 else tag
+        "tag": lambda tag: tag[1:] if tag[0] == '@' and len(tag) > 1 else tag,
+        "shuffle": lambda text: ''.join(random.sample(text, len(text)))
     }
 
     def __init__(self, channel):
@@ -70,9 +73,9 @@ class CommandHandler(Handler):
                         **json,
                         "target": packet.user if packet.target else None
                     }
-                ), *args, **data)
+                ), command, *args, **data)
 
-    def _inject(self, packet, *args, **data):
+    def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""
 
         def sub_argn(match):
@@ -92,7 +95,7 @@ class CommandHandler(Handler):
             return result
 
         try:
-            packet.sub(self.ARGN_EXPR, sub_argn)
+            _packet.sub(self.ARGN_EXPR, sub_argn)
         except IndexError:
             return MessagePacket("Not enough arguments!")
 
@@ -111,18 +114,18 @@ class CommandHandler(Handler):
 
             return result
 
-        if "%ARGS%" in packet and len(args) < 2:
+        if "%ARGS%" in _packet and len(args) < 2:
             return MessagePacket("Not enough arguments!")
 
-        packet.sub(self.ARGS_EXPR, sub_args)
+        _packet.sub(self.ARGS_EXPR, sub_args)
 
-        packet.replace(**{
+        _packet.replace(**{
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
         })
 
-        return packet
+        return _packet
 
     def modify(self, argument, *modifiers):
         """Apply modifiers to an argument."""

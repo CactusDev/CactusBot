@@ -122,7 +122,8 @@ class MessagePacket(Packet):
     def sub(self, pattern, repl):
         """Perform regex substitution on packet."""
         for index, chunk in enumerate(self.message):
-            if chunk["type"] == "text":
+            if chunk["type"] in ("text", "link"):
+
                 self.message[index]["text"] = re.sub(
                     pattern, repl, chunk["text"])
         return self
