@@ -70,11 +70,7 @@ class BeamParser:
 
     @classmethod
     def parse_host(cls, packet):
-        return EventPacket(
-            "host",
-            packet["user"]["username"],
-            packet["hosting"]
-        )
+        return EventPacket("host", packet["hoster"]["token"])
 
     @classmethod
     def synthesize(cls, packet):
@@ -87,6 +83,8 @@ class BeamParser:
         for component in packet:
             if component["type"] == "emoji":
                 message += emoji.get(component["data"], component["text"])
+            elif component["type"] == "tag":
+                message += '@' + component["text"] + ' '
             else:
                 message += component["text"]
 

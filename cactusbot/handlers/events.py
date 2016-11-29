@@ -28,7 +28,11 @@ class EventHandler(Handler):
         """Handle follow packets."""
 
         # TODO: Make configurable
-        response = "Thanks for following, @{} !".format(packet.user)
+        response = MessagePacket(
+            "Thanks for following, ",
+            ("tag", packet.user),
+            "!"
+        )
 
         if packet.success:
             if self.cache_follows:
@@ -47,9 +51,17 @@ class EventHandler(Handler):
     async def on_subscribe(self, packet):
         """Handle subscription packets."""
         # TODO: Make configurable
-        return "Thanks for subscribing, @{} !".format(packet.user)
+        return MessagePacket(
+            "Thanks for subscribing, ",
+            ("tag", packet.user),
+            "!"
+        )
 
     async def on_host(self, packet):
         """Handle host packets."""
         # TODO: Make configurable
-        return "Thanks for hosting, @{} !".format(packet.user)
+        return MessagePacket(
+            "Thanks for hosting, ",
+            ("tag", packet.user),
+            "!"
+        )

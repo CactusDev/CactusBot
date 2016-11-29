@@ -6,9 +6,14 @@ branches:
     - master
     - develop
     - /^release-v(\d+.){0,2}\d+$/
+before_install:
+    - pip install flake8
+    - pip install pytest pytest-asyncio
 install:
   - pip install -r requirements.txt
-  - pip install flake8
+env:
+  - PYTHONPATH=.
 script:
-  - flake8 run.py config.template.py cactusbot/
   - nosetests
+  - flake8 run.py config.template.py cactusbot/
+  - pytest tests/

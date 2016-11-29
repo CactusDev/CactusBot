@@ -69,6 +69,12 @@ class MessagePacket(Packet):
 
         raise TypeError
 
+    def __contains__(self, item):
+        for chunk in self.message:
+            if chunk["type"] == "text" and item in chunk["text"]:
+                return True
+        return False
+
     def __iter__(self):
         return self.message.__iter__()
 

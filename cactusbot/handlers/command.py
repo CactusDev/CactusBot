@@ -72,7 +72,7 @@ class CommandHandler(Handler):
                     }
                 ), *args, **data)
 
-    def _inject(self, _packet, *args, **data):
+    def _inject(self, packet, *args, **data):
         """Inject targets into a packet."""
 
         def sub_argn(match):
@@ -92,9 +92,9 @@ class CommandHandler(Handler):
             return result
 
         try:
-            _packet.sub(self.ARGN_EXPR, sub_argn)
+            packet.sub(self.ARGN_EXPR, sub_argn)
         except IndexError:
-            return "Not enough arguments!"
+            return MessagePacket("Not enough arguments!")
 
         def sub_args(match):
             """Substitute all arguments in place of the ARGS target."""
@@ -111,15 +111,18 @@ class CommandHandler(Handler):
 
             return result
 
-        _packet.sub(self.ARGS_EXPR, sub_args)
+        if "%ARGS%" in packet and len(args) < 2:
+            return MessagePacket("Not enough arguments!")
 
-        _packet.replace(**{
+        packet.sub(self.ARGS_EXPR, sub_args)
+
+        packet.replace(**{
             "%USER%": data.get("username"),
             "%COUNT%": "%COUNT%",  # TODO
             "%CHANNEL%": data.get("channel")
         })
 
-        return _packet
+        return packet
 
     def modify(self, argument, *modifiers):
         """Apply modifiers to an argument."""
