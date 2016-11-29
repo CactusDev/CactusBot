@@ -29,7 +29,7 @@ class TestBeamParser:
             "user": "2Cubed",
             "role": 100,
             "action": False,
-            "target": False
+            "target": None
         }
 
         assert BeamParser.parse_message({
@@ -62,7 +62,7 @@ class TestBeamParser:
             "user": "Stanley",
             "role": 1,
             "action": True,
-            "target": False
+            "target": None
         }
 
     def test_parse_follow(self):

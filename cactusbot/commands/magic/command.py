@@ -1,51 +1,53 @@
 """Manage commands."""
 
-
 from . import Command
 
 
+@Command.command()
 class Meta(Command):
     """Manage commands."""
 
     COMMAND = "command"
 
-    permissions = {
-        '+': "Mod",
-        '$': "Subscriber"
+    ROLES = {
+        '+': 50,
+        '$': 20
     }
 
-    @Command.subcommand
-    async def add(self, command: r'!?([+$]?)(.+)', *response,
-                  added_by: "username"):
+    @Command.command()
+    async def add(self, command: r'!?([+$]?)(.+)', *response, raw: "packet"):
         """Add a command."""
 
-        level, name = command
+        symbol, name = command
 
-        permissions = ','.join(self.permissions[symbol] for symbol in level)
+        user_level = self.ROLES.get(symbol, 0)
 
-        data = await self.api.add_command(
-            name, ' '.join(response), permissions=permissions,
-            added_by=added_by
-        )
-        if data[0]["meta"].get("updated"):
+        raw.role = user_level  # HACK
+        raw.target = None
+        response = await self.api.add_command(
+            name, raw.split(maximum=3)[-1].json, user_level=user_level)
+        data = await response.json()
+
+        if data["meta"].get("updated"):
             return "Updated command !{}.".format(name)
-        elif data[0]["meta"].get("created"):
+        elif data["meta"].get("created"):
             return "Added command !{}.".format(name)
 
-    @Command.subcommand
-    async def remove(self, name: "?command", *, removed_by: "username"):
+    @Command.command()
+    async def remove(self, name: "?command"):
         """Remove a command."""
-        removed = await self.api.remove_command(name, removed_by=removed_by)
-        if removed:
+        response = await self.api.remove_command(name)
+        if response.status == 200:
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.subcommand
+    @Command.command()
     async def list(self):
         """List all custom commands."""
-        commands = await self.api.get_command()
+        response = await self.api.get_command()
 
-        if commands:
+        if response.status == 200:
+            commands = await response.json()
             return "Commands: {}".format(', '.join(
                 command["data"]["attributes"]["name"] for
                 command in commands

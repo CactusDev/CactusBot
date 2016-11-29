@@ -10,7 +10,7 @@ class TestCommandHandler:
 
     def verify(self, message, expected, *args, **kwargs):
         """Verify target substitutions."""
-        actual = self.command_handler.inject(
+        actual = self.command_handler._inject(
             MessagePacket(message),
             *args, **kwargs
         ).text

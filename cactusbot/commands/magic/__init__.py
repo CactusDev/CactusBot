@@ -1,14 +1,15 @@
 """Define custom magic commands."""
 
 from .. import Command
-
+from .cactus import Cactus
 from .command import Meta
-from .quote import Quote
 from .cube import Cube, Temmie
+from .quote import Quote
 from .social import Social
-from .friend import Friend
-from.cactus import Cactus
+from .trust import Trust
+from .uptime import Uptime
 
-COMMANDS = (Meta, Quote, Cube, Temmie, Social, Friend, Cactus)
+COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime)
 
-__all__ = ["Command", "Meta", "Quote", "Cube", "Friend", "Cactus"]
+__all__ = ["Command", "Meta", "Quote", "Cube",
+           "Social", "Trust", "Cactus", "Uptime"]

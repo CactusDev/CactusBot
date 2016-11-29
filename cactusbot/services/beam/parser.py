@@ -41,7 +41,7 @@ class BeamParser:
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
-                chunk["data"] = component["username"]
+                chunk["data"] = str(component["id"])
                 message.append(chunk)
             elif component["text"]:
                 chunk["data"] = component["text"]
@@ -53,7 +53,7 @@ class BeamParser:
             role=cls.ROLES[packet["user_roles"][0]],
             action=packet["message"]["meta"].get("me", False),
             target=packet["message"]["meta"].get(
-                "whisper", "") and packet["target"]
+                "whisper", None) and packet["target"]
         )
 
     @classmethod
@@ -70,11 +70,7 @@ class BeamParser:
 
     @classmethod
     def parse_host(cls, packet):
-        return EventPacket(
-            "host",
-            packet["user"]["username"],
-            packet["hosting"]
-        )
+        return EventPacket("host", packet["hoster"]["token"])
 
     @classmethod
     def synthesize(cls, packet):
