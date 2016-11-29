@@ -90,11 +90,12 @@ class BeamParser:
 
         for component in packet:
             if component["type"] == "emoji":
+                message += ' '
                 message += emoji.get(component["data"], component["text"])
             else:
                 message += component["text"]
 
-            if component["type"] in ("emoji", "url", "tag"):
+            if component["type"] in ("emoji", "tag"):
                 message += ' '
 
         if packet.target:
