@@ -42,6 +42,7 @@ class BeamParser:
                 chunk["data"] = ""
                 message.append(chunk)
             elif component["type"] == "link":
+                chunk["type"] = "url"
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
