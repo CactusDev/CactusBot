@@ -29,7 +29,7 @@ class Command:
                                 '> <'.join(arg.name for arg in error.args[1]))
                         response = "Not enough arguments. <{0}>".format(
                             '|'.join(
-                                commands[command].commands(hidden=True).keys()
+                                commands[command].commands(hidden=False).keys()
                             ))
                         if commands[command].default is not None:
                             try:
@@ -38,7 +38,7 @@ class Command:
                                     *arguments, **meta)
                             except IndexError:
                                 return response
-                        return "rip invalid arg"  # response
+                        return response
                     else:
                         return "Too many arguments."
 
@@ -53,18 +53,16 @@ class Command:
             return "Invalid argument: '{0}'.".format(command)
 
         return "Not enough arguments. <{0}>".format(
-            '|'.join(self.commands(hidden=True).keys()))
+            '|'.join(self.commands(hidden=False).keys()))
 
     @staticmethod
-    def command(name="", *, hidden=False):
+    def command(name=None, **meta):
         """Accept arguments for command decorator."""
 
         def decorator(function):
             """Decorate a command."""
 
-            function.COMMAND_META = {
-                "hidden": hidden
-            }
+            function.COMMAND_META = meta
 
             if inspect.isclass(function):
                 COMMAND = getattr(function, "COMMAND", None)
@@ -73,7 +71,8 @@ class Command:
                 if COMMAND is not None:
                     function.COMMAND = COMMAND
 
-            if name is not "":
+            if name is not None:
+                assert ' ' not in name, "Command name may not contain spaces"
                 if getattr(function, "COMMAND", name) is not name:
                     raise NameError("Multiple command name declarations")
                 function.COMMAND = name
@@ -87,7 +86,6 @@ class Command:
     async def _run_safe(self, function, *args, **meta):
         self._check_safe(function, *args)
 
-#         if safe is True:
         args = self._clean_args(function, *args)
         if isinstance(args, str):
             return args
@@ -163,7 +161,7 @@ class Command:
         meta_args = (p for p in params if p.kind is p.KEYWORD_ONLY)
         return {p.name: meta.get(p.annotation) for p in meta_args}
 
-    def commands(self, *, hidden=False):
+    def commands(self, **meta):
         """Return commands belonging to the parent class."""
 
         disallowed = ["commands", "__class__"]
@@ -172,5 +170,6 @@ class Command:
             if attr not in disallowed
             for method in (getattr(self, attr),)
             if hasattr(method, "COMMAND") and
-            not (hidden and method.COMMAND_META["hidden"])
+            all(method.COMMAND_META.get(key, value) == value
+                for key, value in meta.items())
         }

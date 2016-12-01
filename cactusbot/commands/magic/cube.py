@@ -17,7 +17,7 @@ class Cube(Command):
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
     @Command.command(hidden=True)
-    async def default(self, *args: False, username: "username"):
+    async def default(self, *args: False, username: "username", raw: "packet"):
         """Cube things!"""
 
         if not args:
@@ -27,18 +27,36 @@ class Cube(Command):
         elif len(args) > 8:
             return "Whoa, that's 2 many cubes!"
 
-        return ' · '.join(self.cube(arg) for arg in args)
+        result = []
+
+        for component in raw.split(maximum=1)[1]:
+            if component["type"] == "text":
+                if component["text"].split():
+                    result += self.join(
+                        map(self.cube, component["text"].split()), ' · ')
+                    result.append(' · ')
+            else:
+                result.append(component)
+                result.append('³')
+                result.append(' · ')
+
+        return MessagePacket(*result[:-1])
 
     def cube(self, value: str):
         """Cube a value."""
 
-        if value.startswith(':'):  # HACK: global emote parsing required
-            return '{} ³'.format(value)
-
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
             return '{:.4g}'.format(float(match.string)**3)
-        return '({})³'.format(value)
+        return '{}³'.format(value)
+
+    @staticmethod
+    def join(iterable, delimeter):
+        iterable = iter(iterable)
+        yield next(iterable)
+        for item in iterable:
+            yield delimeter
+            yield item
 
 
 class Temmie(Command):
