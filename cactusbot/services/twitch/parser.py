@@ -1,10 +1,12 @@
+"""Parse incoming and outgoing packets."""
+
 from ...packets import MessagePacket, EventPacket
 
 import json
 from os import path
 
 
-class BeamParser:
+class TwitchParser:
 
     # TODO: update with accurate values
     ROLES = {
