@@ -24,7 +24,7 @@ class TestSpamHandler:
             "Check out my amazing Twitter!",
             ("link", "twitter.com/CactusDevTeam",
              "https://twitter.com/CactusDevTeam")
-        )))[0].text == "Please do not post links."
+        )))[0].text == "Please do not post URLs."
 
         assert await self.spam_handler.on_message(
             MessagePacket("PLEASE STOP SPAMMING CAPITAL LETTERS.", role=50)
@@ -87,17 +87,17 @@ class TestSpamHandler:
             *(("emoji", ":smile:"),) * 100
         ))
 
-    def test_check_links(self):
+    def test_check_urls(self):
 
-        assert not self.spam_handler.check_links(MessagePacket(
+        assert not self.spam_handler.contains_urls(MessagePacket(
             "This message contains no links."
         ))
 
-        assert not self.spam_handler.check_links(MessagePacket(
+        assert not self.spam_handler.contains_urls(MessagePacket(
             "google.com was not parsed as a link, and is therefore 'fine'."
         ))
 
-        assert self.spam_handler.check_links(MessagePacket(
+        assert self.spam_handler.contains_urls(MessagePacket(
             "You should go check out ",
             ("link", "cactusbot.rtfd.org", "https://cactusbot.rtfd.org")
         ))

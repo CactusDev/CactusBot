@@ -252,7 +252,7 @@ class TestBeamParser:
             " Check out ",
             ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
             "!"
-        )) == (("Hey, @Stanley ! :cactus Check out cactusbot.rtfd.org!",), {})
+        )) == (("Hey, @Stanley! :cactus Check out cactusbot.rtfd.org!",), {})
 
         assert BeamParser.synthesize(MessagePacket(
             "waves", action=True
