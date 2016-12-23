@@ -1,8 +1,11 @@
 """Message packet."""
 
 import re
+from collections import namedtuple
 
 from ..packet import Packet
+
+MessageComponent = namedtuple("Component", ("type", "data", "text"))
 
 
 class MessagePacket(Packet):
@@ -13,12 +16,14 @@ class MessagePacket(Packet):
 
         message = list(message)
         for index, chunk in enumerate(message):
-            if isinstance(chunk, tuple):
+            if isinstance(chunk, dict):
+                message[index] = MessageComponent(**chunk)
+            elif isinstance(chunk, tuple):
                 if len(chunk) == 2:
                     chunk = chunk + (chunk[1],)
-                message[index] = dict(zip(("type", "data", "text"), chunk))
+                message[index] = MessageComponent(*chunk)
             elif isinstance(chunk, str):
-                message[index] = {"type": "text", "data": chunk, "text": chunk}
+                message[index] = MessageComponent("text", chunk, chunk)
         self.message = message
 
         self.user = user
@@ -31,16 +36,16 @@ class MessagePacket(Packet):
 
     def __len__(self):
         return len(''.join(
-            chunk["text"] for chunk in self.message
-            if chunk["type"] == "text"
+            chunk.text for chunk in self.message
+            if chunk.type == "text"
         ))
 
     def __getitem__(self, key):
 
         if isinstance(key, int):
             return ''.join(
-                chunk["text"] for chunk in self.message
-                if chunk["type"] == "text"
+                chunk.text for chunk in self.message
+                if chunk.type == "text"
             )[key]
 
         elif isinstance(key, slice):
@@ -51,15 +56,16 @@ class MessagePacket(Packet):
             count = key.start or 0
             message = self.message.copy()
 
-            for component in message.copy():
-                if component["type"] == "text":
-                    if len(component["text"]) <= count:
-                        count -= len(component["text"])
+            for index, component in enumerate(message.copy()):
+                if component.type == "text":
+                    if len(component.text) <= count:
+                        count -= len(component.text)
                         message.pop(0)
                     else:
                         while count > 0:
-                            component["text"] = component["text"][1:]
-                            component["data"] = component["data"][1:]
+                            new_text = component.text[1:]
+                            component = message[index] = component._replace(
+                                text=new_text, data=new_text)
                             count -= 1
                 else:
                     message.pop(0)
@@ -71,7 +77,7 @@ class MessagePacket(Packet):
 
     def __contains__(self, item):
         for chunk in self.message:
-            if chunk["type"] == "text" and item in chunk["text"]:
+            if chunk.type == "text" and item in chunk.text:
                 return True
         return False
 
@@ -81,13 +87,13 @@ class MessagePacket(Packet):
     @property
     def text(self):
         """Pure text representation of the packet."""
-        return ''.join(chunk["text"] for chunk in self.message)
+        return ''.join(chunk.text for chunk in self.message)
 
     @property
     def json(self):
         """JSON representation of the packet."""
         return {
-            "message": self.message,
+            "message": [component._asdict() for component in self.message],
             "user": self.user,
             "role": self.role,
             "action": self.action,
@@ -112,20 +118,20 @@ class MessagePacket(Packet):
     def replace(self, **values):
         """Replace text in packet."""
         for index, chunk in enumerate(self.message):
-            if chunk["type"] == "text":
+            if chunk.type == "text":
                 for old, new in values.items():
                     if new is not None:
-                        self.message[index]["text"] = chunk["text"].replace(
-                            old, new)
+                        self.message[index] = self.message[index]._replace(
+                            text=chunk.text.replace(old, new))
+                        chunk = self.message[index]
         return self
 
     def sub(self, pattern, repl):
         """Perform regex substitution on packet."""
         for index, chunk in enumerate(self.message):
-            if chunk["type"] in ("text", "link"):
-
-                self.message[index]["text"] = re.sub(
-                    pattern, repl, chunk["text"])
+            if chunk.type in ("text", "link"):
+                self.message[index] = self.message[index]._replace(
+                    text=re.sub(pattern, repl, chunk.text))
         return self
 
     def split(self, seperator=' ', maximum=None):
@@ -143,30 +149,29 @@ class MessagePacket(Packet):
                 components.append(component)
                 continue
 
-            is_text = component["type"] == "text"
-            if not is_text or seperator not in component["text"]:
+            is_text = component.type == "text"
+            if not is_text or seperator not in component.text:
                 components.append(component)
                 continue
 
-            new = {"type": "text", "text": "", "data": ""}
+            new = MessageComponent("text", "", "")
 
-            for index, character in enumerate(component["text"]):
+            for index, character in enumerate(component.text):
                 if len(result) == maximum:
-                    new["data"] = new["text"] = \
-                        new["text"] + component["text"][index:]
+                    new.data = new.text = new.text + component.text[index:]
                     break
 
                 if character == seperator:
-                    components.append(new.copy())
+                    components.append(new._replace())
                     result.append(components.copy())
                     components.clear()
-                    new["data"] = new["text"] = ""
+                    new.data = new.text = ""
                 else:
-                    new["data"] = new["text"] = new["text"] + character
+                    new.data = new.text = new.text + character
 
             components.append(new)
 
         result.append(components)
 
-        return [self.copy(*filter(lambda c: c["text"], message))
+        return [self.copy(*filter(lambda c: c.text, message))
                 for message in result]

@@ -19,8 +19,8 @@ class SpamHandler(Handler):
             return None
 
         exceeds_caps = self.check_caps(''.join(
-            chunk["text"] for chunk in packet if
-            chunk["type"] == "text"
+            chunk.text for chunk in packet if
+            chunk.type == "text"
         ))
         exceeds_emoji = self.check_emoji(packet)
         contains_urls = self.contains_urls(packet)
@@ -50,13 +50,13 @@ class SpamHandler(Handler):
 
     def check_emoji(self, packet):
         """Check for excessive emoji in the message."""
-        return sum(chunk["type"] == "emoji" for
+        return sum(chunk.type == "emoji" for
                    chunk in packet) > self.MAX_EMOJI
 
     def contains_urls(self, packet):
         """Check for URLs in the message."""
         return not self.ALLOW_URLS and any(
-            chunk["type"] == "url" for chunk in packet)
+            chunk.type == "link" for chunk in packet)
 
     def check_banned_words(self, packet):
         """Check for banned words in a message."""

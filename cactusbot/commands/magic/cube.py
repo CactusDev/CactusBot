@@ -30,10 +30,10 @@ class Cube(Command):
         result = []
 
         for component in raw.split(maximum=1)[1]:
-            if component["type"] == "text":
-                if component["text"].split():
+            if component.type == "text":
+                if component.text.split():
                     result += self.join(
-                        map(self.cube, component["text"].split()), ' · ')
+                        map(self.cube, component.text.split()), ' · ')
                     result.append(' · ')
             else:
                 result.append(component)

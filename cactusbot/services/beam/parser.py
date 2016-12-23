@@ -42,7 +42,6 @@ class BeamParser:
                 chunk["data"] = ""
                 message.append(chunk)
             elif component["type"] == "link":
-                chunk["type"] = "url"
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
@@ -85,17 +84,16 @@ class BeamParser:
         if packet.action:
             message = "/me "
 
-        for component in packet:
-            if component["type"] == "emoji":
-                message += ' '
-                message += emoji.get(component["data"], component["text"])
-            elif component["type"] == "tag":
-                message += '@' + component["text"] + ' '
+        for index, component in enumerate(packet):
+            if component.type == "emoji":
+                message += emoji.get(component.data, component.text)
+                if (index < len(packet) - 1 and
+                        not packet[index + 1].startswith(' ')):
+                    message += ' '
+            elif component.type == "tag":
+                message += '@' + component.text
             else:
-                message += component["text"]
-
-            if component["type"] in ("emoji", "tag"):
-                message += ' '
+                message += component.text
 
         if packet.target:
             return (packet.target, message), {"method": "whisper"}
