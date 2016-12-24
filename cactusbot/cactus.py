@@ -6,7 +6,7 @@ import time
 
 import config
 
-from .services.sepal import Sepal
+from .sepal import Sepal
 
 __version__ = "v0.4-dev"
 
@@ -49,10 +49,11 @@ class Cactus:
 
         self.logger.info(CACTUS_ART)
 
-        sepal = Sepal(config.API_TOKEN)
+        sepal = Sepal(config.API_TOKEN, self.service)
 
         # TODO: Add support for multiple services
         try:
+            await sepal.connect()
             asyncio.ensure_future(sepal.read(sepal.handle))
             await self.service.run(username, password)
 

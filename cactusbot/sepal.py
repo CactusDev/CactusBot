@@ -4,6 +4,8 @@ import json
 import logging
 
 from .services.websocket import WebSocket
+from .packets import MessagePacket
+from .api import CactusAPI
 
 
 class Sepal(WebSocket):
@@ -15,6 +17,12 @@ class Sepal(WebSocket):
         self.logger = logging.getLogger(__name__)
 
         self.channel = channel
+        self.api = CactusAPI(channel)
+        self.service = service
+        self.parser = None
+
+        if self.service is not None:
+            self.parser = SepalParser(self.api)
 
     async def send(self, packet_type, **kwargs):
         """Send a packet to Sepal."""
@@ -49,18 +57,28 @@ class Sepal(WebSocket):
 
         assert self.service is not None, "Must have a service to handle"
 
-        event = packet["event"]
-
-        if not hasattr(SepalParser, "parse_" + event):
+        if not packet.get("event"):
             return
 
-        data = getattr(SepalParser, "parse_" + event)(packet)
+        event = packet["event"]
+
+        if not hasattr(self.parser, "parse_" + event):
+            return
+
+        data = getattr(self.parser, "parse_" + event)(packet)
 
         await self.service.handle(event, data)
 
 
 class SepalParser:
+    """Parse Sepal packets."""
 
-    @classmethod
-    def parse_repeat(cls, packet):
-        pass  # TODO
+    def __init__(self, api):
+        self.api = api
+
+    async def parse_repeat(self, packet):
+        """Parse the incoming repeat packet."""
+
+        command_name = packet["data"]["commandName"]
+        response = await self.api.get_command(command_name)
+        print(response)
