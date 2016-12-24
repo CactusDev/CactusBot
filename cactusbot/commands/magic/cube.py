@@ -59,6 +59,7 @@ class Cube(Command):
             yield item
 
 
+@Command.command()
 class Temmie(Command):
     "awwAwa!!"
 

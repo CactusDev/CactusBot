@@ -48,6 +48,11 @@ class Cactus(Command):
                 ("url", "https://github.com/CactusDev/CactusBot/issues",
                  "github.com/CactusDev/CactusBot/issues")
             )
+        elif project.lower() in ("cactusdev", "cactus"):
+            return MessagePacket(
+                "Check out the CactusDev GitHub organization at: ",
+                ("url", "https://github.com/CactusDev", "github.com/CactusDev")
+            )
         elif project.lower() in ("api", "cactusapi"):
             return MessagePacket(
                 "Check out the GitHub repository for CactusAPI at: ",
@@ -59,6 +64,12 @@ class Cactus(Command):
                 "Check out the GitHub repository for Sepal at: ",
                 ("url", "https://github.com/CactusDev/Sepal",
                  "github.com/CactusDev/Sepal")
+            )
+        elif project.lower() in ("assets", "art"):
+            return MessagePacket(
+                "Check out the CactusDev assets at: ",
+                ("url", "https://github.com/CactusDev/CactusAssets",
+                 "github.com/CactusDev/CactusAssets")
             )
         return MessagePacket("Unknown project '{0}'.".format(project))
 
