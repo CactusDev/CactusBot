@@ -11,7 +11,7 @@ async def verify_cube(packet, expected):
     elif isinstance(response, MessagePacket):
         assert response.text == expected
     else:
-        raise Exception("weird typawefaw89p34t")
+        raise TypeError
 
 
 @pytest.mark.asyncio
