@@ -3,9 +3,9 @@
 import json
 import logging
 
-from .services.websocket import WebSocket
-from .packets import MessagePacket
 from .api import CactusAPI
+from .packets import MessagePacket
+from .services.websocket import WebSocket
 
 
 class Sepal(WebSocket):
@@ -57,7 +57,7 @@ class Sepal(WebSocket):
 
         assert self.service is not None, "Must have a service to handle"
 
-        if not packet.get("event"):
+        if "event" not in packet:
             return
 
         event = packet["event"]
@@ -65,7 +65,7 @@ class Sepal(WebSocket):
         if not hasattr(self.parser, "parse_" + event):
             return
 
-        data = getattr(self.parser, "parse_" + event)(packet)
+        data = await getattr(self.parser, "parse_" + event)(packet)
 
         await self.service.handle(event, data)
 
