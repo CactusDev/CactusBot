@@ -158,16 +158,18 @@ class MessagePacket(Packet):
 
             for index, character in enumerate(component.text):
                 if len(result) == maximum:
-                    new.data = new.text = new.text + component.text[index:]
+                    new_text = new.text + component.text[index:]
+                    new = new._replace(data=new_text, text=new_text)
                     break
 
                 if character == seperator:
                     components.append(new._replace())
                     result.append(components.copy())
                     components.clear()
-                    new.data = new.text = ""
+                    new = new._replace(data="", text="")
                 else:
-                    new.data = new.text = new.text + character
+                    new_text = new.text + character
+                    new = new._replace(data=new_text, text=new_text)
 
             components.append(new)
 
