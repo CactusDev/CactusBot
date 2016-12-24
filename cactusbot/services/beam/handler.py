@@ -72,7 +72,7 @@ class BeamHandler:
             event = self.chat_events[event]
 
             # HACK?
-            if getattr(self.parser, "parse_" + event):
+            if hasattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
             await self.handle(event, data)
@@ -91,7 +91,7 @@ class BeamHandler:
             event = self.constellation_events[event]
 
             # HACK
-            if getattr(self.parser, "parse_" + event):
+            if hasattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
             await self.handle(event, data)

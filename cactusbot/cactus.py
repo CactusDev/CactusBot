@@ -1,8 +1,12 @@
 """CactusBot!"""
 
+import asyncio
 import logging
-
 import time
+
+import config
+
+from .services.sepal import Sepal
 
 __version__ = "v0.4-dev"
 
@@ -45,8 +49,11 @@ class Cactus:
 
         self.logger.info(CACTUS_ART)
 
+        sepal = Sepal(config.API_TOKEN)
+
         # TODO: Add support for multiple services
         try:
+            asyncio.ensure_future(sepal.read(sepal.handle))
             await self.service.run(username, password)
 
         except KeyboardInterrupt:
