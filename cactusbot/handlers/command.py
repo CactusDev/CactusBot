@@ -90,7 +90,7 @@ class CommandHandler(Handler):
                 result = args[argn] if argn < len(args) else default
 
             if modifiers is not None:
-                result = self.modify(result, *modifiers.split('|')[1:])
+                result = self._modify(result, *modifiers.split('|')[1:])
 
             return result
 
@@ -110,7 +110,7 @@ class CommandHandler(Handler):
                 result = ' '.join(args[1:])
 
             if modifiers is not None:
-                result = self.modify(result, *modifiers.split('|')[1:])
+                result = self._modify(result, *modifiers.split('|')[1:])
 
             return result
 
@@ -127,7 +127,7 @@ class CommandHandler(Handler):
 
         return _packet
 
-    def modify(self, argument, *modifiers):
+    def _modify(self, argument, *modifiers):
         """Apply modifiers to an argument."""
 
         for modifier in modifiers:
@@ -135,3 +135,6 @@ class CommandHandler(Handler):
                 argument = self.MODIFIERS[modifier](argument)
 
         return argument
+
+    async def on_repeat(self, packet):
+        return packet

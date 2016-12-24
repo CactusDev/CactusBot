@@ -175,3 +175,7 @@ class MessagePacket(Packet):
 
         return [self.copy(*filter(lambda c: c.text, message))
                 for message in result]
+
+    @classmethod
+    def from_json(cls, json):
+        return cls(*json.pop("message"), **json)
