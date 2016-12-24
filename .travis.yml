@@ -13,6 +13,8 @@ install:
   - pip install -r requirements.txt
 env:
   - PYTHONPATH=.
+before_script:
+  - cp config.template.py config.py
 script:
   - nosetests
   - flake8 run.py config.template.py cactusbot/
