@@ -81,4 +81,9 @@ class SepalParser:
 
         command_name = packet["data"]["commandName"]
         response = await self.api.get_command(command_name)
-        print(response)
+
+        if response.status is 404:
+            return
+
+        return MessagePacket.from_json(
+            (await response.json())["data"]["attributes"]["response"])
