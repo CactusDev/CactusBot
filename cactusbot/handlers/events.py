@@ -91,3 +91,14 @@ class EventHandler(Handler):
 
         return MessagePacket.from_json(
             self.alert_messages["host"]["message"].replace("%USER%", packet.user))
+
+    async def on_config(self, packet):
+        """Handle config update events."""
+
+        messages = packet["data"]["announce"]
+
+        self.alert_messages = {
+            "follow": messages["follow"],
+            "subscribe": messages["sub"],
+            "host": messages["host"]
+        }
