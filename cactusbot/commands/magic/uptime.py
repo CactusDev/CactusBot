@@ -16,6 +16,8 @@ class Uptime(Command):
 
     @Command.command(hidden=True)
     async def default(self, *, channel: "channel"):
+        """Default response."""
+
         data = await (await aiohttp.get(
             self.BEAM_MANIFEST_URL.format(channel=channel)
         )).json()

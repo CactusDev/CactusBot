@@ -77,7 +77,7 @@ class SepalParser:
         self.api = api
 
     async def parse_repeat(self, packet):
-        """Parse the incoming repeat packet."""
+        """Parse the incoming repeat packets."""
 
         command_name = packet["data"]["commandName"]
         response = await self.api.get_command(command_name)
@@ -87,3 +87,8 @@ class SepalParser:
 
         return MessagePacket.from_json(
             (await response.json())["data"]["attributes"]["response"])
+
+    async def parse_config(self, packet):
+        """Parse the incoming config packets."""
+
+        print("Config packet: ", packet)

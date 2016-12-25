@@ -4,8 +4,11 @@ from ..packet import Packet
 
 
 class BanPacket(Packet):
+    """Ban packet."""
 
     def __init__(self, user, duration=0):
+        super().__init__()
+
         self.user = user
         self.duration = duration
 
@@ -18,5 +21,5 @@ class BanPacket(Packet):
     def json(self):
         return {
             "user": self.user,
-            "action": self.actions
+            "duration": self.duration
         }

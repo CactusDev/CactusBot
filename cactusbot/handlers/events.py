@@ -6,11 +6,13 @@ from ..cached import CacheUtils
 from ..handler import Handler
 from ..packets import MessagePacket
 
+from ..api import CactusAPI
+
 
 class EventHandler(Handler):
     """Events handler."""
 
-    def __init__(self, cache_data):
+    def __init__(self, cache_data, channel):
         super().__init__()
 
         self.cache = CacheUtils("caches/followers.json")
@@ -18,7 +20,32 @@ class EventHandler(Handler):
         self.follow_time = datetime.timedelta(
             minutes=cache_data["CACHE_FOLLOWS_TIME"])
 
+        self.api = CactusAPI(channel)
+
+        self.alert_messages = None
+
+    async def load_messages(self):
+        """Load alert messages."""
+
+        data = self.api.get_config()
+
+        if not data.get("data"):
+            return
+
+        if not data["data"].get("announce"):
+            return
+
+        messages = data["data"]["announce"]
+
+        self.alert_messages = {
+            "follow": messages["follow"],
+            "subscribe": messages["sub"],
+            "host": messages["host"]
+        }
+
     async def on_start(self, _):
+        """Handle start packets."""
+
         return MessagePacket(
             "CactusBot activated. ",
             ("emoji", ":cactus:", ":cactus:")
@@ -27,12 +54,11 @@ class EventHandler(Handler):
     async def on_follow(self, packet):
         """Handle follow packets."""
 
-        # TODO: Make configurable
-        response = MessagePacket(
-            "Thanks for following, ",
-            ("tag", packet.user),
-            "!"
-        )
+        if not self.alert_messages["follow"]["announce"]:
+            return
+
+        response = MessagePacket.from_json(
+            self.alert_messages["follow"]["message"].replace("%USER%", packet.user))
 
         if packet.success:
             if self.cache_follows:
@@ -50,18 +76,18 @@ class EventHandler(Handler):
 
     async def on_subscribe(self, packet):
         """Handle subscription packets."""
-        # TODO: Make configurable
-        return MessagePacket(
-            "Thanks for subscribing, ",
-            ("tag", packet.user),
-            "!"
-        )
+
+        if not self.alert_messages["subscribe"]["announce"]:
+            return
+
+        return MessagePacket.from_json(
+            self.alert_messages["subscribe"]["message"].replace("%USER%", packet.user))
 
     async def on_host(self, packet):
         """Handle host packets."""
-        # TODO: Make configurable
-        return MessagePacket(
-            "Thanks for hosting, ",
-            ("tag", packet.user),
-            "!"
-        )
+
+        if not self.alert_messages["host"]["announce"]:
+            return
+
+        return MessagePacket.from_json(
+            self.alert_messages["host"]["message"].replace("%USER%", packet.user))

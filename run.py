@@ -44,6 +44,5 @@ if __name__ == "__main__":
         # TODO: Make this cactus.run(services) instead of only Beam
         loop.run_until_complete(cactus.run(USERNAME, PASSWORD))
         loop.run_forever()
-    # TODO: Error catching?
     finally:
         loop.close()

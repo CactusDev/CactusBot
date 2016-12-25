@@ -26,7 +26,7 @@ class CommandHandler(Handler):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel.lower())  # FIXME
+        self.api = CactusAPI(channel.lower())
 
         self.magics = {command.COMMAND: command for command in COMMANDS}
         for command in self.magics.values():
@@ -60,13 +60,8 @@ class CommandHandler(Handler):
 
                 response = await self.api.get_command(command)
 
-                if response.status == 404:
-                    return MessagePacket("Command not found.",
-                                         target=packet.user)
-                    # TODO: make configurable
+                json = (await response.json())["data"]["attributes"]["response"]
 
-                json = (await response.json()
-                        )["data"]["attributes"]["response"]
                 return self._inject(MessagePacket(
                     *json.pop("message"),
                     **{

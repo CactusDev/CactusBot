@@ -4,8 +4,11 @@ from ..packet import Packet
 
 
 class EventPacket(Packet):
+    """Event packet."""
 
     def __init__(self, event_type, user, success=True):
+        super().__init__()
+
         self.event_type = event_type
         self.user = user
         self.success = success

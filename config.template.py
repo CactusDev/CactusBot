@@ -21,7 +21,7 @@ CACHE_DATA = {
     "CACHE_FOLLOWS_TIME": 0
 }
 
-handlers = Handlers(LoggingHandler(), EventHandler(CACHE_DATA),
+handlers = Handlers(LoggingHandler(), EventHandler(CACHE_DATA, API_TOKEN),
                     CommandHandler(CHANNEL), SpamHandler())
 
 SERVICE = BeamHandler(CHANNEL, handlers)

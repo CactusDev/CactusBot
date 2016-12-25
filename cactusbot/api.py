@@ -106,3 +106,8 @@ class CactusAPI(API):
         """Remove a friend."""
         return await self.delete("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
+
+    async def get_config(self):
+        """Get the channel config."""
+
+        return await self.get("/channel/{channel}/config".format(channel=self.channel))

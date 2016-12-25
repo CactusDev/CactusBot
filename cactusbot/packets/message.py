@@ -178,4 +178,6 @@ class MessagePacket(Packet):
 
     @classmethod
     def from_json(cls, json):
+        """Create message packet from JSON."""
+
         return cls(*json.pop("message"), **json)
