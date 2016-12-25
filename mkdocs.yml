@@ -1,0 +1,7 @@
+site_name: CactusBot Documentation
+repo_url: https://github.com/CactusDev/CactusBot
+site_author: CactusDev
+pages:
+  - Home: index.md
+  - Usage:
+    - !command: command.md
