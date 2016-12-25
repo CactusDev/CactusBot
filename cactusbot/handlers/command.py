@@ -60,6 +60,9 @@ class CommandHandler(Handler):
 
                 response = await self.api.get_command(command)
 
+                if response.status == 404:
+                    return MessagePacket("Command not found.", target=packet.user)
+
                 json = (await response.json())["data"]["attributes"]["response"]
 
                 return self._inject(MessagePacket(
