@@ -44,8 +44,6 @@ class DiscordParser:
                     component["text"] = prefix + data[index].name
                     index += 1
 
-        # TODO: emoji conversion
-
         return MessagePacket(
             *message,
             user=packet.author.name,

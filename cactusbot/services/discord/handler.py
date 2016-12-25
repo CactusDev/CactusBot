@@ -35,7 +35,7 @@ class DiscordHandler(discord.Client):
     async def handle(self, event, channel, packet):
         """Handle a packet event."""
 
-        for response in self.handlers.handle(event, packet):
+        for response in await self.handlers.handle(event, packet):
             if isinstance(response, MessagePacket):
                 packet = self.parser.synthesize(response)
                 await self.send_message(channel, packet)
