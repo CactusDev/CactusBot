@@ -37,11 +37,15 @@ class BeamParser:
                 chunk["type"] = "emoji"
                 chunk["data"] = cls.EMOJI.get(component["text"], "")
                 message.append(chunk)
-            elif component["type"] == "url":
+            elif component["type"] == "inaspacesuit":
+                chunk["type"] = "emoji"
+                chunk["data"] = ""
+                message.append(chunk)
+            elif component["type"] == "link":
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
-                chunk["data"] = component["username"]
+                chunk["data"] = str(component["id"])
                 message.append(chunk)
             elif component["text"]:
                 chunk["data"] = component["text"]
@@ -52,7 +56,8 @@ class BeamParser:
             user=packet["user_name"],
             role=cls.ROLES[packet["user_roles"][0]],
             action=packet["message"]["meta"].get("me", False),
-            target=packet["message"]["meta"].get("whisper", False)
+            target=packet["message"]["meta"].get(
+                "whisper", None) and packet["target"]
         )
 
     @classmethod
@@ -69,11 +74,7 @@ class BeamParser:
 
     @classmethod
     def parse_host(cls, packet):
-        return EventPacket(
-            "host",
-            packet["user"]["username"],
-            packet["hosting"]
-        )
+        return EventPacket("host", packet["hoster"]["token"])
 
     @classmethod
     def synthesize(cls, packet):
@@ -83,11 +84,16 @@ class BeamParser:
         if packet.action:
             message = "/me "
 
-        for component in packet:
-            if component["type"] == "emoji":
-                message += emoji.get(component["data"], component["text"])
+        for index, component in enumerate(packet):
+            if component.type == "emoji":
+                message += emoji.get(component.data, component.text)
+                if (index < len(packet) - 1 and
+                        not packet[index + 1].startswith(' ')):
+                    message += ' '
+            elif component.type == "tag":
+                message += '@' + component.text
             else:
-                message += component["text"]
+                message += component.text
 
         if packet.target:
             return (packet.target, message), {"method": "whisper"}

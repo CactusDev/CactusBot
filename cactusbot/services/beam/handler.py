@@ -57,9 +57,7 @@ class BeamHandler:
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))
 
-        await self.send(MessagePacket(
-            "CactusBot activated. ", ("emoji", "🌵")
-        ))
+        await self.handle("start", None)
 
     async def handle_chat(self, packet):
         """Handle chat packets."""
@@ -74,23 +72,10 @@ class BeamHandler:
             event = self.chat_events[event]
 
             # HACK?
-            if getattr(self.parser, "parse_" + event):
+            if hasattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
-            for response in self.handlers.handle(event, data):
-                if isinstance(response, MessagePacket):
-                    args, kwargs = self.parser.synthesize(response)
-                    await self.send(*args, **kwargs)
-
-                elif isinstance(response, BanPacket):
-                    if response.time:
-                        await self.send(
-                            response.user,
-                            response.time,
-                            method="timeout"
-                        )
-                    else:
-                        pass  # TODO: full ban
+            await self.handle(event, data)
 
     async def handle_constellation(self, packet):
         """Handle constellation packets."""
@@ -106,11 +91,26 @@ class BeamHandler:
             event = self.constellation_events[event]
 
             # HACK
-            if getattr(self.parser, "parse_" + event):
+            if hasattr(self.parser, "parse_" + event):
                 data = getattr(self.parser, "parse_" + event)(data)
 
-            for response in self.handlers.handle(event, data):
-                await self.send(response.text)  # HACK
+            await self.handle(event, data)
+
+    async def handle(self, event, data):
+        for response in await self.handlers.handle(event, data):
+            if isinstance(response, MessagePacket):
+                args, kwargs = self.parser.synthesize(response)
+                await self.send(*args, **kwargs)
+
+            elif isinstance(response, BanPacket):
+                if response.duration:
+                    await self.send(
+                        response.user,
+                        response.duration,
+                        method="timeout"
+                    )
+                else:
+                    pass  # TODO: full ban
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""

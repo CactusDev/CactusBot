@@ -2,8 +2,9 @@
 
 import datetime
 
-from ..handler import Handler
 from ..cached import CacheUtils
+from ..handler import Handler
+from ..packets import MessagePacket
 
 
 class EventHandler(Handler):
@@ -17,11 +18,21 @@ class EventHandler(Handler):
         self.follow_time = datetime.timedelta(
             minutes=cache_data["CACHE_FOLLOWS_TIME"])
 
-    def on_follow(self, packet):
+    async def on_start(self, _):
+        return MessagePacket(
+            "CactusBot activated. ",
+            ("emoji", ":cactus:", ":cactus:")
+        )
+
+    async def on_follow(self, packet):
         """Handle follow packets."""
 
         # TODO: Make configurable
-        response = "Thanks for following, @{} !".format(packet.user)
+        response = MessagePacket(
+            "Thanks for following, ",
+            ("tag", packet.user),
+            "!"
+        )
 
         if packet.success:
             if self.cache_follows:
@@ -37,12 +48,20 @@ class EventHandler(Handler):
             else:
                 return response
 
-    def on_subscribe(self, packet):
+    async def on_subscribe(self, packet):
         """Handle subscription packets."""
         # TODO: Make configurable
-        return "Thanks for subscribing, @{} !".format(packet.user)
+        return MessagePacket(
+            "Thanks for subscribing, ",
+            ("tag", packet.user),
+            "!"
+        )
 
-    def on_host(self, packet):
+    async def on_host(self, packet):
         """Handle host packets."""
         # TODO: Make configurable
-        return "Thanks for hosting, @{} !".format(packet.user)
+        return MessagePacket(
+            "Thanks for hosting, ",
+            ("tag", packet.user),
+            "!"
+        )

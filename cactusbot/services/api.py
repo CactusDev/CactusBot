@@ -1,9 +1,10 @@
 """Interact with a REST API."""
 
+import json
 import logging
-
 from urllib.parse import urljoin
-from aiohttp import ClientSession, ClientHttpProcessingError
+
+from aiohttp import ClientHttpProcessingError, ClientSession
 
 
 class API(ClientSession):
@@ -25,16 +26,14 @@ class API(ClientSession):
         url = self._build(endpoint)
 
         async with super().request(method, url, **kwargs) as response:
-            if not response.status == 200:
-                error = "{resp.status} {resp.reason}".format(resp=response)
-                self.logger.error(error)
-                raise ClientHttpProcessingError(error)
             try:
-                response = await response.json()
-                return response
-            except ValueError:
+                await response.text()
+            except json.decoder.JSONDecodeError:
                 self.logger.warning("Response was not JSON!")
+                self.logger.debug(response.text)
                 raise ClientHttpProcessingError("Response was not JSON!")
+            else:
+                return response
 
     async def get(self, endpoint, **kwargs):
         return await self.request("GET", endpoint, **kwargs)

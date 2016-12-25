@@ -1,14 +1,14 @@
 """Cube things."""
 
+import random
 import re
-
-from random import choice
 from difflib import get_close_matches
 
 from . import Command
 from ...packets import MessagePacket
 
 
+@Command.command()
 class Cube(Command):
     """Cube things."""
 
@@ -16,8 +16,8 @@ class Cube(Command):
 
     NUMBER_EXPR = re.compile(r'^[-+]?\d*\.\d+|[-+]?\d+$')
 
-    @Command.subcommand(hidden=True)
-    async def run(self, *args: False, username: "username") -> "cube":
+    @Command.command(hidden=True)
+    async def default(self, *args: False, username: "username", raw: "packet"):
         """Cube things!"""
 
         if not args:
@@ -25,24 +25,41 @@ class Cube(Command):
         if args == ('2',):
             return "8. Whoa, that's 2Cubed!"
         elif len(args) > 8:
-            return "Whoa, that's 2 many cubes"
+            return "Whoa, that's 2 many cubes!"
 
-        return ' · '.join(self.cube(arg) for arg in args)
+        result = []
+
+        for component in raw.split(maximum=1)[1]:
+            if component.type == "text":
+                if component.text.split():
+                    result += self.join(
+                        map(self.cube, component.text.split()), ' · ')
+                    result.append(' · ')
+            else:
+                result.append(component)
+                result.append('³')
+                result.append(' · ')
+
+        return MessagePacket(*result[:-1])
 
     def cube(self, value: str):
         """Cube a value."""
 
-        if value.startswith(':'):  # HACK: global emote parsing required
-            return '{} ³'.format(value)
-
         match = re.match(self.NUMBER_EXPR, value)
         if match is not None:
             return '{:.4g}'.format(float(match.string)**3)
-        return '({})³'.format(value)
+        return '{}³'.format(value)
 
-    DEFAULT = run
+    @staticmethod
+    def join(iterable, delimeter):
+        iterable = iter(iterable)
+        yield next(iterable)
+        for item in iterable:
+            yield delimeter
+            yield item
 
 
+@Command.command()
 class Temmie(Command):
     "awwAwa!!"
 
@@ -71,8 +88,8 @@ class Temmie(Command):
         ("You say hello to Temmie.", True)
     )
 
-    @Command.subcommand(hidden=True)
-    async def get(self, *query: False):
+    @Command.command(hidden=True)
+    async def default(self, *query: False):
         """hOI!!!!!!"""
 
         if query:
@@ -82,8 +99,6 @@ class Temmie(Command):
                 ' '.join(query).lower(), quotes.keys(), n=1, cutoff=0)[0]
             quote, action = quotes[lowered]
         else:
-            quote, action = choice(self.QUOTES)
+            quote, action = random.choice(self.QUOTES)
 
         return MessagePacket(quote, action=action)
-
-    DEFAULT = get

@@ -3,37 +3,55 @@
 from aiohttp import get
 
 from . import Command
+from ...packets import MessagePacket
 
 
+@Command.command()
 class Quote(Command):
     """Manage quotes."""
 
     COMMAND = "quote"
 
-    @Command.subcommand(hidden=True)
-    async def get(self, quote_id: r'[1-9]\d*'=None):
+    @Command.command(hidden=True)
+    async def default(self, quote_id: r'[1-9]\d*'=None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
+
         if quote_id is None:
-            return self.api.get_quote()
-        return self.api.get_quote(quote_id)
+            response = await self.api.get_quote()
+            if response.status == 404:
+                return "No quotes have been added!"
+            return (await response.json())["data"][0]["attributes"]["quote"]
+        else:
+            response = await self.api.get_quote(quote_id)
+            if response.status == 404:
+                return "Quote {} does not exist!".format(quote_id)
+            return (await response.json())["data"]["attributes"]["quote"]
 
-    @Command.subcommand
-    async def add(self, *quote, added_by: "username"):
+    @Command.command()
+    async def add(self, *quote):
         """Add a quote."""
-        response = await self.api.add_quote(' '.join(quote), added_by=added_by)
-        return "Added quote with ID {}.".format(response["data"]["id"])
+        response = await self.api.add_quote(' '.join(quote))
+        data = await response.json()
+        return "Added quote with ID {}.".format(
+            data["data"]["attributes"]["quoteId"])
 
-    @Command.subcommand
+    @Command.command()
+    async def edit(self, quote_id: r'[1-9]\d*', *quote):
+        """Edit a quote based on ID."""
+        response = await self.api.edit_quote(quote_id, ' '.join(quote))
+        if response.status == 201:
+            return "Added quote with ID {}.".format(quote_id)
+        return "Edited quote with ID {}.".format(quote_id)
+
+    @Command.command()
     async def remove(self, quote_id: r'[1-9]\d*'):
         """Remove a quote."""
-        try:
-            self.api.remove_quote(quote_id)
-        except Exception:  # FIXME: data, not exceptions
+        response = await self.api.remove_quote(quote_id)
+        if response.status == 404:
             return "Quote {} does not exist!".format(quote_id)
-        else:
-            return "Removed quote with ID {}.".format(quote_id)
+        return "Removed quote with ID {}.".format(quote_id)
 
-    @Command.subcommand  # FIXME: make secret
+    @Command.command(hidden=True)
     async def inspirational(self):
         """Retrieve an inspirational quote."""
         try:
@@ -42,11 +60,13 @@ class Quote(Command):
                 params=dict(method="getQuote", lang="en", format="json")
             )).json()
         except Exception:
-            return "Unable to get an inspirational quote."
+            return MessagePacket(
+                "Unable to get an inspirational quote. Have a ",
+                ("emoji", ":hamster:", ":hamster"),
+                " instead."
+            )
         else:
             return "\"{quote}\" -{author}".format(
                 quote=data["quoteText"].strip(),
                 author=data["quoteAuthor"].strip() or "Unknown"
             )
-
-    DEFAULT = get
