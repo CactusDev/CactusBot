@@ -57,3 +57,4 @@ class SpamHandler(Handler):
         """Check for URLs in the message."""
         return not self.ALLOW_URLS and any(
             chunk.type == "link" for chunk in packet
+        )

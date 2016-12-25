@@ -4,7 +4,7 @@ import logging
 
 import discord
 
-from ...packets import EditPacket, MessagePacket
+from ...packets import MessagePacket
 from .parser import DiscordParser
 
 
