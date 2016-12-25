@@ -1,6 +1,4 @@
-import json
 import re
-from os import path
 
 from ...packets import EditPacket, MessagePacket
 
@@ -17,9 +15,6 @@ class DiscordParser:
         ("emoji", u'([\U0001f600-\U0001f650])'),
         ("emoji", r'<(:\w{2,32}:)\d{18}>')
     ]
-
-    with open(path.join(path.dirname(__file__), "emoji.json")) as file:
-        EMOJI = json.load(file)
 
     @classmethod
     def parse_message(cls, packet):
@@ -83,12 +78,9 @@ class DiscordParser:
     @classmethod
     def synthesize(cls, packet):
         message = ""
-        emoji = dict(zip(cls.EMOJI.values(), cls.EMOJI.keys()))
 
         for component in packet:
-            if component["type"] == "emoji":
-                message += emoji.get(component["data"], component["text"])
-            elif component["type"] == "url":
+            if component["type"] == "url":
                 message += component["data"]
             else:
                 message += component["text"]

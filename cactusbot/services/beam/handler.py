@@ -1,15 +1,14 @@
 """Handle data from Beam."""
 
-import logging
-
 import asyncio
+import logging
 from functools import partial
 
+from ...packets import BanPacket, MessagePacket
 from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
-from ...packets import MessagePacket, BanPacket
 
 
 class BeamHandler:
@@ -59,8 +58,7 @@ class BeamHandler:
             self.constellation.read(self.handle_constellation))
 
         await self.send(MessagePacket(
-            ("text", "CactusBot activated. "),
-            ("emoji", ":cactus:", "🌵")
+            "CactusBot activated. ", ("emoji", "🌵")
         ))
 
     async def handle_chat(self, packet):

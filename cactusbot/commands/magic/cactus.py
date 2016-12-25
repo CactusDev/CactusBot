@@ -12,17 +12,14 @@ class Cactus(Command):
 
     @Command.subcommand
     async def cactus(self):
-        return MessagePacket(
-            ("text", "Ohai! I'm CactusBot! "),
-            ("emoji", ":cactus:", ":cactus:")
-        )
+        return MessagePacket("Ohai! I'm CactusBot! ", ("emoji", "🌵"))
 
     @Command.subcommand
     async def docs(self):
         return MessagePacket(
-            ("text", "Check out my documentation at "),
+            "Check out my documentation at ",
             ("url", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
-            ("text", ".")
+            "."
         )
 
     @Command.subcommand
