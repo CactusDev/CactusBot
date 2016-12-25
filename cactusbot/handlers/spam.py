@@ -10,7 +10,6 @@ class SpamHandler(Handler):
     MAX_SCORE = 16
     MAX_EMOJI = 6
     ALLOW_URLS = False
-    # TODO: Make configurable
 
     async def on_message(self, packet):
         """Handle message events."""
@@ -42,6 +41,13 @@ class SpamHandler(Handler):
                     StopIteration)
         else:
             return None
+
+    async def on_config(self, packet):
+        """Handle config update events."""
+
+        self.MAX_EMOJI = packet["data"]["spam"]["maxEmoji"]
+        self.ALLOW_URLS = packet["data"]["spam"]["allowLinks"]
+        self.MAX_SCORE = packet["data"]["spam"]["maxCaps"]
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""
