@@ -22,6 +22,6 @@ CACHE_DATA = {
 }
 
 handlers = Handlers(LoggingHandler(), EventHandler(CACHE_DATA, API_TOKEN),
-                    CommandHandler(CHANNEL), SpamHandler())
+                    SpamHandler(), CommandHandler(CHANNEL))
 
 SERVICE = BeamHandler(CHANNEL, handlers)
