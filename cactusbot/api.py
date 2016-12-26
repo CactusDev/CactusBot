@@ -111,3 +111,26 @@ class CactusAPI(API):
         """Get the channel config."""
 
         return await self.get("/channel/{channel}/config".format(channel=self.channel))
+
+    async def add_repeat(self, command, time, *args):
+        """Add a repeat."""
+
+        data = {
+            "command": command,
+            "period": time,
+            "arguments": args
+        }
+
+        return await self.post("/user/{user}/repeat".format(user=self.channel),
+                               data=json.dumps(data))
+
+    async def remove_repeat(self, repeat):
+        """Remove a repeat."""
+
+        return await self.delete("/user/{user}/repeat/{repeat}".format(
+            user=self.channel, repeat=repeat))
+
+    async def get_repeats(self):
+        """Get all repeats."""
+
+        return await self.get("/user/{user}/repeat")
