@@ -112,14 +112,16 @@ class CactusAPI(API):
 
         return await self.get("/channel/{channel}/config".format(channel=self.channel))
 
-    async def add_repeat(self, command, time, *args):
+    async def add_repeat(self, command, period, *args):
         """Add a repeat."""
 
         data = {
             "command": command,
-            "period": time,
+            "period": int(period),
             "arguments": args
         }
+
+        print(json.dumps(data))
 
         return await self.post("/user/{user}/repeat".format(user=self.channel),
                                data=json.dumps(data))
