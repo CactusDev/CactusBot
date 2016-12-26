@@ -128,7 +128,7 @@ class MessagePacket(Packet):
         Returns
         -------
         :obj:`dict`
-            Object attributes, in a JSON-compatible dictionary.
+            Object attributes, in a JSON-compatible format.
 
         Examples
         --------
