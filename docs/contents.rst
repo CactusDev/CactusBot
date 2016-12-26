@@ -1,5 +1,5 @@
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 1
    Home<index.md>
 
 .. toctree::

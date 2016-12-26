@@ -107,19 +107,76 @@ class MessagePacket(Packet):
 
     @property
     def text(self):
-        """Pure text representation of the packet."""
+        """Pure text representation of the packet.
+
+        Returns
+        -------
+        :obj:`str`
+            Joined ``text`` of every component.
+
+        Examples
+        --------
+        >>> MessagePacket("Hello, world! ", ("emoji", "😃")).text
+        """
         return ''.join(chunk.text for chunk in self.message)
 
     @property
     def json(self):
-        """JSON representation of the packet."""
+        """JSON representation of the packet.
+
+        Returns
+        -------
+        :obj:`dict`
+            Object attributes, in a JSON-compatible dictionary.
+
+        Examples
+        --------
+        >>> pprint.pprint(MessagePacket("Hello, world! ", ("emoji", "😃")).json)
+        {'action': False,
+         'message': [{'data': 'Hello, world! ',
+                      'text': 'Hello, world! ',
+                      'type': 'text'},
+                     {'data': '😃', 'text': '😃', 'type': 'emoji'}],
+         'role': 1,
+         'target': None,
+         'user': ''}
+        """
         return {
-            "message": [component._asdict() for component in self.message],
+            "message": [
+                dict(component._asdict()) for component in self.message
+            ],
             "user": self.user,
             "role": self.role,
             "action": self.action,
             "target": self.target
         }
+
+    @classmethod
+    def from_json(cls, json):
+        """Convert :obj:`MessagePacket` JSON into an object.
+
+        Parameters
+        ----------
+        json : :obj:`dict`
+            The JSON dictionary to convert.
+
+        Returns
+        -------
+        :obj:`MessagePacket`
+
+        Examples
+        --------
+        >>> MessagePacket.from_json({'action': False,
+        ...  'message': [{'data': 'Hello, world! ',
+        ...               'text': 'Hello, world! ',
+        ...               'type': 'text'},
+        ...              {'data': '😃', 'text': '😃', 'type': 'emoji'}],
+        ...  'role': 1,
+        ...  'target': None,
+        ...  'user': ''}).text
+        'Hello, world! 😃'
+        """
+        return cls(*json.pop("message"), **json)
 
     def copy(self, *args, **kwargs):
         """Return a copy of :obj:`self`.
@@ -228,7 +285,6 @@ class MessagePacket(Packet):
 
         Parameters
         ----------
-
         seperator : :obj:`str`, default `' '`
             The characters to split the string with.
         maximum : :obj:`int` or :obj:`None`
@@ -299,7 +355,3 @@ class MessagePacket(Packet):
 
         return [self.copy(*filter(lambda c: c.text, message))
                 for message in result]
-
-    @classmethod
-    def from_json(cls, json):
-        return cls(*json.pop("message"), **json)
