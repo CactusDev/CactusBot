@@ -5,7 +5,31 @@ from collections import namedtuple
 
 from .packet import Packet
 
-MessageComponent = namedtuple("Component", ("type", "data", "text"))
+
+class MessageComponent(namedtuple("Component", ("type", "data", "text"))):
+    """:obj:`MessagePacket` component.
+
+    Valid Types:
+
+    =========   =====================================   ===================
+    Type        Description                             Sample Data
+    =========   =====================================   ===================
+    text        Plaintext of any length.                Hello, world.
+    emoji       Single emoji.                           🌵
+    tag         Single user tag or mention.             Username
+    url         URL.                                    https://google.com
+    variable    Key to be replaced with live values.    %ARGS%
+    =========   =====================================   ===================
+
+    Parameters
+    ----------
+    type : :obj:`str`
+        Component type.
+    data : :obj:`str`
+        Component data.
+    text : :obj:`str`
+        Text representation of the component.
+    """
 
 
 class MessagePacket(Packet):
