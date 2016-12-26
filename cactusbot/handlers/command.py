@@ -37,7 +37,7 @@ class CommandHandler(Handler):
 
         if packet.target and packet.text == "/cry":
             return MessagePacket(
-                "cries with", ("tag", packet.user), action=True)
+                "cries with ", ("tag", packet.user), action=True)
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
 
