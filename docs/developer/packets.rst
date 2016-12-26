@@ -1,6 +1,12 @@
 Packets
 =======
 
+:obj:`Packet`
+-------------
+
+.. autoclass :: cactusbot.packets.packet.Packet
+    :members:
+
 :obj:`MessagePacket`
 --------------------
 

@@ -1,6 +1,6 @@
 """Event packet."""
 
-from ..packet import Packet
+from .packet import Packet
 
 
 class EventPacket(Packet):

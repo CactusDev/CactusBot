@@ -1,6 +1,6 @@
 """Ban packet."""
 
-from ..packet import Packet
+from .packet import Packet
 
 
 class BanPacket(Packet):

@@ -3,7 +3,7 @@
 import re
 from collections import namedtuple
 
-from ..packet import Packet
+from .packet import Packet
 
 MessageComponent = namedtuple("Component", ("type", "data", "text"))
 
