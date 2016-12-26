@@ -2,16 +2,12 @@
 
 """Run CactusBot."""
 
+import logging
+from argparse import ArgumentParser
 from asyncio import get_event_loop
 
-from argparse import ArgumentParser
-
-import logging
-
 from cactusbot import Cactus
-
-from config import SERVICE, USERNAME, PASSWORD
-
+from config import API_TOKEN, PASSWORD, SERVICE, USERNAME
 
 if __name__ == "__main__":
 
@@ -42,7 +38,8 @@ if __name__ == "__main__":
 
     try:
         # TODO: Make this cactus.run(services) instead of only Beam
-        loop.run_until_complete(cactus.run(USERNAME, PASSWORD))
+        loop.run_until_complete(
+            cactus.run(USERNAME, PASSWORD, api_token=API_TOKEN))
         loop.run_forever()
     # TODO: Error catching?
     finally:
