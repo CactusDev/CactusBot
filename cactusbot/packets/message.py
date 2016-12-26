@@ -9,7 +9,16 @@ MessageComponent = namedtuple("Component", ("type", "data", "text"))
 
 
 class MessagePacket(Packet):
-    """Message packet."""
+    """Packet to store messages.
+
+    :param message: Message content.
+    :type message: dict, tuple, str, or MessageComponent
+    :param str user: The sender of the MessagePacket.
+    :param int role: The role ID of the sender.
+    :param bool action: Whether or not the message was sent in action form.
+    :param target: The single user target of the message.
+    :type target: str or None
+    """
 
     def __init__(self, *message, user="", role=1, action=False, target=None):
         super().__init__()
