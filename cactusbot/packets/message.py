@@ -117,6 +117,7 @@ class MessagePacket(Packet):
         Examples
         --------
         >>> MessagePacket("Hello, world! ", ("emoji", "😃")).text
+        'Hello, world! 😃'
         """
         return ''.join(chunk.text for chunk in self.message)
 
@@ -166,14 +167,16 @@ class MessagePacket(Packet):
 
         Examples
         --------
-        >>> MessagePacket.from_json({'action': False,
-        ...  'message': [{'data': 'Hello, world! ',
-        ...               'text': 'Hello, world! ',
-        ...               'type': 'text'},
-        ...              {'data': '😃', 'text': '😃', 'type': 'emoji'}],
-        ...  'role': 1,
-        ...  'target': None,
-        ...  'user': ''}).text
+        >>> MessagePacket.from_json({
+        ...     'action': False,
+        ...     'message': [{'type': 'text',
+        ...                  'data': 'Hello, world! ',
+        ...                  'text': 'Hello, world! '},
+        ...                 {'data': '😃', 'text': '😃', 'type': 'emoji'}],
+        ...     'role': 1,
+        ...     'target': None,
+        ...     'user': ''
+        ... }).text
         'Hello, world! 😃'
         """
         return cls(*json.pop("message"), **json)
