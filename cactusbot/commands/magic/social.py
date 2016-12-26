@@ -35,13 +35,14 @@ class Social(Command):
                 data = await social.json()
 
                 for service in data["data"]:
-                    response.append(service["attributes"]["service"].title() + ': ')
+                    response.append(
+                        service["attributes"]["service"].title() + ': ')
                     response.append(("url", service["attributes"]["url"]))
                     response.append(', ')
                 return MessagePacket(*response[:-1])
             else:
-                return "'{services}' not found on the streamer's profile!".format(
-                    services=', '.join(services))
+                return "'{}' not found on the streamer's profile!".format(
+                    ', '.join(services))
 
     @Command.command()
     async def add(self, service, url):
