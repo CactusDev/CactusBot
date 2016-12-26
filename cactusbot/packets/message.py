@@ -13,16 +13,15 @@ class MessagePacket(Packet):
 
     Parameters
     ----------
-
     message : :obj:`dict`, :obj:`tuple`, :obj:`str`, or :obj:`MessageComponent`
         Message content components.
 
-        :obj:`dict` should contain `"type"`, `"data"`, and `"text"` keys.
+        :obj:`dict` should contain ``"type"``, ``"data"``, and ``"text"`` keys.
 
-        :obj:`tuple` will be interpreted as :obj:`(type, data, text)`. If not
-        supplied, `text` will be equivalent to `data`.
+        :obj:`tuple` will be interpreted as ``(type, data, text)``. If not
+        supplied, ``text`` will be equivalent to ``data``.
 
-        :obj:`str` will be interpreted as a component with `type` text.
+        :obj:`str` will be interpreted as a component with ``type`` text.
     user : :obj:`str`
         The sender of the MessagePacket.
     role : :obj:`int`
@@ -123,7 +122,21 @@ class MessagePacket(Packet):
         }
 
     def copy(self, *args, **kwargs):
-        """Return a copy."""
+        """Return a copy of :obj:`self`.
+
+        Parameters
+        ----------
+        *args
+            If any are provided, will entirely override :attr:`self.message`.
+        **kwargs
+            Each will override class attributes provided in :func:`__init__`.
+
+        Returns
+        -------
+        :obj:`MessagePacket`
+            Copy of :obj:`self`, with replaced attributes as specified in
+            ``args`` and ``kwargs``.
+        """
 
         _args = args or self.message
 
@@ -138,18 +151,72 @@ class MessagePacket(Packet):
         return MessagePacket(*_args, **_kwargs)
 
     def replace(self, **values):
-        """Replace text in packet."""
+        """Replace text in packet.
+
+        Parameters
+        ----------
+        values : :obj:`dict`
+            The text to replace.
+
+        Returns
+        -------
+        :obj:`MessagePacket`
+            :obj:`self`, with replaced text.
+
+        Note
+        ----
+        Modifies the object itself. Does *not* return a copy.
+
+        Examples
+        --------
+        >>> packet = MessagePacket("Hello, world!")
+        >>> packet.replace(world="universe").text
+        'Hello, universe!'
+
+        >>> packet = MessagePacket("Hello, world!")
+        >>> packet.replace(**{
+        ...     "Hello": "Goodbye",
+        ...     "world": "Python 2"
+        ... }).text
+        'Goodbye, Python 2!'
+        """
         for index, chunk in enumerate(self.message):
             if chunk.type == "text":
                 for old, new in values.items():
                     if new is not None:
+                        new_text = chunk.text.replace(old, new)
                         self.message[index] = self.message[index]._replace(
-                            text=chunk.text.replace(old, new))
+                            data=new_text, text=new_text)
                         chunk = self.message[index]
         return self
 
     def sub(self, pattern, repl):
-        """Perform regex substitution on packet."""
+        """Perform regex substitution on packet.
+
+        Parameters
+        ----------
+        pattern : :obj:`str`
+            Regular expression to match.
+        repl
+            The replacement for the `pattern`.
+
+            Accepts the same argument types as :func:`re.sub`.
+
+        Returns
+        -------
+        :obj:`MessagePacket`
+            :obj:`self`, with replaced patterns.
+
+        Note
+        ----
+        Modifies the object itself. Does *not* return a copy.
+
+        Examples
+        --------
+        >>> packet = MessagePacket("I would like 3 ", ("emoji", "😃"), "s.")
+        >>> packet.sub(r"\\d+", "<number>").text
+        'I would like <number> 😃s.'
+        """
         for index, chunk in enumerate(self.message):
             if chunk.type in ("text", "link"):
                 self.message[index] = self.message[index]._replace(
@@ -157,7 +224,40 @@ class MessagePacket(Packet):
         return self
 
     def split(self, seperator=' ', maximum=None):
-        """Split into multiple MessagePackets, based on a separator."""
+        """Split into multiple MessagePackets, based on a separator.
+
+        Parameters
+        ----------
+
+        seperator : :obj:`str`, default `' '`
+            The characters to split the string with.
+        maximum : :obj:`int` or :obj:`None`
+            The maximum number of splits to perform.
+
+            If less than the total number of potential splits, will result in a
+            list of length `maximum + 1`.
+            Otherwise, will perform all splits.
+
+            If :obj:`None`, will perform all splits.
+
+        Returns
+        -------
+        :obj:`list` of :obj:`MessagePacket`s
+
+        Examples
+        --------
+        >>> packet = MessagePacket("0 1 2 3 4 5 6 7")
+        >>> [component.text for component in packet.split()]
+        ['0', '1', '2', '3', '4', '5', '6', '7']
+
+        >>> packet = MessagePacket("0 1 2 3 4 5 6 7")
+        >>> [component.text for component in packet.split("2")]
+        ['0 1 ', ' 3 4 5 6 7']
+
+        >>> packet = MessagePacket("0 1 2 3 4 5 6 7")
+        >>> [component.text for component in packet.split(maximum=3)]
+        ['0', '1', '2', '3 4 5 6 7']
+        """
 
         result = []
         components = []
