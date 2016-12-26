@@ -37,6 +37,7 @@ class EventPacket(Packet):
 
         Examples
         --------
+        >>> import pprint
         >>> pprint.pprint(EventPacket("follow", "Stanley").json)
         {'event': 'follow', 'success': True, 'user': 'Stanley'}
         """

@@ -38,6 +38,7 @@ class BanPacket(Packet):
 
         Examples
         --------
+        >>> import pprint
         >>> pprint.pprint(BanPacket("Stanley", 60).json)
         {'duration': 60, 'user': 'Stanley'}
         """

@@ -132,6 +132,7 @@ class MessagePacket(Packet):
 
         Examples
         --------
+        >>> import pprint
         >>> pprint.pprint(MessagePacket("Hello, world! ", ("emoji", "😃")).json)
         {'action': False,
          'message': [{'data': 'Hello, world! ',
