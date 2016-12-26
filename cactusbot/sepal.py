@@ -79,14 +79,7 @@ class SepalParser:
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""
 
-        command_name = packet["data"]["command"]
-        response = await self.api.get_command(command_name)
-
-        if response.status is 404:
-            return
-
-        return MessagePacket.from_json(
-            (await response.json())["data"]["attributes"]["response"])
+        return MessagePacket.from_json(packet["data"]["command"]["response"])
 
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
