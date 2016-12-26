@@ -123,7 +123,7 @@ class CactusAPI(API):
 
     async def get_social(self, service=None):
         """Get social service."""
-        print(service)
+
         if service is None:
             return await self.get("/user/{user}/social".format(
                 user=self.channel))

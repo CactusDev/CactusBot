@@ -33,7 +33,6 @@ class Social(Command):
                 data = await social.json()
 
                 for service in data["data"]:
-                    print(service)
                     response.append(service["attributes"]["service"].title() + ': ')
                     response.append(("url", service["attributes"]["url"]))
                     response.append(', ')
