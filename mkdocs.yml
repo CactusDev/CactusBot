@@ -5,3 +5,4 @@ pages:
   - Home: index.md
   - Usage:
     - "!command": usage/command.md
+  - Developer: developer/*
