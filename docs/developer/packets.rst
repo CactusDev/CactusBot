@@ -10,14 +10,14 @@ Packets
 :obj:`BanPacket`
 ----------------
 
-.. autoclass :: cactusbot.packets.packet.BanPacket
+.. autoclass :: cactusbot.packets.ban.BanPacket
     :members:
     :show-inheritance:
 
 :obj:`EventPacket`
 ------------------
 
-.. autoclass :: cactusbot.packets.packet.EventPacket
+.. autoclass :: cactusbot.packets.event.EventPacket
     :members:
     :show-inheritance:
 
