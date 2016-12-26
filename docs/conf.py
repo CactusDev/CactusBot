@@ -11,4 +11,4 @@ source_parsers = {
 
 source_suffix = [".rst", ".md"]
 
-extensions = ["sphinx.ext.autodoc"]
+extensions = ["sphinx.ext.autodoc", "sphinxcontrib.napoleon"]

@@ -11,13 +11,26 @@ MessageComponent = namedtuple("Component", ("type", "data", "text"))
 class MessagePacket(Packet):
     """Packet to store messages.
 
-    :param message: Message content.
-    :type message: dict, tuple, str, or MessageComponent
-    :param str user: The sender of the MessagePacket.
-    :param int role: The role ID of the sender.
-    :param bool action: Whether or not the message was sent in action form.
-    :param target: The single user target of the message.
-    :type target: str or None
+    Parameters
+    ----------
+
+    message : :obj:`dict`, :obj:`tuple`, :obj:`str`, or :obj:`MessageComponent`
+        Message content components.
+
+        :obj:`dict` should contain `"type"`, `"data"`, and `"text"` keys.
+
+        :obj:`tuple` will be interpreted as :obj:`(type, data, text)`. If not
+        supplied, `text` will be equivalent to `data`.
+
+        :obj:`str` will be interpreted as a component with `type` text.
+    user : :obj:`str`
+        The sender of the MessagePacket.
+    role : :obj:`int`
+        The role ID of the sender.
+    action : :obj:`bool`
+        Whether or not the message was sent in action form.
+    target : :obj:`str` or :obj:`None`
+        The single user target of the message.
     """
 
     def __init__(self, *message, user="", role=1, action=False, target=None):
