@@ -1,13 +1,13 @@
 Packets
 =======
 
-:obj:`Packet`
+Base Packet
 -------------
 
 .. autoclass :: cactusbot.packets.packet.Packet
     :members:
 
-:obj:`MessagePacket`
+Message Packet
 --------------------
 
 .. autoclass:: cactusbot.packets.message.MessageComponent
@@ -17,15 +17,14 @@ Packets
     :members:
     :show-inheritance:
 
-
-:obj:`BanPacket`
+Ban Packet
 ----------------
 
 .. autoclass :: cactusbot.packets.ban.BanPacket
     :members:
     :show-inheritance:
 
-:obj:`EventPacket`
+Event Packet
 ------------------
 
 .. autoclass :: cactusbot.packets.event.EventPacket
