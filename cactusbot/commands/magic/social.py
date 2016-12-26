@@ -20,12 +20,14 @@ class Social(Command):
                 social = await self.api.get_social(service)
                 if social.status == 200:
                     data = await social.json()
-                    response.append(data["data"]["attributes"]["service"].title() + ': ')
-                    response.append(("url", data["data"]["attributes"]["url"]))
+                    response.append(
+                        data["data"]["attributes"]["service"].title() + ': ')
+                    response.append(
+                        ("url", data["data"]["attributes"]["url"]))
                     response.append(', ')
                 else:
-                    return "'{services}' not found on the streamer's profile!".format(
-                        s='s' if len(services) > 1 else '', services=', '.join(services))
+                    return "'{}' not found on the streamer's profile!".format(
+                        ', '.join(services))
             return MessagePacket(*response[:-1])
         else:
             social = await self.api.get_social()
