@@ -35,6 +35,10 @@ class CommandHandler(Handler):
     async def on_message(self, packet):
         """Handle message events."""
 
+        if packet.target and packet.text == "/cry":
+            return MessagePacket(
+                "cries with", ("tag", packet.user), action=True)
+
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
 
             command, *args = packet[1:].text.split()
