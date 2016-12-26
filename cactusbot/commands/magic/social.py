@@ -40,4 +40,24 @@ class Social(Command):
                 return MessagePacket(*response[:-1])
             else:
                 return "'{services}' not found on the streamer's profile!".format(
-                s='s' if len(services) > 1 else '', services=', '.join(services))
+                    services=', '.join(services))
+
+    @Command.command()
+    async def add(self, service, url):
+        """Add a social service."""
+
+        response = self.api.add_social(service, url)
+        if response.status == 201:
+            return "Added social service {}.".format(service)
+        elif response.status == 200:
+            return "Updated social service {}".format(service)
+
+    @Command.command()
+    async def remove(self, service):
+        """Remove a social service."""
+
+        response = self.api.remove_social(service)
+        if response.status == 200:
+            return "Removed social service {}.".format(service)
+        elif response.status == 404:
+            return "Social service {} doesn't exist!".format(service)
