@@ -22,7 +22,7 @@ CACHE_DATA = {
 }
 
 handlers = Handlers(LoggingHandler(), ResponseHandler(USERNAME),
-                    EventHandler(CACHE_DATA), CommandHandler(CHANNEL),
+                    EventHandler(CACHE_DATA), CommandHandler(API_TOKEN),
                     SpamHandler())
 
 SERVICE = BeamHandler(CHANNEL, handlers)

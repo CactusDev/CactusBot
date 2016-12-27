@@ -5,6 +5,7 @@ from ...packets import EventPacket, MessagePacket
 
 
 class BeamParser:
+    """Parse Beam Packets."""
 
     # TODO: update with accurate values
     ROLES = {

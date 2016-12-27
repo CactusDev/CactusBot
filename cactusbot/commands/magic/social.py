@@ -14,6 +14,9 @@ class Social(Command):
     async def default(self, *services: False):
         """Get a social service if it's provived, or give it all."""
 
+        if len(services) >= 12:
+            return "Maximum number of requested services (12) exceeded."
+
         response = []
         if services:
             for service in services:
