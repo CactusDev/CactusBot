@@ -47,7 +47,7 @@ class Config(Command):
             }
 
             action = None
-            if attribute.lower() in ["links"]:
+            if attribute.lower() == "links":
                 if args[0] in ["false", "disable", "off"]:
                     action = False
                 elif args[0] in ["true", "enable", "on"]:
