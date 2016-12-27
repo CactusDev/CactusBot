@@ -74,6 +74,23 @@ class CactusAPI(API):
         return await self.delete("/user/{user}/alias/{alias}".format(
             user=self.channel, alias=alias))
 
+      async def toggle_command(self, command, status):
+        """Toggle the availability of a command."""
+
+        data = {"enabled": status}
+
+        return await self.patch("/user/{channel}/command/{command}".format(
+            channel=self.channel, command=command), data=json.dumps(data))
+
+    async def update_command_count(self, command, action):
+        """Set the count of a command."""
+
+        data = {"count": action}
+
+        return await(
+            self.patch("/user/{channel}/command/{command}/count".format(
+                channel=self.channel, command=command), data=json.dumps(data)))
+
     async def get_quote(self, quote_id=None):
         """Get a quote."""
 
@@ -126,3 +143,26 @@ class CactusAPI(API):
         """Remove a friend."""
         return await self.delete("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
+
+    async def add_social(self, service, url):
+        """Add a social service."""
+
+        data = {"url": url}
+
+        return await self.patch("/user/{user}/social/{service}".format(
+            user=self.channel, service=service), data=json.dumps(data))
+
+    async def remove_social(self, service):
+        """Remove a social service."""
+
+        return await self.delete("/user/{user}/social/{service}".format(
+            user=self.channel, service=service))
+
+    async def get_social(self, service=None):
+        """Get social service."""
+
+        if service is None:
+            return await self.get("/user/{user}/social".format(
+                user=self.channel))
+        return await self.get("/user/{user}/social/{service}".format(
+            user=self.channel, service=service))

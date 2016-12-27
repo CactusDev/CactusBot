@@ -26,7 +26,7 @@ class CommandHandler(Handler):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel.lower())  # FIXME
+        self.api = CactusAPI(channel.lower())
 
         self.magics = {command.COMMAND: command for command in COMMANDS}
         for command in self.magics.values():
@@ -34,6 +34,10 @@ class CommandHandler(Handler):
 
     async def on_message(self, packet):
         """Handle message events."""
+
+        if packet.target and packet.text == "/cry":
+            return MessagePacket(
+                "cries with ", ("tag", packet.user), action=True)
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
 
@@ -65,6 +69,10 @@ class CommandHandler(Handler):
 
                 json = (await response.json()
                        )["data"]["attributes"]["response"]
+                
+                return MessagePacket("Command not found.",
+                                         target=packet.user)
+
                 return self._inject(MessagePacket(
                     *json.pop("message"),
                     **{

@@ -2,7 +2,7 @@
 
 from cactusbot.handler import Handlers
 from cactusbot.handlers import (CommandHandler, EventHandler, LoggingHandler,
-                                SpamHandler)
+                                SpamHandler, ResponseHandler)
 from cactusbot.services.beam.handler import BeamHandler
 
 USERNAME = "BotUsername"
@@ -21,7 +21,8 @@ CACHE_DATA = {
     "CACHE_FOLLOWS_TIME": 0
 }
 
-handlers = Handlers(LoggingHandler(), EventHandler(CACHE_DATA),
-                    CommandHandler(CHANNEL), SpamHandler())
+handlers = Handlers(LoggingHandler(), ResponseHandler(USERNAME),
+                    EventHandler(CACHE_DATA), CommandHandler(API_TOKEN),
+                    SpamHandler())
 
 SERVICE = BeamHandler(CHANNEL, handlers)

@@ -2,8 +2,7 @@
 
 import logging
 
-from .packet import Packet
-from .packets import MessagePacket
+from .packets import MessagePacket, Packet
 
 
 class Handlers(object):

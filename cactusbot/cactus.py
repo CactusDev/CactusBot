@@ -4,8 +4,6 @@ import asyncio
 import logging
 import time
 
-import config
-
 from .sepal import Sepal
 
 __version__ = "v0.4-dev"
@@ -44,18 +42,18 @@ class Cactus:
 
         self.debug = debug  # XXX: find purpose or remove
 
-    async def run(self, username, password):
+    async def run(self, *auth, api_token):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
 
-        sepal = Sepal(config.API_TOKEN, self.service)
+        sepal = Sepal(api_token, self.service)
 
         # TODO: Add support for multiple services
         try:
             await sepal.connect()
             asyncio.ensure_future(sepal.read(sepal.handle))
-            await self.service.run(username, password)
+            await self.service.run(*auth)
 
         except KeyboardInterrupt:
             self.logger.info("Removing thorns... done.")

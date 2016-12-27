@@ -41,8 +41,8 @@ class Meta(Command):
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.command()
-    async def list(self):
+    @Command.command(name="list")
+    async def list_commands(self):
         """List all custom commands."""
         response = await self.api.get_command()
 
@@ -53,3 +53,40 @@ class Meta(Command):
                 command in commands
             ))
         return "No commands added!"
+
+    @Command.command()
+    async def enable(self, command: r'!?\w{1,32}'):
+        """Enable a command."""
+
+        response = await self.api.toggle_command(command, True)
+        if response.status == 200:
+            return "Command !{} has been enabled.".format(command)
+
+    @Command.command()
+    async def disable(self, command: r'!?\w{1,32}'):
+        """Disable a command."""
+
+        response = await self.api.toggle_command(command, False)
+        if response.status == 200:
+            return "Command !{} has been disabled.".format(command)
+
+    @Command.command()
+    async def count(self, command: r'!?\w{1,32}', action=None):
+        """Set, add, remove the count of a command."""
+
+        if action is None:
+            response = await self.api.get_command(command)
+            data = await response.json()
+            if response.status == 404:
+                return "The command !{} doesn't exist!"
+            elif response.status == 200:
+                return "!{command}'s count is: {count}".format(
+                    command=command, count=data["data"]["attributes"]["count"])
+
+        if action[0] not in ("-", "+", "="):
+            return "Invalid action! (-, +, =)"
+
+        if not len(action) == 2:
+            response = self.api.update_command_count(command, action)
+            if response.status == 200:
+                return "Count updated."

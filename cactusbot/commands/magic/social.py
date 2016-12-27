@@ -1,7 +1,5 @@
 """Get social data."""
 
-import aiohttp
-
 from . import Command
 from ...packets import MessagePacket
 
@@ -13,32 +11,59 @@ class Social(Command):
     COMMAND = "social"
 
     @Command.command(hidden=True)
-    async def default(self, *args: False, channel: "channel"):
+    async def default(self, *services: False):
         """Get a social service if it's provived, or give it all."""
 
-        social_data = await (await aiohttp.get(
-            "https://beam.pro/api/v1/channels/{}".format(channel)
-        )).json()
+        if len(services) >= 12:
+            return "Maximum number of requested services (12) exceeded."
 
-        social_data = social_data["user"]["social"]
+        response = []
+        if services:
+            for service in services:
+                social = await self.api.get_social(service)
+                if social.status == 200:
+                    data = await social.json()
+                    response.append(
+                        data["data"]["attributes"]["service"].title() + ': ')
+                    response.append(
+                        ("url", data["data"]["attributes"]["url"]))
+                    response.append(', ')
+                else:
+                    return "'{}' not found on the streamer's profile!".format(
+                        service)
 
-        if not social_data:
-            return MessagePacket(
-                "No social services found on this streamer's profile.")
-        elif not args:
-            if "verified" in social_data:
-                del social_data["verified"]
-            return MessagePacket(', '.join('{}: {}'.format(
-                service.title(), url) for service, url in social_data.items()))
+            return MessagePacket(*response[:-1])
         else:
-            selected = set(map(str.lower, args))
-            available = set(social_data.keys())
+            social = await self.api.get_social()
+            if social.status == 200:
+                data = await social.json()
 
-            if selected.issubset(available):
-                return MessagePacket(', '.join('{}: {}'.format(
-                    service.title(), social_data[service]
-                ) for service in selected))
-            return MessagePacket(
-                "The service{s} {services} don't exist.".format(
-                    services=', '.join(selected.difference(available)),
-                    s='s' if len(selected.difference(available) > 1) else ''))
+                for service in data["data"]:
+                    response.append(
+                        service["attributes"]["service"].title() + ': ')
+                    response.append(("url", service["attributes"]["url"]))
+                    response.append(', ')
+                return MessagePacket(*response[:-1])
+            else:
+                return "'{}' not found on the streamer's profile!".format(
+                    service)
+
+    @Command.command()
+    async def add(self, service, url):
+        """Add a social service."""
+
+        response = await self.api.add_social(service, url)
+        if response.status == 201:
+            return "Added social service {}.".format(service)
+        elif response.status == 200:
+            return "Updated social service {}".format(service)
+
+    @Command.command()
+    async def remove(self, service):
+        """Remove a social service."""
+
+        response = await self.api.remove_social(service)
+        if response.status == 200:
+            return "Removed social service {}.".format(service)
+        elif response.status == 404:
+            return "Social service {} doesn't exist!".format(service)

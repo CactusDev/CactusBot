@@ -19,3 +19,4 @@ script:
   - nosetests
   - flake8 run.py config.template.py cactusbot/
   - pytest tests/
+  - pytest cactusbot/ --doctest-modules
