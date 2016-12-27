@@ -67,5 +67,18 @@ class Meta(Command):
         """Disable a command."""
 
         response = await self.api.toggle_command(command, False)
-        if respose.status == 200:
+        if response.status == 200:
             return "Command !{} has been disabled.".format(command)
+
+    @Command.command()
+    async def count(self, command: r'!?\w{1,32}', *args: False):
+        """Set, add, remove the count of a command."""
+
+        if not args:
+            response = await self.api.get_command(command)
+            data = await response.json()
+            if response.status == 404:
+                return "The command !{} doesn't exist!"
+            elif response.status == 200:
+                return "!{command}'s count is: {count}".format(
+                    command=command, count=data["data"]["attributes"]["count"])
