@@ -9,9 +9,10 @@ from .social import Social
 from .trust import Trust
 from .uptime import Uptime
 from .repeat import Repeat
+from .config import Config
 
-COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime, Repeat)
+COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime, Repeat, Config)
 
 __all__ = ["Command", "Meta", "Quote", "Cube",
            "Social", "Trust", "Cactus", "Uptime",
-           "Repeat"]
+           "Repeat", "Config"]

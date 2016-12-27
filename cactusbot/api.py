@@ -136,3 +136,9 @@ class CactusAPI(API):
         """Get all repeats."""
 
         return await self.get("/user/{user}/repeat")
+
+    async def update_config(self, value):
+        """Update config attributes."""
+
+        return await self.patch("/user/{user}/config".format(
+            user=self.channel), data=json.dumps(value))

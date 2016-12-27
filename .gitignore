@@ -73,4 +73,5 @@ venv/
 
 # CactusBot private data
 config.py
+!cactusbot/commands/magic/config.py
 data/
