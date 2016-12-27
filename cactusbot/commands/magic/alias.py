@@ -10,7 +10,7 @@ class Alias(Command):
     COMMAND = "alias"
 
     @Command.command()
-    async def add(self, alias: "?command", command: "?command", *args,
+    async def add(self, alias: "?command", command: "?command", *args: False,
                   raw: "packet"):
         """Add a new command alias."""
 

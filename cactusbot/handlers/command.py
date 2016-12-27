@@ -66,12 +66,12 @@ class CommandHandler(Handler):
                     if response.status == 404:
                         return MessagePacket("Command not found.",
                                              target=packet.user)
-
-                json = await response.json()
-                json = json["data"]["attributes"]["response"]
-
-                return MessagePacket("Command not found.",
-                                     target=packet.user)
+                    else:
+                        json = await response.json()
+                        json = json["data"]["attributes"]["command"]["response"]
+                else:
+                    json = await response.json()
+                    json = json["data"]["attributes"]["response"]
 
                 return self._inject(MessagePacket(
                     *json.pop("message"),
