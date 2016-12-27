@@ -15,7 +15,7 @@ class Social(Command):
         """Get a social service if it's provived, or give it all."""
 
         if len(services) >= 12:
-            return "Too many social services. Max: 12"
+            return "Maximum number of requested services (12) exceeded."
 
         response = []
         if services:
