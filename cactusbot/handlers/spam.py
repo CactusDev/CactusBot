@@ -7,9 +7,14 @@ from ..packets import BanPacket, MessagePacket
 class SpamHandler(Handler):
     """Spam handler."""
 
-    MAX_SCORE = 16
-    MAX_EMOJI = 6
-    ALLOW_URLS = False
+    def __init__(self):
+        super().__init__()
+
+        self.config = {
+            "max_score": 16,
+            "max_emoji": 6,
+            "allow_urls": False
+        }
 
     async def on_message(self, packet):
         """Handle message events."""
@@ -45,25 +50,23 @@ class SpamHandler(Handler):
     async def on_config(self, packet):
         """Handle config update events."""
 
-        self.MAX_EMOJI = packet["data"]["spam"]["maxEmoji"]
-        self.ALLOW_URLS = packet["data"]["spam"]["allowLinks"]
-        self.MAX_SCORE = packet["data"]["spam"]["maxCaps"]
+        if packet.kwargs["key"] == "spam":
+            self.config["max_emoji"] = packet.kwargs["values"]["maxEmoji"]
+            # self.config["max_score"] = packet.kwargs["values"]["maxCaps"]
+            # FIXME
+            self.config["allow_urls"] = packet.kwargs["values"]["allowLinks"]
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""
         return sum(char.isupper() - char.islower() for
-                   char in message) > self.MAX_SCORE
+                   char in message) > self.config["max_score"]
 
     def check_emoji(self, packet):
         """Check for excessive emoji in the message."""
         return sum(chunk.type == "emoji" for
-                   chunk in packet) > self.MAX_EMOJI
+                   chunk in packet) > self.config["max_emoji"]
 
     def contains_urls(self, packet):
         """Check for URLs in the message."""
-        return not self.ALLOW_URLS and any(
+        return not self.config["allow_urls"] and any(
             chunk.type == "link" for chunk in packet)
-
-    def check_banned_words(self, packet):
-        """Check for banned words in a message."""
-        pass

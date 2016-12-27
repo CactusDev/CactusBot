@@ -2,11 +2,10 @@
 
 import datetime
 
+from ..api import CactusAPI
 from ..cached import CacheUtils
 from ..handler import Handler
 from ..packets import MessagePacket
-
-from ..api import CactusAPI
 
 
 class EventHandler(Handler):
@@ -22,20 +21,27 @@ class EventHandler(Handler):
 
         self.api = CactusAPI(channel)
 
-        self.alert_messages = None
+        self.alert_messages = {
+            "follow": {
+                "announce": True,
+                "message": "Thanks for following, %USER%!"
+            },
+            "subscribe": {
+                "announce": True,
+                "message": "Thanks for subscribing, %USER%!"
+            },
+            "host": {
+                "announce": True,
+                "message": "Thanks for hosting, %USER%!"
+            }
+        }
 
     async def load_messages(self):
         """Load alert messages."""
 
-        data = self.api.get_config()
+        data = await (await self.api.get_config()).json()
 
-        if not data.get("data"):
-            return
-
-        if not data["data"].get("announce"):
-            return
-
-        messages = data["data"]["announce"]
+        messages = data["data"]["attributes"]["announce"]
 
         self.alert_messages = {
             "follow": messages["follow"],
@@ -45,6 +51,8 @@ class EventHandler(Handler):
 
     async def on_start(self, _):
         """Handle start packets."""
+
+        await self.load_messages()
 
         return MessagePacket(
             "CactusBot activated. ",
@@ -57,8 +65,10 @@ class EventHandler(Handler):
         if not self.alert_messages["follow"]["announce"]:
             return
 
-        response = MessagePacket.from_json(
-            self.alert_messages["follow"]["message"].replace("%USER%", packet.user))
+        response = MessagePacket(
+            self.alert_messages["follow"]["message"].replace(
+                "%USER%", packet.user
+            ))
 
         if packet.success:
             if self.cache_follows:
@@ -77,28 +87,27 @@ class EventHandler(Handler):
     async def on_subscribe(self, packet):
         """Handle subscription packets."""
 
-        if not self.alert_messages["subscribe"]["announce"]:
-            return
-
-        return MessagePacket.from_json(
-            self.alert_messages["subscribe"]["message"].replace("%USER%", packet.user))
+        if self.alert_messages["subscribe"]["announce"]:
+            return MessagePacket(
+                self.alert_messages["subscribe"]["message"].replace(
+                    "%USER%", packet.user
+                ))
 
     async def on_host(self, packet):
         """Handle host packets."""
 
-        if not self.alert_messages["host"]["announce"]:
-            return
-
-        return MessagePacket.from_json(
-            self.alert_messages["host"]["message"].replace("%USER%", packet.user))
+        if self.alert_messages["host"]["announce"]:
+            return MessagePacket(
+                self.alert_messages["host"]["message"].replace(
+                    "%USER%", packet.user
+                ))
 
     async def on_config(self, packet):
         """Handle config update events."""
 
-        messages = packet["data"]["announce"]
-
-        self.alert_messages = {
-            "follow": messages["follow"],
-            "subscribe": messages["sub"],
-            "host": messages["host"]
-        }
+        if packet.kwargs["key"] == "announce":
+            self.alert_messages = {
+                "follow": packet.kwargs["values"]["follow"],
+                "subscribe": packet.kwargs["values"]["sub"],
+                "host": packet.kwargs["values"]["host"]
+            }

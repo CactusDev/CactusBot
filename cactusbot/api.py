@@ -15,13 +15,14 @@ class CactusAPI(API):
 
         self.channel = channel
 
-    async def request(self, method, endpoints, **kwargs):
+    async def request(self, method, endpoints, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
 
-        if "headers" in kwargs:
-            kwargs["headers"]["Content-Type"] = "application/json"
-        else:
-            kwargs["headers"] = {"Content-Type": "application/json"}
+        if is_json:
+            if "headers" in kwargs:
+                kwargs["headers"]["Content-Type"] = "application/json"
+            else:
+                kwargs["headers"] = {"Content-Type": "application/json"}
 
         return await super().request(method, endpoints, **kwargs)
 
@@ -110,7 +111,8 @@ class CactusAPI(API):
     async def get_config(self):
         """Get the channel config."""
 
-        return await self.get("/channel/{channel}/config".format(channel=self.channel))
+        return await self.get("/user/{channel}/config".format(
+            channel=self.channel), is_json=False)
 
     async def add_repeat(self, command, period, *args):
         """Add a repeat."""

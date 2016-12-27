@@ -4,6 +4,7 @@ import json
 import logging
 
 from .api import CactusAPI
+from .packet import Packet
 from .packets import MessagePacket
 from .services.websocket import WebSocket
 
@@ -67,7 +68,11 @@ class Sepal(WebSocket):
 
         data = await getattr(self.parser, "parse_" + event)(packet)
 
-        await self.service.handle(event, data)
+        if isinstance(data, (list, tuple)):
+            for packet in data:
+                await self.service.handle(event, packet)
+        else:
+            await self.service.handle(event, data)
 
 
 class SepalParser:
@@ -87,4 +92,5 @@ class SepalParser:
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
 
-        print("Config packet: ", packet)
+        return [Packet("config", key=key, values=values)
+                for key, values in packet["data"].items()]
