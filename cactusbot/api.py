@@ -74,7 +74,7 @@ class CactusAPI(API):
         return await self.delete("/user/{user}/alias/{alias}".format(
             user=self.channel, alias=alias))
 
-      async def toggle_command(self, command, status):
+    async def toggle_command(self, command, status):
         """Toggle the availability of a command."""
 
         data = {"enabled": status}
