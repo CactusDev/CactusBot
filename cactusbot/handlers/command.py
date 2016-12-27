@@ -67,11 +67,11 @@ class CommandHandler(Handler):
                         return MessagePacket("Command not found.",
                                              target=packet.user)
 
-                json = (await response.json()
-                       )["data"]["attributes"]["response"]
-                
+                json = await response.json()
+                json = json["data"]["attributes"]["response"]
+
                 return MessagePacket("Command not found.",
-                                         target=packet.user)
+                                     target=packet.user)
 
                 return self._inject(MessagePacket(
                     *json.pop("message"),
