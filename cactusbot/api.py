@@ -121,8 +121,6 @@ class CactusAPI(API):
             "arguments": args
         }
 
-        print(json.dumps(data))
-
         return await self.post("/user/{user}/repeat".format(user=self.channel),
                                data=json.dumps(data))
 
