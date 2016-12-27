@@ -54,6 +54,14 @@ class CactusAPI(API):
         return await self.delete("/user/{channel}/command/{command}".format(
             channel=self.channel, command=name))
 
+    async def toggle_command(self, command, status):
+        """Toggle the availability of a command."""
+
+        data = {"enabled": status}
+
+        return await self.patch("/user/{channel}/command/{command}".format(
+            channel=self.channel, command=command), data=json.dumps(data))
+
     async def get_quote(self, quote_id=None):
         """Get a quote."""
 

@@ -41,8 +41,8 @@ class Meta(Command):
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.command()
-    async def list(self):
+    @Command.command(name="list")
+    async def list_commands(self):
         """List all custom commands."""
         response = await self.api.get_command()
 
@@ -53,3 +53,19 @@ class Meta(Command):
                 command in commands
             ))
         return "No commands added!"
+
+    @Command.command()
+    async def enable(self, command: r'!?\w{1,32}'):
+        """Enable a command."""
+
+        response = await self.api.toggle_command(command, True)
+        if response.status == 200:
+            return "Command !{} has been enabled.".format(command)
+
+    @Command.command()
+    async def disable(self, command: r'!?\w{1,32}'):
+        """Disable a command."""
+
+        response = await self.api.toggle_command(command, False)
+        if respose.status == 200:
+            return "Command !{} has been disabled.".format(command)
