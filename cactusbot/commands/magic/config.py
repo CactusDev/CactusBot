@@ -10,21 +10,58 @@ class Config(Command):
     COMMAND = "config"
 
     @Command.command()
-    async def announce(self, *args: False):
+    async def announce(self, attribute=None, *args: False):
         """Announce subcommand."""
 
-        if not args:
+        if attribute is None:
             return "You must supply an attribute!"
 
-        print(args)
+        if not args:
+            return "You must supply a message!"
 
-        if args[0].lower() not in ["follow", "subscribe", "host"]:
+        if attribute.lower() not in ["follow", "subscribe", "host"]:
             return "Invalid announcement type. Available: follow, subscribe, host"
         else:
-            if len(args) == 1:
-                return "You must specify a message for the announcement!"
             message = ' '.join(args)
 
-            response = await self.api.update_config({"announce": {args[0]: {"message": message}}})
+            response = await self.api.update_config({"announce": {attribute: {"message": message}}})
             if response.status == 200:
                 return "Updated announcment"
+
+    @Command.command()
+    async def spam(self, attribute=None, *args: False):
+        """Spam subcommand."""
+
+        if attribute is None:
+            return "You must supply an attribute!"
+
+        if not args:
+            return "You must supply a value!"
+
+        if attribute.lower() not in ["links", "emoji"]:
+            return "Invalid spam type. Available: links, emoji"
+        else:
+            translations = {
+                "links": "allowLinks",
+                "emoji": "maxEmoji"
+            }
+
+            action = None
+            if attribute.lower() in ["links"]:
+                if args[0] in ["false", "disable", "off"]:
+                    action = False
+                elif args[0] in ["true", "enable", "on"]:
+                    action = True
+                else:
+                    return "Invalid action. Available: on/true/enable, off/false/disable"
+            elif attribute.lower() == "emoji":
+                try:
+                    action = int(args[0])
+                except ValueError:
+                    return "Amount must be a number."
+
+            if action or not action:
+                response = await self.api.update_config(
+                    {"spam": {translations[attribute.lower()]: action}})
+                if response.status == 200:
+                    return "{} updated.".format(translations[attribute.lower()].title())
