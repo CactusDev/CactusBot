@@ -18,9 +18,6 @@ class Repeat(Command):
         if response.status == 201:
             return "Repeat !{command} added on interval {period}!".format(
                 command=command, period=period)
-        else:
-            print("UH OH")
-            print(await response.json())
 
     @Command.command()
     async def remove(self, repeat: r'[1-9]\d*'=None):
