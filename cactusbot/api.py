@@ -54,6 +54,26 @@ class CactusAPI(API):
         return await self.delete("/user/{channel}/command/{command}".format(
             channel=self.channel, command=name))
 
+    async def get_command_alias(self, command):
+        """Get a command alias."""
+        return await self.get("/user/{channel}/alias/{command}".format(
+            channel=self.channel, command=self.command))
+
+    async def add_alias(self, command, alias, *args):
+        """Create a command alias."""
+
+        print(args)
+        data = {"command": command, "arguments": args}
+
+        return await self.patch("/user/{user}/alias/{alias}".format(
+            user=self.channel, alias=alias), data=json.dumps(data))
+
+    async def remove_alias(self, alias):
+        """Remove a command alias."""
+
+        return await self.delete("/user/{user}/alias/{alias}".format(
+            user=self.channel, alias=alias))
+
     async def get_quote(self, quote_id=None):
         """Get a quote."""
 
@@ -106,8 +126,3 @@ class CactusAPI(API):
         """Remove a friend."""
         return await self.delete("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
-
-    async def get_command_alias(self, command):
-        """Get a command alias."""
-        return await self.get("/user/{channel}/alias/{command}".format(
-            channel=self.channel, command=self.command))

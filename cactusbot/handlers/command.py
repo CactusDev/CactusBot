@@ -53,13 +53,9 @@ class CommandHandler(Handler):
                     if not isinstance(response, MessagePacket):
                         response = MessagePacket(response)
                     response.target = packet.user
-
                 return response
-
             else:
-
                 response = await self.api.get_command(command)
-
                 if response.status == 404:
                     response = await self.api.get_command_alias(command)
 

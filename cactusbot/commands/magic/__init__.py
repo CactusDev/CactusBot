@@ -8,8 +8,10 @@ from .quote import Quote
 from .social import Social
 from .trust import Trust
 from .uptime import Uptime
+from .alias import Alias
 
-COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime)
+COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime, Alias)
 
 __all__ = ["Command", "Meta", "Quote", "Cube",
-           "Social", "Trust", "Cactus", "Uptime"]
+           "Social", "Trust", "Cactus", "Uptime",
+           "Alias"]
