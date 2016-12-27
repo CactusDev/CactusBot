@@ -26,7 +26,8 @@ class Social(Command):
                         ("url", data["data"]["attributes"]["url"]))
                     response.append(', ')
                 else:
-                    return "'{}' not found on the streamer's profile!".format(service)
+                    return "'{}' not found on the streamer's profile!".format(
+                        service)
 
             return MessagePacket(*response[:-1])
         else:
@@ -41,7 +42,8 @@ class Social(Command):
                     response.append(', ')
                 return MessagePacket(*response[:-1])
             else:
-                return "'{}' not found on the streamer's profile!".format(service)
+                return "'{}' not found on the streamer's profile!".format(
+                    service)
 
     @Command.command()
     async def add(self, service, url):
