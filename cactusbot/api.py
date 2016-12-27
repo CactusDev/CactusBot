@@ -61,15 +61,15 @@ class CactusAPI(API):
 
         return await self.patch("/user/{channel}/command/{command}".format(
             channel=self.channel, command=command), data=json.dumps(data))
-        
-    async def set_command_count(self, command, amount):
+
+    async def update_command_count(self, command, action):
         """Set the count of a command."""
 
-        data = {"count": "={}".format(amount)}
+        data = {"count": action}
 
         return await(
             self.patch("/user/{channel}/command/{command}/count".format(
-                channel=self.channel, command=command)))
+                channel=self.channel, command=command), data=json.dumps(data)))
 
     async def get_quote(self, quote_id=None):
         """Get a quote."""

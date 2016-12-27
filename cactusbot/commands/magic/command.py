@@ -71,10 +71,10 @@ class Meta(Command):
             return "Command !{} has been disabled.".format(command)
 
     @Command.command()
-    async def count(self, command: r'!?\w{1,32}', *args: False):
+    async def count(self, command: r'!?\w{1,32}', action=None):
         """Set, add, remove the count of a command."""
 
-        if not args:
+        if action is None:
             response = await self.api.get_command(command)
             data = await response.json()
             if response.status == 404:
@@ -82,3 +82,11 @@ class Meta(Command):
             elif response.status == 200:
                 return "!{command}'s count is: {count}".format(
                     command=command, count=data["data"]["attributes"]["count"])
+
+        if action[0] not in ("-", "+", "="):
+            return "Invalid action! (-, +, =)"
+
+        if not len(action) == 2:
+            response = self.api.update_command_count(command, action)
+            if response.status == 200:
+                return "Count updated."
