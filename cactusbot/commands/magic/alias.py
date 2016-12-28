@@ -16,7 +16,13 @@ class Alias(Command):
 
         _, _, _, packet_args = raw.split(maximum=3)
 
-        response = self.api.add_alias(command, alias, packet_args.json)
+        print(alias)
+        print(command)
+        print(packet_args.json)
+
+        response = await self.api.add_alias(command, alias, packet_args.json)
+        print(response.status)
+        print(await response.json())
         if response.status == 201:
             return "Alias {} for command {} created.".format(alias, command)
         elif response.status == 200:
@@ -26,7 +32,7 @@ class Alias(Command):
     async def remove(self, alias: "?command"):
         """Remove a command alias."""
 
-        response = self.api.remove_alias(alias)
+        response = await self.api.remove_alias(alias)
         if response.status == 200:
             return "Alias {} removed.".format(alias)
         elif response.status == 404:
