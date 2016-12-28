@@ -8,7 +8,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Cube(Command):
     """Cube things."""
 

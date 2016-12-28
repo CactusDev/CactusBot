@@ -4,7 +4,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Social(Command):
     """Get social data."""
 

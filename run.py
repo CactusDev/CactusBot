@@ -41,6 +41,5 @@ if __name__ == "__main__":
         loop.run_until_complete(
             cactus.run(USERNAME, PASSWORD, api_token=API_TOKEN))
         loop.run_forever()
-    # TODO: Error catching?
     finally:
         loop.close()

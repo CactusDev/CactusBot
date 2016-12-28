@@ -7,15 +7,18 @@ import aiohttp
 from . import Command
 
 
-@Command.command()
 class Uptime(Command):
     """Uptime command."""
+
+    COMMAND = "uptime"
 
     BEAM_MANIFEST_URL = ("https://beam.pro/api/v1/channels/{channel}"
                          "/manifest.light2")
 
     @Command.command(hidden=True)
     async def default(self, *, channel: "channel"):
+        """Default response."""
+
         data = await (await aiohttp.get(
             self.BEAM_MANIFEST_URL.format(channel=channel)
         )).json()

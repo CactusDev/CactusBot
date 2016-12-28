@@ -72,5 +72,5 @@ target/
 venv/
 
 # CactusBot private data
-config.py
+/config.py
 data/

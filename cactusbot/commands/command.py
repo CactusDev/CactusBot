@@ -9,6 +9,13 @@ class Command:
 
     default = None
 
+    api = None
+
+    def __init__(self, api=None):
+
+        if api is not None:
+            type(self).api = api
+
     async def __call__(self, *args, **meta):
 
         commands = self.commands()
@@ -55,8 +62,8 @@ class Command:
         return "Not enough arguments. <{0}>".format(
             '|'.join(self.commands(hidden=False).keys()))
 
-    @staticmethod
-    def command(name=None, **meta):
+    @classmethod
+    def command(cls, name=None, **meta):
         """Accept arguments for command decorator."""
 
         def decorator(function):
@@ -66,7 +73,7 @@ class Command:
 
             if inspect.isclass(function):
                 COMMAND = getattr(function, "COMMAND", None)
-                function = function()
+                function = function(cls.api)
                 function.__name__ = function.__class__.__name__
                 if COMMAND is not None:
                     function.COMMAND = COMMAND
