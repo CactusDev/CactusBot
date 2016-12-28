@@ -11,13 +11,12 @@ class BeamParser:
 
     # TODO: update with accurate values
     ROLES = {
-        "Owner": 100,
-        "Founder": 91,
-        "Staff": 90,
-        "Global Mod": 85,
-        "Mod": 50,
-        "Subscriber": 20,
-        "Pro": 5,
+        "Owner": 5,
+        "Staff": 4,  # Not necessarily bot staff.
+        "Global Mod": 4,
+        "Mod": 4,
+        "Subscriber": 2,
+        "Pro": 1,
         "User": 1,
         "Muted": 0,
         "Banned": 0

@@ -3,6 +3,14 @@
 import inspect
 import re
 
+ROLES = {
+    5: "Owner",
+    4: "Moderator",
+    2: "Subscriber",
+    1: "User",
+    0: "Banned"
+}
+
 
 class Command:
     """Parent class to all commands."""
@@ -22,30 +30,52 @@ class Command:
         assert self.default is None or callable(self.default)
 
         if args:
+
             command, *arguments = args
+
             if command in commands:
+
+                role = commands[command].COMMAND_META.get("role", 1)
+
+                if isinstance(role, str):
+                    role = list(ROLES.keys())[list(map(
+                        str.lower, ROLES.values())).index(role.lower())]
+                if "packet" in meta and meta["packet"].role < role:
+                    return "Role level '{role}' or higher required.".format(
+                        role=ROLES[max(k for k in ROLES.keys() if k <= role)])
+
                 try:
+
                     return await self._run_safe(
                         commands[command], *arguments, **meta)
+
                 except IndexError as error:
+
                     if error.args[0] == 0:
+
                         has_default = hasattr(commands[command], "default")
                         has_commands = hasattr(commands[command], "commands")
                         if not (has_default or has_commands):
                             return "Not enough arguments. <{0}>".format(
                                 '> <'.join(arg.name for arg in error.args[1]))
+
                         response = "Not enough arguments. <{0}>".format(
                             '|'.join(
                                 commands[command].commands(hidden=False).keys()
                             ))
+
                         if commands[command].default is not None:
+
                             try:
                                 return await self._run_safe(
                                     commands[command].default,
                                     *arguments, **meta)
+
                             except IndexError:
                                 return response
+
                         return response
+
                     else:
                         return "Too many arguments."
 
@@ -91,6 +121,7 @@ class Command:
         return decorator
 
     async def _run_safe(self, function, *args, **meta):
+
         self._check_safe(function, *args)
 
         args = self._clean_args(function, *args)
