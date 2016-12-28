@@ -10,21 +10,44 @@ class CactusAPI(API):
 
     URL = "https://cactus.exoz.one/api/v1/"
 
-    def __init__(self, channel, **kwargs):
+    def __init__(self, channel, auth_token="", **kwargs):
         super().__init__(**kwargs)
 
         self.channel = channel
+        self.auth_token = auth_token
 
     async def request(self, method, endpoints, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
 
+        headers = {
+            "X-Auth-Token": self.channel,
+            "X-Auth-JWT": self.auth_token
+        }
+
         if is_json:
-            if "headers" in kwargs:
-                kwargs["headers"]["Content-Type"] = "application/json"
-            else:
-                kwargs["headers"] = {"Content-Type": "application/json"}
+            headers["Content-Type"] = "application/json"
+
+        if "headers" in kwargs:
+            kwargs["headers"].update(headers)
+        else:
+            kwargs["headers"] = headers
 
         return await super().request(method, endpoints, **kwargs)
+
+    async def login(self, password, *scopes):
+        """Authenticate."""
+
+        data = {
+            "token": self.channel,
+            "password": password,
+            "scopes": scopes
+        }
+
+        response = await self.post("/login", data=json.dumps(data))
+
+        self.auth_token = (await response.json())["token"]
+
+        return response
 
     async def get_command(self, name=None):
         """Get a command."""

@@ -12,6 +12,7 @@ PASSWORD = "BotPassword"
 CHANNEL = "ChannelName"
 
 API_TOKEN = "CactusAPI_Token"
+API_PASSWORD = "CactusAPI_Password"
 api = CactusAPI(API_TOKEN)
 
 # CACHE_FOLLOWS: Cache to remove chat spam (Default: False)
