@@ -62,8 +62,10 @@ class CactusAPI(API):
     async def add_alias(self, command, alias, args):
         """Create a command alias."""
 
-        print(args)
-        data = {"command": command, "arguments": args["message"]}
+        data = {
+            "command": command,
+            "arguments": args["message"]
+        }
 
         return await self.patch("/user/{user}/alias/{alias}".format(
             user=self.channel, alias=alias), data=json.dumps(data))

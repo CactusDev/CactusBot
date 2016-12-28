@@ -16,13 +16,8 @@ class Alias(Command):
 
         _, _, _, _, packet_args = raw.split(maximum=4)
 
-        print(alias)
-        print(command)
-        print(packet_args.json)
-
         response = await self.api.add_alias(command, alias, packet_args.json)
-        print(response.status)
-        print(await response.json())
+
         if response.status == 201:
             return "Alias {} for command {} created.".format(alias, command)
         elif response.status == 200:
