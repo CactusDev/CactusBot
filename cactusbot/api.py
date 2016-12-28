@@ -108,11 +108,21 @@ class CactusAPI(API):
         return await self.delete("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
 
-    async def get_config(self):
+    async def get_config(self, *keys):
         """Get the channel config."""
+
+        if keys:
+            return await self.get("/user/{channel}/config".format(
+                channel=self.channel), data=json.dumps({"keys": keys}))
 
         return await self.get("/user/{channel}/config".format(
             channel=self.channel), is_json=False)
+
+    async def update_config(self, value):
+        """Update config attributes."""
+
+        return await self.patch("/user/{user}/config".format(
+            user=self.channel), data=json.dumps(value))
 
     async def add_repeat(self, command, period, *args):
         """Add a repeat."""
@@ -136,9 +146,3 @@ class CactusAPI(API):
         """Get all repeats."""
 
         return await self.get("/user/{user}/repeat")
-
-    async def update_config(self, value):
-        """Update config attributes."""
-
-        return await self.patch("/user/{user}/config".format(
-            user=self.channel), data=json.dumps(value))

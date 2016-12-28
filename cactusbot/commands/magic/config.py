@@ -10,58 +10,98 @@ class Config(Command):
     COMMAND = "config"
 
     @Command.command()
-    async def announce(self, attribute=None, *args: False):
+    async def announce(self, kind, *args):
         """Announce subcommand."""
 
-        if attribute is None:
-            return "You must supply an attribute!"
+        if kind.lower() not in ("follow", "subscribe", "host"):
+            return "Invalid announcement type: '{kind}'.".format(kind=kind)
 
-        if not args:
-            return "You must supply a message!"
+        if args[0] == "toggle" and len(args) <= 2:
 
-        if attribute.lower() not in ["follow", "subscribe", "host"]:
-            return "Invalid announcement type. Available: follow, subscribe, host"
-        else:
-            message = ' '.join(args)
+            if len(args) == 1:
 
-            response = await self.api.update_config({"announce": {attribute: {"message": message}}})
-            if response.status == 200:
-                return "Updated announcment"
+                current_value = (
+                    await (
+                        await self.api.get_config("announce:" + kind)
+                    ).json()
+                )["data"]["announce"][kind]["announce"]
+
+                await self.update_config(
+                    "announce", kind, "announce", not current_value
+                )
+
+                return "{kind} announcements are now {pre}abled.".format(
+                    kind=kind.title(), pre=('dis', 'en')[not current_value])
+
+            if args[1].lower() in ("on", "enable", "true"):
+
+                await self.update_config(
+                    "announce", kind, "announce", True)
+
+                return "{kind} announcements are now enabled.".format(
+                    kind=kind.title())
+
+            elif args[1].lower() in ("off", "disable", "false"):
+
+                await self.update_config(
+                    "announce", kind, "announce", False)
+
+                return "{kind} announcements are now disabled.".format(
+                    kind=kind.title())
+
+            else:
+                return "Invalid toggle state: '{state}'.".format(state=args[1])
+
+        response = await self.update_config(
+            "announce", kind, "message", ' '.join(args))
+
+        if response.status == 200:
+            return "Updated announcment."
 
     @Command.command()
-    async def spam(self, attribute=None, *args: False):
-        """Spam subcommand."""
+    class Spam(Command):
 
-        if attribute is None:
-            return "You must supply an attribute!"
+        @Command.command()
+        async def urls(self, value):
 
-        if not args:
-            return "You must supply a value!"
+            if value in ("on", "allow", "enable", "true"):
+                await self.update_config(
+                    "announce", "allowUrls", "announce", True)
+                return "URLs are now allowed."
 
-        if attribute.lower() not in ["links", "emoji"]:
-            return "Invalid spam type. Available: links, emoji"
-        else:
-            translations = {
-                "links": "allowLinks",
-                "emoji": "maxEmoji"
+            elif value in ("off", "disallow", "disable", "false"):
+                await self.update_config(
+                    "announce", "allowUrls", "announce", False)
+                return "URLs are now disallowed."
+
+            else:
+                return "Invalid boolean value: '{value}'.".format(value=value)
+
+        @Command.command()
+        async def emoji(self, value: r"\d+"):
+
+            await self.update_config(
+                "announce", "maxEmoji", "announce", int(value))
+
+            return "Maximum number of emoji is now {value}.".format(
+                value=value)
+
+        @Command.command()
+        async def caps(self, value: r"\d+"):
+
+            await self.update_config(
+                "announce", "maxCapsScore", "announce", int(value))
+
+            return "Maximum capitals score is now {value}.".format(
+                value=value)
+
+    async def update_config(self, scope, kind, field, value):
+        return await self.api.update_config({
+            scope: {
+                kind: {
+                    field: value
+                }
             }
+        })
 
-            action = None
-            if attribute.lower() == "links":
-                if args[0] in ["false", "disable", "off"]:
-                    action = False
-                elif args[0] in ["true", "enable", "on"]:
-                    action = True
-                else:
-                    return "Invalid action. Available: on/true/enable, off/false/disable"
-            elif attribute.lower() == "emoji":
-                try:
-                    action = int(args[0])
-                except ValueError:
-                    return "Amount must be a number."
-
-            if action or not action:
-                response = await self.api.update_config(
-                    {"spam": {translations[attribute.lower()]: action}})
-                if response.status == 200:
-                    return "{} updated.".format(translations[attribute.lower()].title())
+    Spam.update_config = update_config
