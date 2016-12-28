@@ -14,7 +14,7 @@ class Alias(Command):
                   raw: "packet"):
         """Add a new command alias."""
 
-        _, _, _, packet_args = raw.split(maximum=3)
+        _, _, _, _, packet_args = raw.split(maximum=4)
 
         print(alias)
         print(command)

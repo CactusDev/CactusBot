@@ -68,19 +68,21 @@ class CommandHandler(Handler):
                                              target=packet.user)
                     else:
                         json = await response.json()
+
+                        args = MessagePacket(
+                            *json["data"]["attributes"]["arguments"]
+                        ).text.split() + args
+
                         json = json["data"]["attributes"]["command"][
                             "response"]
                 else:
                     json = await response.json()
                     json = json["data"]["attributes"]["response"]
 
-                return self._inject(MessagePacket(
-                    *json.pop("message"),
-                    **{
-                        **json,
-                        "target": packet.user if packet.target else None
-                    }
-                ), command, *args, **data)
+                json["target"] = packet.user if packet.target else None
+
+                return self._inject(MessagePacket.from_json(json),
+                                    command, *args, **data)
 
     def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""
