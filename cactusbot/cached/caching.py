@@ -1,8 +1,11 @@
+"""Follower caching."""
+
 import datetime
 import json
 
 
 class CacheUtils:
+    """Follower caching."""
 
     # You have found MysticalMage's code, turn back now, no good lies ahead
     def __init__(self, filename):

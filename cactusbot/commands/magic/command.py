@@ -3,7 +3,6 @@
 from . import Command
 
 
-@Command.command()
 class Meta(Command):
     """Manage commands."""
 

@@ -15,13 +15,14 @@ class CactusAPI(API):
 
         self.channel = channel
 
-    async def request(self, method, endpoints, **kwargs):
+    async def request(self, method, endpoints, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
 
-        if "headers" in kwargs:
-            kwargs["headers"]["Content-Type"] = "application/json"
-        else:
-            kwargs["headers"] = {"Content-Type": "application/json"}
+        if is_json:
+            if "headers" in kwargs:
+                kwargs["headers"]["Content-Type"] = "application/json"
+            else:
+                kwargs["headers"] = {"Content-Type": "application/json"}
 
         return await super().request(method, endpoints, **kwargs)
 
@@ -51,6 +52,7 @@ class CactusAPI(API):
 
     async def remove_command(self, name):
         """Remove a command."""
+
         return await self.delete("/user/{channel}/command/{command}".format(
             channel=self.channel, command=name))
 
@@ -125,11 +127,13 @@ class CactusAPI(API):
 
     async def remove_quote(self, quote_id):
         """Remove a quote."""
+
         return await self.delete("/user/{channel}/quote/{id}".format(
             channel=self.channel, id=quote_id))
 
     async def get_friend(self, name=None):
         """Get a list of friends."""
+
         if name is None:
             return await self.get("/channel/{channel}/friend")
 
@@ -138,13 +142,54 @@ class CactusAPI(API):
 
     async def add_friend(self, username):
         """Add a friend."""
+
         return await self.patch("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
 
     async def remove_friend(self, username):
         """Remove a friend."""
+
         return await self.delete("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
+
+    async def get_config(self, *keys):
+        """Get the channel config."""
+
+        if keys:
+            return await self.get("/user/{channel}/config".format(
+                channel=self.channel), data=json.dumps({"keys": keys}))
+
+        return await self.get("/user/{channel}/config".format(
+            channel=self.channel), is_json=False)
+
+    async def update_config(self, value):
+        """Update config attributes."""
+
+        return await self.patch("/user/{user}/config".format(
+            user=self.channel), data=json.dumps(value))
+
+    async def add_repeat(self, command, period, *args):
+        """Add a repeat."""
+
+        data = {
+            "command": command,
+            "period": int(period),
+            "arguments": args
+        }
+
+        return await self.post("/user/{user}/repeat".format(user=self.channel),
+                               data=json.dumps(data))
+
+    async def remove_repeat(self, repeat):
+        """Remove a repeat."""
+
+        return await self.delete("/user/{user}/repeat/{repeat}".format(
+            user=self.channel, repeat=repeat))
+
+    async def get_repeats(self):
+        """Get all repeats."""
+
+        return await self.get("/user/{user}/repeat")
 
     async def add_social(self, service, url):
         """Add a social service."""
