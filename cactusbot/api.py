@@ -51,6 +51,7 @@ class CactusAPI(API):
 
     async def remove_command(self, name):
         """Remove a command."""
+
         return await self.delete("/user/{channel}/command/{command}".format(
             channel=self.channel, command=name))
 
@@ -86,11 +87,13 @@ class CactusAPI(API):
 
     async def remove_quote(self, quote_id):
         """Remove a quote."""
+
         return await self.delete("/user/{channel}/quote/{id}".format(
             channel=self.channel, id=quote_id))
 
     async def get_friend(self, name=None):
         """Get a list of friends."""
+
         if name is None:
             return await self.get("/channel/{channel}/friend")
 
@@ -99,11 +102,13 @@ class CactusAPI(API):
 
     async def add_friend(self, username):
         """Add a friend."""
+
         return await self.patch("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
 
     async def remove_friend(self, username):
         """Remove a friend."""
+
         return await self.delete("/channel/{channel}/friend/{name}".format(
             channel=self.channel, name=username))
 
