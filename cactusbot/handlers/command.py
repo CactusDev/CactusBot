@@ -25,7 +25,7 @@ class CommandHandler(Handler):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel.lower())
+        self.api = api
 
         self.magics = {command.COMMAND: command(api) for command in COMMANDS}
 
@@ -54,32 +54,26 @@ class CommandHandler(Handler):
                     if not isinstance(response, MessagePacket):
                         response = MessagePacket(response)
                     response.target = packet.user
+
                 return response
+
             else:
+
                 response = await self.api.get_command(command)
+
                 if response.status == 404:
-                    response = await self.api.get_command_alias(command)
+                    return MessagePacket("Command not found.",
+                                         target=packet.user)
 
-                    if response.status == 404:
-                        return MessagePacket("Command not found.",
-                                             target=packet.user)
-                    else:
-                        json = await response.json()
-
-                        args = MessagePacket(
-                            *json["data"]["attributes"]["arguments"]
-                        ).text.split() + args
-
-                        json = json["data"]["attributes"]["command"][
-                            "response"]
-                else:
-                    json = await response.json()
-                    json = json["data"]["attributes"]["response"]
-
-                json["target"] = packet.user if packet.target else None
-
-                return self._inject(MessagePacket.from_json(json),
-                                    command, *args, **data)
+                json = await response.json()
+                json = json["data"]["attributes"]["response"]
+                return self._inject(MessagePacket(
+                    *json.pop("message"),
+                    **{
+                        **json,
+                        "target": packet.user if packet.target else None
+                    }
+                ), command, *args, **data)
 
     def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""

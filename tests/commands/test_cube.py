@@ -1,11 +1,14 @@
 import pytest
 
+from cactusbot.api import CactusAPI
 from cactusbot.commands.magic import Cube, Temmie
 from cactusbot.packets import MessagePacket
 
+cube = Cube(CactusAPI("test_token"))
+
 async def verify_cube(packet, expected):
     _, *args = packet[1:].text.split()
-    response = (await Cube(*args, username=packet.user, packet=packet))
+    response = (await cube(*args, username=packet.user, packet=packet))
     if isinstance(response, str):
         assert response == expected
     elif isinstance(response, MessagePacket):
@@ -47,13 +50,15 @@ async def test_cube():
         "lots³ · of³ · taco³ · salad³ · 😃³"
     )
 
+temmie = Temmie(CactusAPI("test_token"))
+
 
 @pytest.mark.asyncio
 async def test_temmie():
 
-    await Temmie()
+    await temmie()
 
-    assert (await Temmie("hoi")).text == "hOI!!!!!! i'm tEMMIE!!"
+    assert (await temmie("hoi")).text == "hOI!!!!!! i'm tEMMIE!!"
 
-    assert not (await Temmie("hoi")).action
-    assert (await Temmie("flakes")).action
+    assert not (await temmie("hoi")).action
+    assert (await temmie("flakes")).action

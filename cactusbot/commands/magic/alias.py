@@ -3,7 +3,6 @@
 from . import Command
 
 
-@Command.command()
 class Alias(Command):
     """Alias command."""
 

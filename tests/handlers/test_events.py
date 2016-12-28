@@ -3,10 +3,38 @@ import pytest
 from cactusbot.handlers import EventHandler
 from cactusbot.packets import EventPacket
 
+
+class MockAPI:
+
+    async def get_config(self):
+
+        class Response:
+
+            async def json(self):
+
+                return {
+                    "data": {"attributes": {"announce": {
+                        "follow": {
+                            "announce": True,
+                            "message": "Thanks for following, %USER%!"
+                        },
+                        "sub": {
+                            "announce": True,
+                            "message": "Thanks for subscribing, %USER%!"
+                        },
+                        "host": {
+                            "announce": True,
+                            "message": "Thanks for hosting, %USER%!"
+                        }
+                    }}}
+                }
+
+        return Response()
+
 event_handler = EventHandler({
     "CACHE_FOLLOWS": False,
     "CACHE_FOLLOWS_TIME": 0
-})
+}, MockAPI())
 
 
 @pytest.mark.asyncio
