@@ -236,3 +236,22 @@ class CactusAPI(API):
                 user=self.token))
         return await self.get("/user/{user}/social/{service}".format(
             user=self.token, service=service))
+
+    async def get_trusts(self, user_id=None):
+        """Get all trusted users."""
+        if user_id is None:
+            return await self.get("/user/{user}/trust".format(user=self.token))
+
+    async def trust_user(self, user_id, username):
+        """Trust new user."""
+
+        data = {"userName": username}
+
+        return await self.patch("/user/{user}/trust/{user_id}".format(
+            user=self.token, user_id=user_id), data=json.dumps(data))
+
+    async def remove_trust(self, user_id):
+        """Remove user trust."""
+
+        return await self.delete("/user/{user}/trust/{user_id}".format(
+            user=self.token, user_id=user_id))
