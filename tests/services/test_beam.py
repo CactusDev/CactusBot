@@ -25,7 +25,7 @@ def test_parse_message():
             "text": "Hello, world!"
         }],
         "user": "2Cubed",
-        "role": 100,
+        "role": 5,
         "action": False,
         "target": None
     }

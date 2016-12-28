@@ -60,7 +60,7 @@ class Config(Command):
     @Command.command()
     class Spam(Command):
 
-        @Command.command()
+        @Command.command(role="moderator")
         async def urls(self, value):
 
             if value in ("on", "allow", "enable", "true"):
