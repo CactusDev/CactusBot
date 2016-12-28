@@ -141,7 +141,8 @@ class Command:
                 if isinstance(arg.annotation, str):
                     annotation = arg.annotation
                     if annotation.startswith('?'):
-                        annotation = r"!?\w{1,32}"  # HACK
+                        if annotation == "?command":
+                            annotation = r"!?\w{1,32}"
                     match = re.match('^' + annotation + '$', args[index])
                     if match is None:
                         return error_response

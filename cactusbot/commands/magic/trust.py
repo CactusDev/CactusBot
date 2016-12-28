@@ -1,6 +1,7 @@
 """Trust command."""
 
 from ..command import Command
+from ...packets import MessagePacket
 
 import aiohttp
 
@@ -31,14 +32,21 @@ class Trust(Command):
 
         response = await aiohttp.get(self.BASE + user)
         if response.status == 404:
-            return "User {} does not exist!".format(user)
-
+            return MessagePacket(
+                ("text", "User ")
+                ("tag", user),
+                ("text", " does not exist!")
+            )
         data = await response.json()
         user_id = data["id"]
         response = await self.api.trust_user(user_id, user)
 
         if response.status in (201, 200):
-            return "User {} has been trusted!".format(user)
+            return MessagePacket(
+                ("text", "User "),
+                ("tag", user),
+                ("text", "has been trusted!")
+            )
 
     @Command.command()
     async def remove(self, user: r'\w{1,32}'):
@@ -46,7 +54,11 @@ class Trust(Command):
 
         response = await aiohttp.get(self.BASE + user)
         if response.status == 404:
-            return "User {} does not exist!".format(user)
+            return MessagePacket(
+                ("text", "User ")
+                ("tag", user),
+                ("text", " does not exist!")
+            )
 
         data = await response.json()
         user_id = data["id"]
@@ -54,9 +66,15 @@ class Trust(Command):
         print(await response.json())
 
         if response.status == 200:
-            return "Removed trust for user {}!".format(user)
+            return MessagePacket(
+                ("text", "Removed trust for user "),
+                ("tag", user),
+                ("text", '!')
+            )
         else:
-            return "{} isn't a trusted user".format(user)
-
+            return MessagePacket(
+                ("tag", user),
+                ("text", " isn't a trusted user!")
+            )
     async def get_user_id(self, username):
         return await aiohttp.get(self.BASE + username)
