@@ -2,6 +2,7 @@
 
 from . import Command
 
+
 @Command.command()
 class Repeat(Command):
     """Manage repeats."""
@@ -13,14 +14,10 @@ class Repeat(Command):
         """Add a repeat."""
 
         response = await self.api.add_repeat(command, period, *args)
-        print(response.status)
 
         if response.status == 201:
             return "Repeat !{command} added on interval {period}!".format(
                 command=command, period=period)
-        else:
-            print("UH OH")
-            print(await response.json())
 
     @Command.command()
     async def remove(self, repeat: r'[1-9]\d*'=None):

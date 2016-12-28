@@ -3,7 +3,6 @@
 from .command import Command
 
 
-@Command.command()
 class Config(Command):
     """Config command"""
 

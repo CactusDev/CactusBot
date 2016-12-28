@@ -5,7 +5,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Cactus(Command):
     """Ouch! That's pokey!"""
 

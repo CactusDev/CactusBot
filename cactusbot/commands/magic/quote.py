@@ -6,7 +6,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Quote(Command):
     """Manage quotes."""
 

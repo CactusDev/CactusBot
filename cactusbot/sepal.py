@@ -3,7 +3,6 @@
 import json
 import logging
 
-from .api import CactusAPI
 from .packet import Packet
 from .packets import MessagePacket
 from .services.websocket import WebSocket
@@ -18,12 +17,8 @@ class Sepal(WebSocket):
         self.logger = logging.getLogger(__name__)
 
         self.channel = channel
-        self.api = CactusAPI(channel)
         self.service = service
         self.parser = None
-
-        if self.service is not None:
-            self.parser = SepalParser(self.api)
 
     async def send(self, packet_type, **kwargs):
         """Send a packet to Sepal."""
@@ -77,9 +72,6 @@ class Sepal(WebSocket):
 
 class SepalParser:
     """Parse Sepal packets."""
-
-    def __init__(self, api):
-        self.api = api
 
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""

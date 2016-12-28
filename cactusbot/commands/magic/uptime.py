@@ -7,9 +7,10 @@ import aiohttp
 from . import Command
 
 
-@Command.command()
 class Uptime(Command):
     """Uptime command."""
+
+    COMMAND = "uptime"
 
     BEAM_MANIFEST_URL = ("https://beam.pro/api/v1/channels/{channel}"
                          "/manifest.light2")

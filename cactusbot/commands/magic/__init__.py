@@ -3,16 +3,16 @@
 from .. import Command
 from .cactus import Cactus
 from .command import Meta
+from .config import Config
 from .cube import Cube, Temmie
 from .quote import Quote
+from .repeat import Repeat
 from .social import Social
 from .trust import Trust
 from .uptime import Uptime
-from .repeat import Repeat
-from .config import Config
 
-COMMANDS = (Cactus, Meta, Quote, Cube, Temmie, Social, Trust, Uptime, Repeat, Config)
+COMMANDS = (Cactus, Meta, Config, Cube, Temmie,
+            Quote, Repeat, Social, Trust, Uptime)
 
-__all__ = ["Command", "Meta", "Quote", "Cube",
-           "Social", "Trust", "Cactus", "Uptime",
-           "Repeat", "Config"]
+__all__ = ("Command", "Cactus", "Meta", "Config", "Cube", "Temmie",
+           "Quote", "Repeat", "Social", "Trust", "Uptime")

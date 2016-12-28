@@ -2,7 +2,6 @@
 
 import random
 
-from ..api import CactusAPI
 from ..commands import COMMANDS
 from ..handler import Handler
 from ..packets import MessagePacket
@@ -22,15 +21,13 @@ class CommandHandler(Handler):
         "shuffle": lambda text: ''.join(random.sample(text, len(text)))
     }
 
-    def __init__(self, channel):
+    def __init__(self, channel, api):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel.lower())
+        self.api = api
 
-        self.magics = {command.COMMAND: command for command in COMMANDS}
-        for command in self.magics.values():
-            command.api = self.api
+        self.magics = {command.COMMAND: command(api) for command in COMMANDS}
 
     async def on_message(self, packet):
         """Handle message events."""

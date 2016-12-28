@@ -2,7 +2,6 @@
 
 import datetime
 
-from ..api import CactusAPI
 from ..cached import CacheUtils
 from ..handler import Handler
 from ..packets import MessagePacket
@@ -11,7 +10,7 @@ from ..packets import MessagePacket
 class EventHandler(Handler):
     """Events handler."""
 
-    def __init__(self, cache_data, channel):
+    def __init__(self, cache_data, api):
         super().__init__()
 
         self.cache = CacheUtils("caches/followers.json")
@@ -19,7 +18,7 @@ class EventHandler(Handler):
         self.follow_time = datetime.timedelta(
             minutes=cache_data["CACHE_FOLLOWS_TIME"])
 
-        self.api = CactusAPI(channel)
+        self.api = api
 
         self.alert_messages = {
             "follow": {
