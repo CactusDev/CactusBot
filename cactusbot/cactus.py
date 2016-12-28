@@ -42,10 +42,12 @@ class Cactus:
 
         self.debug = debug  # XXX: find purpose or remove
 
-    async def run(self, *auth, api_token):
+    async def run(self, api, api_token, api_password, *auth):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
+
+        await api.login(api_password, "command:create", "command:details")
 
         sepal = Sepal(api_token, self.service)
 

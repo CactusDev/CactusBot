@@ -75,9 +75,6 @@ class SepalParser:
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""
 
-        if not isinstance(packet["data"]["command"], dict):
-            return
-
         return MessagePacket.from_json(packet["data"]["command"]["response"])
 
     async def parse_config(self, packet):

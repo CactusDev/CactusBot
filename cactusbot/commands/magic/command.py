@@ -40,7 +40,7 @@ class Meta(Command):
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.command(name="list")
+    @Command.command("list")
     async def list_commands(self):
         """List all custom commands."""
         response = await self.api.get_command()
