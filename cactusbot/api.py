@@ -168,12 +168,12 @@ class CactusAPI(API):
         return await self.patch("/user/{user}/config".format(
             user=self.channel), data=json.dumps(value))
 
-    async def add_repeat(self, command, period, *args):
+    async def add_repeat(self, command, period, args):
         """Add a repeat."""
 
         data = {
-            "command": command,
-            "period": int(period),
+            "commandName": command,
+            "period": period,
             "arguments": args
         }
 
@@ -189,7 +189,7 @@ class CactusAPI(API):
     async def get_repeats(self):
         """Get all repeats."""
 
-        return await self.get("/user/{user}/repeat")
+        return await self.get("/user/{user}/repeat".format(user=self.channel))
 
     async def add_social(self, service, url):
         """Add a social service."""
