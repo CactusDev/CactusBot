@@ -10,17 +10,17 @@ class CactusAPI(API):
 
     URL = "https://cactus.exoz.one/api/v1/"
 
-    def __init__(self, channel, auth_token="", **kwargs):
+    def __init__(self, token, auth_token="", **kwargs):
         super().__init__(**kwargs)
 
-        self.channel = channel
+        self.token = token
         self.auth_token = auth_token
 
     async def request(self, method, endpoints, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
 
         headers = {
-            "X-Auth-Token": self.channel,
+            "X-Auth-Token": self.token,
             "X-Auth-JWT": self.auth_token
         }
 
@@ -38,7 +38,7 @@ class CactusAPI(API):
         """Authenticate."""
 
         data = {
-            "token": self.channel,
+            "token": self.token,
             "password": password,
             "scopes": scopes
         }
@@ -54,10 +54,10 @@ class CactusAPI(API):
 
         if name is not None:
             return await self.get(
-                "/user/{channel}/command/{command}".format(
-                    channel=self.channel, command=name))
-        return await self.get("/user/{channel}/command".format(
-            channel=self.channel))
+                "/user/{token}/command/{command}".format(
+                    token=self.token, command=name))
+        return await self.get("/user/{token}/command".format(
+            token=self.token))
 
     async def add_command(self, name, response, *, user_level=0):
         """Add a command."""
@@ -68,21 +68,21 @@ class CactusAPI(API):
         }
 
         return await self.patch(
-            "/user/{channel}/command/{command}".format(
-                channel=self.channel, command=name),
+            "/user/{token}/command/{command}".format(
+                token=self.token, command=name),
             data=json.dumps(data)
         )
 
     async def remove_command(self, name):
         """Remove a command."""
 
-        return await self.delete("/user/{channel}/command/{command}".format(
-            channel=self.channel, command=name))
+        return await self.delete("/user/{token}/command/{command}".format(
+            token=self.token, command=name))
 
     async def get_command_alias(self, command):
         """Get a command alias."""
-        return await self.get("/user/{channel}/alias/{command}".format(
-            channel=self.channel, command=command))
+        return await self.get("/user/{token}/alias/{command}".format(
+            token=self.token, command=command))
 
     async def add_alias(self, command, alias, args):
         """Create a command alias."""
@@ -93,21 +93,21 @@ class CactusAPI(API):
         }
 
         return await self.patch("/user/{user}/alias/{alias}".format(
-            user=self.channel, alias=alias), data=json.dumps(data))
+            user=self.token, alias=alias), data=json.dumps(data))
 
     async def remove_alias(self, alias):
         """Remove a command alias."""
 
         return await self.delete("/user/{user}/alias/{alias}".format(
-            user=self.channel, alias=alias))
+            user=self.token, alias=alias))
 
     async def toggle_command(self, command, status):
         """Toggle the availability of a command."""
 
         data = {"enabled": status}
 
-        return await self.patch("/user/{channel}/command/{command}".format(
-            channel=self.channel, command=command), data=json.dumps(data))
+        return await self.patch("/user/{token}/command/{command}".format(
+            token=self.token, command=command), data=json.dumps(data))
 
     async def update_command_count(self, command, action):
         """Set the count of a command."""
@@ -115,17 +115,17 @@ class CactusAPI(API):
         data = {"count": action}
 
         return await(
-            self.patch("/user/{channel}/command/{command}/count".format(
-                channel=self.channel, command=command), data=json.dumps(data)))
+            self.patch("/user/{token}/command/{command}/count".format(
+                token=self.token, command=command), data=json.dumps(data)))
 
     async def get_quote(self, quote_id=None):
         """Get a quote."""
 
         if quote_id is not None:
-            return await self.get("/user/{channel}/quote/{id}".format(
-                channel=self.channel, id=quote_id))
-        return await self.get("/user/{channel}/quote".format(
-            channel=self.channel), params={"random": True})
+            return await self.get("/user/{token}/quote/{id}".format(
+                token=self.token, id=quote_id))
+        return await self.get("/user/{token}/quote".format(
+            token=self.token), params={"random": True})
 
     async def add_quote(self, quote):
         """Add a quote."""
@@ -133,7 +133,7 @@ class CactusAPI(API):
         data = {"quote": quote}
 
         return await self.post(
-            "/user/{channel}/quote".format(channel=self.channel),
+            "/user/{token}/quote".format(token=self.token),
             data=json.dumps(data)
         )
 
@@ -143,53 +143,53 @@ class CactusAPI(API):
         data = {"quote": quote}
 
         return await self.patch(
-            "/user/{channel}/quote/{quote_id}".format(
-                channel=self.channel, quote_id=quote_id),
+            "/user/{token}/quote/{quote_id}".format(
+                token=self.token, quote_id=quote_id),
             data=json.dumps(data)
         )
 
     async def remove_quote(self, quote_id):
         """Remove a quote."""
 
-        return await self.delete("/user/{channel}/quote/{id}".format(
-            channel=self.channel, id=quote_id))
+        return await self.delete("/user/{token}/quote/{id}".format(
+            token=self.token, id=quote_id))
 
     async def get_friend(self, name=None):
         """Get a list of friends."""
 
         if name is None:
-            return await self.get("/channel/{channel}/friend")
+            return await self.get("/token/{token}/friend")
 
-        return await self.get("/channel/{channel}/friend/{name}".format(
-            channel=self.channel, name=name))
+        return await self.get("/token/{token}/friend/{name}".format(
+            token=self.token, name=name))
 
     async def add_friend(self, username):
         """Add a friend."""
 
-        return await self.patch("/channel/{channel}/friend/{name}".format(
-            channel=self.channel, name=username))
+        return await self.patch("/token/{token}/friend/{name}".format(
+            token=self.token, name=username))
 
     async def remove_friend(self, username):
         """Remove a friend."""
 
-        return await self.delete("/channel/{channel}/friend/{name}".format(
-            channel=self.channel, name=username))
+        return await self.delete("/token/{token}/friend/{name}".format(
+            token=self.token, name=username))
 
     async def get_config(self, *keys):
-        """Get the channel config."""
+        """Get the token config."""
 
         if keys:
-            return await self.get("/user/{channel}/config".format(
-                channel=self.channel), data=json.dumps({"keys": keys}))
+            return await self.get("/user/{token}/config".format(
+                token=self.token), data=json.dumps({"keys": keys}))
 
-        return await self.get("/user/{channel}/config".format(
-            channel=self.channel), is_json=False)
+        return await self.get("/user/{token}/config".format(
+            token=self.token), is_json=False)
 
     async def update_config(self, value):
         """Update config attributes."""
 
         return await self.patch("/user/{user}/config".format(
-            user=self.channel), data=json.dumps(value))
+            user=self.token), data=json.dumps(value))
 
     async def add_repeat(self, command, period, args):
         """Add a repeat."""
@@ -200,19 +200,19 @@ class CactusAPI(API):
             "arguments": args
         }
 
-        return await self.post("/user/{user}/repeat".format(user=self.channel),
+        return await self.post("/user/{user}/repeat".format(user=self.token),
                                data=json.dumps(data))
 
     async def remove_repeat(self, repeat):
         """Remove a repeat."""
 
         return await self.delete("/user/{user}/repeat/{repeat}".format(
-            user=self.channel, repeat=repeat))
+            user=self.token, repeat=repeat))
 
     async def get_repeats(self):
         """Get all repeats."""
 
-        return await self.get("/user/{user}/repeat".format(user=self.channel))
+        return await self.get("/user/{user}/repeat".format(user=self.token))
 
     async def add_social(self, service, url):
         """Add a social service."""
@@ -220,19 +220,19 @@ class CactusAPI(API):
         data = {"url": url}
 
         return await self.patch("/user/{user}/social/{service}".format(
-            user=self.channel, service=service), data=json.dumps(data))
+            user=self.token, service=service), data=json.dumps(data))
 
     async def remove_social(self, service):
         """Remove a social service."""
 
         return await self.delete("/user/{user}/social/{service}".format(
-            user=self.channel, service=service))
+            user=self.token, service=service))
 
     async def get_social(self, service=None):
         """Get social service."""
 
         if service is None:
             return await self.get("/user/{user}/social".format(
-                user=self.channel))
+                user=self.token))
         return await self.get("/user/{user}/social/{service}".format(
-            user=self.channel, service=service))
+            user=self.token, service=service))
