@@ -68,7 +68,8 @@ class CommandHandler(Handler):
                                              target=packet.user)
                     else:
                         json = await response.json()
-                        json = json["data"]["attributes"]["command"]["response"]
+                        json = json["data"]["attributes"]["command"][
+                            "response"]
                 else:
                     json = await response.json()
                     json = json["data"]["attributes"]["response"]
