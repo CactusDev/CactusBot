@@ -3,7 +3,6 @@
 from . import Command
 
 
-@Command.command()
 class Repeat(Command):
     """Manage repeats."""
 
