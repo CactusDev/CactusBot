@@ -62,6 +62,9 @@ class Sepal(WebSocket):
 
         data = await getattr(self.parser, "parse_" + event)(packet)
 
+        if data is None:
+            return
+
         if isinstance(data, (list, tuple)):
             for packet in data:
                 await self.service.handle(event, packet)
@@ -75,7 +78,8 @@ class SepalParser:
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""
 
-        return MessagePacket.from_json(packet["data"]["response"])
+        if "response" in packet["data"]:
+            return MessagePacket.from_json(packet["data"]["response"])
 
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
