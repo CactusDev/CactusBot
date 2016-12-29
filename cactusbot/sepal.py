@@ -17,7 +17,7 @@ class Sepal(WebSocket):
 
         self.channel = channel
         self.service = service
-        self.parser = None
+        self.parser = SepalParser()
 
     async def send(self, packet_type, **kwargs):
         """Send a packet to Sepal."""
@@ -53,11 +53,14 @@ class Sepal(WebSocket):
         assert self.service is not None, "Must have a service to handle"
 
         if "event" not in packet:
+            print("no event")
             return
 
         event = packet["event"]
+        print(event)
 
-        if not hasattr(self.parser, "parse_" + event):
+        if not hasattr(self.parser, "parse_" + event.lower()):
+            print(self.parser)
             return
 
         data = await getattr(self.parser, "parse_" + event)(packet)
@@ -75,7 +78,7 @@ class SepalParser:
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""
 
-        return MessagePacket.from_json(packet["data"]["command"]["response"])
+        return MessagePacket.from_json(packet["data"]["response"])
 
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
