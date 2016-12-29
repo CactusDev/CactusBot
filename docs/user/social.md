@@ -14,9 +14,6 @@ Retrieve a social URL. If `service` is provided, the service will be returned
 ```
 
 
-
-
-
 ## `!social add <service> <url>`
 
 Minimum Role Required: **Moderator**
