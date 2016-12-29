@@ -1,9 +1,18 @@
 """Trust command."""
 
-from ..command import Command
-from ...packets import MessagePacket
-
 import aiohttp
+
+from ...packets import MessagePacket
+from ..command import Command
+
+BASE_URL = "https://beam.pro/api/v1/channels/{username}"
+
+
+async def check_user(username):
+    async with aiohttp.get(BASE_URL.format(username=username)) as response:
+        if response.status == 404:
+            raise NameError
+        return (username, (await response.json())["id"])
 
 
 class Trust(Command):
@@ -11,70 +20,58 @@ class Trust(Command):
 
     COMMAND = "trust"
 
-    BASE = "https://beam.pro/api/v1/channels/"
+    async def get_user_id(self, username):
+        return await aiohttp.get(self.BASE + username)
 
-    @Command.command(name="list")
+    @Command.command(hidden=True)
+    async def default(self, username: check_user):
+        """Toggle a trust."""
+
+        user, user_id = username
+
+        is_trusted = (await self.api.get_trust(user_id)).status == 200
+
+        if is_trusted:
+            await self.api.remove_trust(user_id)
+        else:
+            await self.api.add_trust(user_id, user)
+
+        return MessagePacket(
+            ("tag", user), " is {modifier} trusted.".format(
+                modifier=("now", "no longer")[is_trusted]))
+
+    @Command.command()
+    async def add(self, username: check_user):
+        """Add a trusted user."""
+
+        user, user_id = username
+
+        response = await self.api.add_trust(user_id, user)
+
+        if response.status in (201, 200):
+            return MessagePacket("User ", ("tag", user), " has been trusted.")
+
+    @Command.command()
+    async def remove(self, username: check_user):
+        """Remove a trusted user."""
+
+        user, user_id = username
+
+        response = await self.api.remove_trust(user_id)
+
+        if response.status == 200:
+            return MessagePacket("Removed trust for user ", ("tag", user), '.')
+        else:
+            return MessagePacket(("tag", user), " is not a trusted user.")
+
+    @Command.command("list")
     async def list_trusts(self):
         """Get the trused users in a channel."""
 
-        response = await self.api.get_trusts()
-        data = await response.json()
+        data = await (await self.api.get_trust()).json()
 
-        if data["data"] == []:
-            return "No trusted user in this channel!"
+        if not data["data"]:
+            return "No trusted users."
 
-        return "Trusted users: {}".format(', '.join(
+        return "Trusted users: {}.".format(', '.join(
             user["attributes"]["userName"] for user in data["data"]))
-
-    @Command.command()
-    async def add(self, user: r'\w{1,32}'):
-        """Add a trusted user."""
-
-        response = await aiohttp.get(self.BASE + user)
-        if response.status == 404:
-            return MessagePacket(
-                ("text", "User ")
-                ("tag", user),
-                ("text", " does not exist!")
-            )
-        data = await response.json()
-        user_id = data["id"]
-        response = await self.api.trust_user(user_id, user)
-
-        if response.status in (201, 200):
-            return MessagePacket(
-                ("text", "User "),
-                ("tag", user),
-                ("text", "has been trusted!")
-            )
-
-    @Command.command()
-    async def remove(self, user: r'\w{1,32}'):
-        """Remove a trusted user."""
-
-        response = await aiohttp.get(self.BASE + user)
-        if response.status == 404:
-            return MessagePacket(
-                ("text", "User ")
-                ("tag", user),
-                ("text", " does not exist!")
-            )
-
-        data = await response.json()
-        user_id = data["id"]
-        response = await self.api.remove_trust(user_id)
-        print(await response.json())
-
-        if response.status == 200:
-            return MessagePacket(
-                ("text", "Removed trust for user "),
-                ("tag", user),
-                ("text", '!')
-            )
-        else:
-            return MessagePacket(
-                ("tag", user),
-                ("text", " isn't a trusted user!")
-            )
-    async def get_user_id(self, username):
-        return await aiohttp.get(self.BASE + username)

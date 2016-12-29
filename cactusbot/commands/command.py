@@ -93,7 +93,7 @@ class Command:
     async def _run_safe(self, function, *args, **meta):
         self._check_safe(function, *args)
 
-        args = self._clean_args(function, *args)
+        args = await self._clean_args(function, *args)
         if isinstance(args, str):
             return args
         kwargs = self._clean_kwargs(function, **meta)
@@ -125,7 +125,7 @@ class Command:
         return True
 
     @staticmethod
-    def _clean_args(function, *args):
+    async def _clean_args(function, *args):
 
         params = inspect.signature(function).parameters.values()
 
@@ -154,7 +154,7 @@ class Command:
                             args[index] = groups
                 elif callable(arg.annotation):
                     try:
-                        args[index] = arg.annotation(args[index])
+                        args[index] = await arg.annotation(args[index])
                     except Exception:
                         return error_response
                 else:

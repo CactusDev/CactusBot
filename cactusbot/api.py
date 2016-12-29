@@ -154,27 +154,6 @@ class CactusAPI(API):
         return await self.delete("/user/{token}/quote/{id}".format(
             token=self.token, id=quote_id))
 
-    async def get_friend(self, name=None):
-        """Get a list of friends."""
-
-        if name is None:
-            return await self.get("/token/{token}/friend")
-
-        return await self.get("/token/{token}/friend/{name}".format(
-            token=self.token, name=name))
-
-    async def add_friend(self, username):
-        """Add a friend."""
-
-        return await self.patch("/token/{token}/friend/{name}".format(
-            token=self.token, name=username))
-
-    async def remove_friend(self, username):
-        """Remove a friend."""
-
-        return await self.delete("/token/{token}/friend/{name}".format(
-            token=self.token, name=username))
-
     async def get_config(self, *keys):
         """Get the token config."""
 
@@ -237,12 +216,16 @@ class CactusAPI(API):
         return await self.get("/user/{user}/social/{service}".format(
             user=self.token, service=service))
 
-    async def get_trusts(self, user_id=None):
-        """Get all trusted users."""
+    async def get_trust(self, user_id=None):
+        """Get trusted users."""
+
         if user_id is None:
             return await self.get("/user/{user}/trust".format(user=self.token))
 
-    async def trust_user(self, user_id, username):
+        return await self.get("/user/{user}/trust/{user_id}".format(
+            user=self.token, user_id=user_id))
+
+    async def add_trust(self, user_id, username):
         """Trust new user."""
 
         data = {"userName": username}
