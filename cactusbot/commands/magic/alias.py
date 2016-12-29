@@ -13,7 +13,7 @@ class Alias(Command):
                   raw: "packet"):
         """Add a new command alias."""
 
-        _, _, _, _, packet_args = raw.split(maximum=4)
+        _, _, _, packet_args = raw.split(maximum=3)
 
         response = await self.api.add_alias(command, alias, packet_args.json)
 

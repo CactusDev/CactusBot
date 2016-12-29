@@ -88,7 +88,7 @@ class CactusAPI(API):
         """Create a command alias."""
 
         data = {
-            "command": command,
+            "commandName": command,
             "arguments": args["message"]
         }
 
