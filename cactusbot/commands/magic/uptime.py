@@ -24,12 +24,10 @@ class Uptime(Command):
         )).json()
 
         if "id" in response:
-            print(response["id"])
             data = await (await aiohttp.get(
                 self.BEAM_MANIFEST_URL.format(channel=response["id"])
             )).json()
 
-            print(data)
             if "startedAt" in data:
                 time = datetime.datetime.utcnow() - datetime.datetime.strptime(
                     data["startedAt"], "%Y-%m-%dT%H:%M:%S.%fZ")
