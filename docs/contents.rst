@@ -8,12 +8,12 @@
 
    !command<user/command.md>
    !config<user/config.md>
-   !filters<user/filters.md>
    !quote<user/quote.md>
    !repeat<user/repeat.md>
    !social<user/social.md>
    !trust<user/trust.md>
-   !variables<user/variables.md>
+   Variables<user/variables.md>
+   Filters<user/filters.md>
 
 .. toctree::
    :maxdepth: 2
