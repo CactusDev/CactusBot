@@ -14,7 +14,7 @@ class Meta(Command):
     }
 
     @Command.command(role="moderator")
-    async def add(self, command: r'!?([+$]?)(\w{1,32)', *response,
+    async def add(self, command: r'!?([+$]?)(\w{1,32})', *response,
                   raw: "packet"):
         """Add a command."""
 
@@ -47,11 +47,11 @@ class Meta(Command):
         response = await self.api.get_command()
 
         if response.status == 200:
-            commands = await response.json()
-            return "Commands: {}".format(', '.join(
-                command["data"]["attributes"]["name"] for
+            commands = (await response.json())["data"]
+            return "Commands: {}".format(', '.join(sorted(
+                command["attributes"]["name"] for
                 command in commands
-            ))
+            )))
         return "No commands added!"
 
     @Command.command(role="moderator")
