@@ -9,7 +9,7 @@ class Repeat(Command):
     COMMAND = "repeat"
 
     @Command.command(role="moderator")
-    async def add(self, period: r"[1-9]\d*", command: r"!?\w{1,32}",
+    async def add(self, period: r"[1-9]\d*", command: "?command",
                   *_: False, packet: "packet"):
         """Add a repeat."""
 

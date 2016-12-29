@@ -11,9 +11,75 @@ ROLES = {
     0: "Banned"
 }
 
+REGEXES = {
+    "command": r"!?\w{1,32}"
+}
+
 
 class Command:
-    """Parent class to all commands."""
+    """Parent class to all magic commands.
+
+    Function definitions may use annotations to specify information about the
+    arguments.
+
+    Using a string signifies a required regular expression to match. (If no
+    groups are specified, the entire match is returned. If one group is
+    specified, it is returned as a string. Otherwise, the tuple of groups is
+    returned.)
+
+    Special shortcuts, beginning with a `?`, are taken from a built-in list.
+
+        =============   ===================
+        Shortcut        Regular Expression
+        =============   ===================
+        ``?command``    ``!?\\w{1,32}``
+        =============   ===================
+
+    Using the ``False`` annotation on `*args` signifies that no arguments are
+    required to successfully execute the command.
+
+    Keyword-only arguments should be annotated with the requested metadata.
+
+        =========   =======================================================
+        Value       Description
+        =========   =======================================================
+        username    The username of the message sender.
+        channel     The name of the channel which the message was sent in.
+        packet      The entire :obj:`MessagePacket`.
+        =========   =======================================================
+
+    Parameters
+    ----------
+    api : :obj:`CactusAPI` or :obj:`None`
+        Instance of :obj:`CactusAPI`. Must be provided to the top-level magic
+        :obj:`Command`.
+
+    Examples
+    --------
+    >>> class Test(Command):
+    ...
+    ...     COMMAND = "test"
+    ...
+    ...     @Command.command()
+    ...     async def add(self, command: "?command", *response):
+    ...         return "Added !{command} with response {response}.".format(
+    ...             command=command, response=' '.join(response))
+    ...
+    ...     @Command.command(hidden=True)
+    ...     async def highfive(self, *, recipient: "username"):
+    ...         return "Have a highfive, {recipient}!".format(
+    ...             recipient=recipient)
+    ...
+    ...     @Command.command()
+    ...     async def potato(self, *users: False):
+    ...
+    ...         if not users:
+    ...             return "Have a potato!"
+    ...
+    ...         return "Have a potato, {users}!".format(users=', '.join(users))
+
+
+    """
 
     default = None
 
@@ -22,7 +88,8 @@ class Command:
     def __init__(self, api=None):
 
         if api is not None:
-            type(self).api = api
+            self.api = api
+            Command.api = api
 
     async def __call__(self, *args, **meta):
 
@@ -94,7 +161,52 @@ class Command:
 
     @classmethod
     def command(cls, name=None, **meta):
-        """Accept arguments for command decorator."""
+        """Accept arguments for command decorator.
+
+
+        Parameters
+        ----------
+        name : :obj:`str` or :obj:`None`, default :obj:`None`
+            The name of the command. If :obj:`None`, the function name is used.
+        hidden : :obj:`bool`
+            Whether or not to hide the command from help messages.
+        role : :obj:`str` or :obj:`int`, default ``1``
+            The minimum role required to run the command.
+            String capitalization is ignored.
+
+            =======   ===========
+            Number    String
+            =======   ===========
+            5         Owner
+            4         Moderator
+            2         Subscriber
+            1         User
+            0         Banned
+            =======   ===========
+
+        Returns
+        -------
+        :obj:`function`
+            Decorator command.
+
+        Examples
+        --------
+        >>> @Command.command()
+        ... async def hello():
+        ...     return "Hello, world."
+
+        >>> @Command.command(name="return")
+        ... async def return_():
+        ...     return "Achievement Get: Return to Sender"
+
+        >>> @Command.command(hidden=True)
+        ... async def secret():
+        ...     return "Wow, you found a secret!"
+
+        >>> @Command.command(role="moderator")
+        ... async def secure():
+        ...     return "Moderator-only things have happened."
+        """
 
         def decorator(function):
             """Decorate a command."""
@@ -103,7 +215,7 @@ class Command:
 
             if inspect.isclass(function):
                 COMMAND = getattr(function, "COMMAND", None)
-                function = function(cls.api)
+                function = function(Command.api)
                 function.__name__ = function.__class__.__name__
                 if COMMAND is not None:
                     function.COMMAND = COMMAND
@@ -172,7 +284,10 @@ class Command:
                 if isinstance(arg.annotation, str):
                     annotation = arg.annotation
                     if annotation.startswith('?'):
-                        annotation = r"!?\w{1,32}"  # HACK
+                        if annotation[1:] in REGEXES:
+                            annotation = REGEXES[annotation[1:]]
+                        else:
+                            annotation = ""
                     match = re.match('^' + annotation + '$', args[index])
                     if match is None:
                         return error_response
@@ -201,7 +316,35 @@ class Command:
         return {p.name: meta.get(p.annotation) for p in meta_args}
 
     def commands(self, **meta):
-        """Return commands belonging to the parent class."""
+        """Return commands belonging to the parent class.
+
+        Parameters
+        ----------
+        **meta
+            Attributes to filter by.
+
+        Returns
+        -------
+        :obj:`dict`
+            Commands which match the meta attributes.
+            Keys are names, values are methods.
+
+        Examples
+        --------
+        >>> @Command.command()
+        ... class Test(Command):
+        ...
+        ...     @Command.command()
+        ...     async def simple(self):
+        ...         return "Simple response."
+        ...
+        ...     @Command.command(hidden=True)
+        ...     async def secret(self):
+        ...         return "#secrets"
+        ...
+        >>> Test.commands(hidden=False).keys()
+        dict_keys(['simple'])
+        """
 
         disallowed = ["commands", "__class__"]
         return {

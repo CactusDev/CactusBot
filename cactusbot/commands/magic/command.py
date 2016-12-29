@@ -14,7 +14,8 @@ class Meta(Command):
     }
 
     @Command.command(role="moderator")
-    async def add(self, command: r'!?([+$]?)(.+)', *response, raw: "packet"):
+    async def add(self, command: r'!?([+$]?)(\w{1,32)', *response,
+                  raw: "packet"):
         """Add a command."""
 
         symbol, name = command
@@ -54,7 +55,7 @@ class Meta(Command):
         return "No commands added!"
 
     @Command.command(role="moderator")
-    async def enable(self, command: r'!?\w{1,32}'):
+    async def enable(self, command: "?command"):
         """Enable a command."""
 
         response = await self.api.toggle_command(command, True)
@@ -62,7 +63,7 @@ class Meta(Command):
             return "Command !{} has been enabled.".format(command)
 
     @Command.command(role="moderator")
-    async def disable(self, command: r'!?\w{1,32}'):
+    async def disable(self, command: "?command"):
         """Disable a command."""
 
         response = await self.api.toggle_command(command, False)

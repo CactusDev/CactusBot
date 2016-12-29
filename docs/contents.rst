@@ -20,3 +20,4 @@
    :caption: Developer
 
    Packets<developer/packets.rst>
+   Commands<developer/commands.rst>
