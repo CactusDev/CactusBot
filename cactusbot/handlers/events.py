@@ -53,10 +53,7 @@ class EventHandler(Handler):
 
         await self.load_messages()
 
-        return MessagePacket(
-            "CactusBot activated. ",
-            ("emoji", ":cactus:", ":cactus:")
-        )
+        return MessagePacket("CactusBot activated. ", ("emoji", "🌵"))
 
     async def on_follow(self, packet):
         """Handle follow packets."""

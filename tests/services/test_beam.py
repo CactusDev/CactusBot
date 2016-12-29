@@ -250,7 +250,7 @@ def test_synthesize():
         "Hey, ",
         ("tag", "Stanley"),
         "! ",
-        ("emoji", ":cactus:"),
+        ("emoji", "🌵"),
         " Check out ",
         ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
         "!"
