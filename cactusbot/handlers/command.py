@@ -83,15 +83,17 @@ class CommandHandler(Handler):
         if response.status == 200:
             json = await response.json()
             json = json["data"]["attributes"]
+            command_name = command
         else:
             response = await self.api.get_command_alias(command)
 
             if response.status == 200:
                 json = await response.json()
 
-                args = MessagePacket(
+                args = tuple(MessagePacket(
                     *json["data"]["attributes"]["arguments"]
-                ).text.split() + args
+                ).text.split()) + args
+                command_name = json["data"]["attributes"]["commandName"]
 
                 json = json["data"]["attributes"]["command"]
 
@@ -100,7 +102,7 @@ class CommandHandler(Handler):
 
         json["target"] = _packet.user if _packet.target else None
 
-        await self.api.update_command_count(command, "+1")
+        await self.api.update_command_count(command_name, "+1")
         if "count" not in data:
             data["count"] = str(json["count"] + 1)
 
