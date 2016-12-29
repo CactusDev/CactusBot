@@ -8,7 +8,7 @@ cactus = Cactus(CactusAPI("test_token"))
 
 @pytest.mark.asyncio
 async def test_default():
-    assert (await cactus()).text == "Ohai! I'm CactusBot! :cactus:"
+    assert (await cactus()).text == "Ohai! I'm CactusBot! 🌵"
 
 
 @pytest.mark.asyncio

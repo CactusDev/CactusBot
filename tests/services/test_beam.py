@@ -54,7 +54,7 @@ def test_parse_message():
             "text": "waves "
         }, {
             "type": "emoji",
-            "data": ":smiley:",
+            "data": "😃",
             "text": ":D"
         }],
         "user": "Stanley",
