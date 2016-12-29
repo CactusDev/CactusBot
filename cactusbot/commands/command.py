@@ -37,10 +37,11 @@ class Command:
 
     Using the ``False`` annotation on `*args` signifies that no arguments are
     required to successfully execute the command.
-    
-    Asynchronous functions may be used as validation annotations, as well. The
-    function is passed the command argument. If an exception is not raised, the
-    return value of the function is passed to the command.
+
+    An asynchronous function may be used as a validation annotation, as well.
+    The function is passed the command argument. If an exception is not raised,
+    the return value of the function is passed to the command. Otherwise, an
+    error message is returned.
 
     Keyword-only arguments should be annotated with the requested metadata.
 
