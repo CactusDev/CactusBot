@@ -14,7 +14,7 @@ class Meta(Command):
     }
 
     @Command.command(role="moderator")
-    async def add(self, command: r'!?([+$]?)(\w{1,32)', *response,
+    async def add(self, command: r'!?([+$]?)(\w{1,32})', *response,
                   raw: "packet"):
         """Add a command."""
 

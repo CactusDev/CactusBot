@@ -80,27 +80,31 @@ class CommandHandler(Handler):
     async def custom_response(self, _packet, command, *args, **data):
 
         response = await self.api.get_command(command)
-        if response.status == 404:
+        if response.status == 200:
+            json = await response.json()
+            json = json["data"]["attributes"]
+        else:
             response = await self.api.get_command_alias(command)
 
-            if response.status == 404:
-                return None
-            else:
+            if response.status == 200:
                 json = await response.json()
 
                 args = MessagePacket(
                     *json["data"]["attributes"]["arguments"]
                 ).text.split() + args
 
-                json = json["data"]["attributes"]["command"][
-                    "response"]
-        else:
-            json = await response.json()
-            json = json["data"]["attributes"]["response"]
+                json = json["data"]["attributes"]["command"]
+
+            else:
+                return
 
         json["target"] = _packet.user if _packet.target else None
 
-        return self._inject(MessagePacket.from_json(json),
+        await self.api.update_command_count(command, "+1")
+        if "count" not in data:
+            data["count"] = str(json["count"] + 1)
+
+        return self._inject(MessagePacket.from_json(json["response"]),
                             command, *args, **data)
 
     def _inject(self, _packet, *args, **data):
@@ -149,7 +153,7 @@ class CommandHandler(Handler):
 
         _packet.replace(**{
             "%USER%": data.get("username"),
-            "%COUNT%": "%COUNT%",  # TODO
+            "%COUNT%": data.get("count"),
             "%CHANNEL%": data.get("channel")
         })
 
