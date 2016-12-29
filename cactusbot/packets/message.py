@@ -308,12 +308,12 @@ class MessagePacket(Packet):
                     text=re.sub(pattern, repl, chunk.text))
         return self
 
-    def split(self, seperator=' ', maximum=None):
+    def split(self, separator=' ', maximum=None):
         """Split into multiple MessagePackets, based on a separator.
 
         Parameters
         ----------
-        seperator : :obj:`str`, default `' '`
+        separator : :obj:`str`, default `' '`
             The characters to split the string with.
         maximum : :obj:`int` or :obj:`None`
             The maximum number of splits to perform.
@@ -356,7 +356,7 @@ class MessagePacket(Packet):
                 continue
 
             is_text = component.type == "text"
-            if not is_text or seperator not in component.text:
+            if not is_text or separator not in component.text:
                 components.append(component)
                 continue
 
@@ -368,7 +368,7 @@ class MessagePacket(Packet):
                     new = new._replace(data=new_text, text=new_text)
                     break
 
-                if character == seperator:
+                if character == separator:
                     components.append(new._replace())
                     result.append(components.copy())
                     components.clear()

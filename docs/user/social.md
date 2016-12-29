@@ -1,15 +1,23 @@
 # `!social [service]`
 Minimum Role Required: **Moderator**
 
-Retrieve a social URL. If `service` is provided, the 
+Retrieve a social URL. If `service` is provided, the service will be returned
 
 ```
 [cass3rz] !social
 [CactusBot] Twitter: https://twitter.com/innectic, Github: https://github.com/innectic
 ```
 
+```
+[innectic] !social github
+[CactusBot] GitHub: https://github.com/innectic
+```
+
+
 ## `!social add <service> <url>`
+
 Minimum Role Required: **Moderator**
+
 Add a social service
 
 ```
@@ -21,6 +29,7 @@ Add a social service
 
 ## `!social remove <service>`
 Minimum Role Required: **Moderator**
+
 Remove a social service
 
 ```
