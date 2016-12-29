@@ -3,8 +3,7 @@
 import json
 import logging
 
-from .api import CactusAPI
-from .packets import MessagePacket
+from .packets import MessagePacket, Packet
 from .services.websocket import WebSocket
 
 
@@ -17,12 +16,8 @@ class Sepal(WebSocket):
         self.logger = logging.getLogger(__name__)
 
         self.channel = channel
-        self.api = CactusAPI(channel)
         self.service = service
         self.parser = None
-
-        if self.service is not None:
-            self.parser = SepalParser(self.api)
 
     async def send(self, packet_type, **kwargs):
         """Send a packet to Sepal."""
@@ -67,23 +62,23 @@ class Sepal(WebSocket):
 
         data = await getattr(self.parser, "parse_" + event)(packet)
 
-        await self.service.handle(event, data)
+        if isinstance(data, (list, tuple)):
+            for packet in data:
+                await self.service.handle(event, packet)
+        else:
+            await self.service.handle(event, data)
 
 
 class SepalParser:
     """Parse Sepal packets."""
 
-    def __init__(self, api):
-        self.api = api
-
     async def parse_repeat(self, packet):
-        """Parse the incoming repeat packet."""
+        """Parse the incoming repeat packets."""
 
-        command_name = packet["data"]["commandName"]
-        response = await self.api.get_command(command_name)
+        return MessagePacket.from_json(packet["data"]["command"]["response"])
 
-        if response.status is 404:
-            return
+    async def parse_config(self, packet):
+        """Parse the incoming config packets."""
 
-        return MessagePacket.from_json(
-            (await response.json())["data"]["attributes"]["response"])
+        return [Packet("config", key=key, values=values)
+                for key, values in packet["data"].items()]

@@ -1,8 +1,9 @@
 """CactusBot configuration."""
 
+from cactusbot.api import CactusAPI
 from cactusbot.handler import Handlers
 from cactusbot.handlers import (CommandHandler, EventHandler, LoggingHandler,
-                                SpamHandler)
+                                ResponseHandler, SpamHandler)
 from cactusbot.services.beam.handler import BeamHandler
 
 USERNAME = "BotUsername"
@@ -11,6 +12,8 @@ PASSWORD = "BotPassword"
 CHANNEL = "ChannelName"
 
 API_TOKEN = "CactusAPI_Token"
+API_PASSWORD = "CactusAPI_Password"
+api = CactusAPI(API_TOKEN)
 
 # CACHE_FOLLOWS: Cache to remove chat spam (Default: False)
 # CACHE_FOLLOWS_TIME: How long in minutes before resending message
@@ -21,7 +24,13 @@ CACHE_DATA = {
     "CACHE_FOLLOWS_TIME": 0
 }
 
-handlers = Handlers(LoggingHandler(), EventHandler(CACHE_DATA),
-                    CommandHandler(CHANNEL), SpamHandler())
+
+handlers = Handlers(
+    LoggingHandler(),
+    ResponseHandler(USERNAME),
+    EventHandler(CACHE_DATA, api),
+    SpamHandler(),
+    CommandHandler(CHANNEL, api)
+)
 
 SERVICE = BeamHandler(CHANNEL, handlers)

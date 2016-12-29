@@ -40,6 +40,7 @@ class BeamHandler:
 
     async def run(self, *auth):
         """Connect to Beam chat and handle incoming packets."""
+
         channel = await self.api.get_channel(self._channel)
         self.channel = str(channel["id"])
         self.api.channel = self.channel  # HACK
@@ -97,6 +98,8 @@ class BeamHandler:
             await self.handle(event, data)
 
     async def handle(self, event, data):
+        """Handle event."""
+
         for response in await self.handlers.handle(event, data):
             if isinstance(response, MessagePacket):
                 args, kwargs = self.parser.synthesize(response)

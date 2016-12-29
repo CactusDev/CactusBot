@@ -1,3 +1,5 @@
+"""Parse Beam packets."""
+
 import json
 from os import path
 
@@ -5,16 +7,16 @@ from ...packets import EventPacket, MessagePacket
 
 
 class BeamParser:
+    """Parse Beam packets."""
 
     # TODO: update with accurate values
     ROLES = {
-        "Owner": 100,
-        "Founder": 91,
-        "Staff": 90,
-        "Global Mod": 85,
-        "Mod": 50,
-        "Subscriber": 20,
-        "Pro": 5,
+        "Owner": 5,
+        "Staff": 4,  # Not necessarily bot staff.
+        "Global Mod": 4,
+        "Mod": 4,
+        "Subscriber": 2,
+        "Pro": 1,
         "User": 1,
         "Muted": 0,
         "Banned": 0
@@ -25,6 +27,7 @@ class BeamParser:
 
     @classmethod
     def parse_message(cls, packet):
+        """Parse a Beam message packet."""
 
         message = []
         for component in packet["message"]["message"]:
@@ -62,6 +65,8 @@ class BeamParser:
 
     @classmethod
     def parse_follow(cls, packet):
+        """Parse follow packet."""
+
         return EventPacket(
             "follow",
             packet["user"]["username"],
@@ -70,14 +75,20 @@ class BeamParser:
 
     @classmethod
     def parse_subscribe(cls, packet):
+        """Parse subscribe packet."""
+
         return EventPacket("subscribe", packet["user"]["username"])
 
     @classmethod
     def parse_host(cls, packet):
+        """Parse host packet."""
+
         return EventPacket("host", packet["hoster"]["token"])
 
     @classmethod
     def synthesize(cls, packet):
+        """Create a Cactus MessagePacket from Beam packets."""
+
         message = ""
         emoji = dict(zip(cls.EMOJI.values(), cls.EMOJI.keys()))
 

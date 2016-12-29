@@ -6,7 +6,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Quote(Command):
     """Manage quotes."""
 
@@ -27,7 +26,7 @@ class Quote(Command):
                 return "Quote {} does not exist!".format(quote_id)
             return (await response.json())["data"]["attributes"]["quote"]
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def add(self, *quote):
         """Add a quote."""
         response = await self.api.add_quote(' '.join(quote))
@@ -35,7 +34,7 @@ class Quote(Command):
         return "Added quote with ID {}.".format(
             data["data"]["attributes"]["quoteId"])
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def edit(self, quote_id: r'[1-9]\d*', *quote):
         """Edit a quote based on ID."""
         response = await self.api.edit_quote(quote_id, ' '.join(quote))
@@ -43,7 +42,7 @@ class Quote(Command):
             return "Added quote with ID {}.".format(quote_id)
         return "Edited quote with ID {}.".format(quote_id)
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def remove(self, quote_id: r'[1-9]\d*'):
         """Remove a quote."""
         response = await self.api.remove_quote(quote_id)
@@ -51,7 +50,7 @@ class Quote(Command):
             return "Quote {} does not exist!".format(quote_id)
         return "Removed quote with ID {}.".format(quote_id)
 
-    @Command.command(hidden=True)
+    @Command.command(hidden=True, role="subscriber")
     async def inspirational(self):
         """Retrieve an inspirational quote."""
         try:

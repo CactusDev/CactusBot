@@ -5,7 +5,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Cactus(Command):
     """Ouch! That's pokey!"""
 
@@ -13,6 +12,8 @@ class Cactus(Command):
 
     @Command.command(name="cactus")
     async def default(self):
+        """Default response."""
+
         return MessagePacket(
             ("text", "Ohai! I'm CactusBot! "),
             ("emoji", ":cactus:", ":cactus:")
@@ -20,6 +21,8 @@ class Cactus(Command):
 
     @Command.command()
     async def docs(self):
+        """Documentation response."""
+
         return MessagePacket(
             ("text", "Check out my documentation at "),
             ("url", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
@@ -28,6 +31,8 @@ class Cactus(Command):
 
     @Command.command()
     async def twitter(self):
+        """Twitter response."""
+
         return MessagePacket(
             ("text", "You can follow the team behind CactusBot at: "),
             ("url", "https://twitter.com/CactusDevTeam",
@@ -36,6 +41,8 @@ class Cactus(Command):
 
     @Command.command()
     async def github(self, project=None):
+        """Github response."""
+
         if project is None or project.lower() in ("bot", "cactusbot"):
             return MessagePacket(
                 "Check out my GitHub repository at: ",
@@ -75,5 +82,7 @@ class Cactus(Command):
 
     @Command.command()
     async def help(self):
+        """Help response."""
+
         return ("Try our docs (!cactus docs). If that doesn't help, tweet at"
                 " us (!cactus twitter)!")

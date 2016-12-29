@@ -2,7 +2,6 @@
 
 import random
 
-from ..api import CactusAPI
 from ..commands import COMMANDS
 from ..handler import Handler
 from ..packets import MessagePacket
@@ -22,18 +21,20 @@ class CommandHandler(Handler):
         "shuffle": lambda text: ''.join(random.sample(text, len(text)))
     }
 
-    def __init__(self, channel):
+    def __init__(self, channel, api):
         super().__init__()
 
         self.channel = channel
-        self.api = CactusAPI(channel.lower())  # FIXME
+        self.api = api
 
-        self.magics = {command.COMMAND: command for command in COMMANDS}
-        for command in self.magics.values():
-            command.api = self.api
+        self.magics = {command.COMMAND: command(api) for command in COMMANDS}
 
     async def on_message(self, packet):
         """Handle message events."""
+
+        if packet.target and packet.text == "/cry":
+            return MessagePacket(
+                "cries with ", ("tag", packet.user), action=True)
 
         if len(packet) > 1 and packet[0] == "!" and packet[1] != ' ':
 
@@ -58,22 +59,48 @@ class CommandHandler(Handler):
 
             else:
 
-                response = await self.api.get_command(command)
+                split = packet.split()
+                hyphenated_options = (((split[:index]), split[index:])
+                                      for index in range(len(split), 0, -1))
 
-                if response.status == 404:
-                    return MessagePacket("Command not found.",
-                                         target=packet.user)
-                    # TODO: make configurable
+                for command, args in hyphenated_options:
 
-                json = (await response.json()
-                        )["data"]["attributes"]["response"]
-                return self._inject(MessagePacket(
-                    *json.pop("message"),
-                    **{
-                        **json,
-                        "target": packet.user if packet.target else None
-                    }
-                ), command, *args, **data)
+                    command = MessagePacket.join(*command, sep='-').text[1:]
+                    args = tuple(arg.text for arg in args)
+
+                    response = await self.custom_response(
+                        packet, command, *args, **data)
+
+                    if response is not None:
+                        return response
+
+                return MessagePacket("Command not found.", target=packet.user)
+
+    async def custom_response(self, _packet, command, *args, **data):
+
+        response = await self.api.get_command(command)
+        if response.status == 404:
+            response = await self.api.get_command_alias(command)
+
+            if response.status == 404:
+                return None
+            else:
+                json = await response.json()
+
+                args = MessagePacket(
+                    *json["data"]["attributes"]["arguments"]
+                ).text.split() + args
+
+                json = json["data"]["attributes"]["command"][
+                    "response"]
+        else:
+            json = await response.json()
+            json = json["data"]["attributes"]["response"]
+
+        json["target"] = _packet.user if _packet.target else None
+
+        return self._inject(MessagePacket.from_json(json),
+                            command, *args, **data)
 
     def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""

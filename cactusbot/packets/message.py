@@ -69,7 +69,9 @@ class MessagePacket(Packet):
                 message[index] = MessageComponent(*chunk)
             elif isinstance(chunk, str):
                 message[index] = MessageComponent("text", chunk, chunk)
+
         self.message = message
+        self._condense()
 
         self.user = user
         self.role = role
@@ -128,6 +130,33 @@ class MessagePacket(Packet):
 
     def __iter__(self):
         return self.message.__iter__()
+
+    def __add__(self, other):
+
+        return MessagePacket(
+            *(self.message + other.message),
+            user=self.user or other.user,
+            role=self.role or other.role,
+            action=self.action or other.action,
+            target=self.target or other.target
+        )
+
+    def _condense(self):
+
+        message = [self.message[0]]
+
+        for component in self.message[1:]:
+
+            if message[-1].type == component.type == "text":
+                new_text = message[-1].text + component.text
+                message[-1] = message[-1]._replace(
+                    data=new_text, text=new_text)
+            else:
+                message.append(component)
+
+        self.message = message
+
+        return self
 
     @property
     def text(self):
@@ -383,3 +412,39 @@ class MessagePacket(Packet):
 
         return [self.copy(*filter(lambda c: c.text, message))
                 for message in result]
+
+    @classmethod
+    def join(cls, *packets, separator=''):
+        """Join multiple message packets together.
+
+        Parameters
+        ----------
+        *packets : :obj:`MessagePacket`
+            The packets to join.
+        separator : str
+            The string to place between every packet.
+
+        Returns
+        -------
+        :obj:`MessagePacket`
+            Packet containing joined contents.
+
+        Examples
+        --------
+        >>> MessagePacket.join(MessagePacket("a"), MessagePacket("b"), Message\
+Packet("c")).text
+        'abc'
+
+        >>> MessagePacket.join(MessagePacket("a"), MessagePacket("b"), Message\
+Packet("c"), separator='-').text
+        'a-b-c'
+        """
+
+        result = packets[0]
+
+        for packet in packets[1:]:
+
+            result += MessagePacket(separator)
+            result += packet
+
+        return result

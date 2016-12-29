@@ -8,7 +8,6 @@ from . import Command
 from ...packets import MessagePacket
 
 
-@Command.command()
 class Cube(Command):
     """Cube things."""
 
@@ -59,7 +58,6 @@ class Cube(Command):
             yield item
 
 
-@Command.command()
 class Temmie(Command):
     "awwAwa!!"
 
