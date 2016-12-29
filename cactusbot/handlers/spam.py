@@ -1,14 +1,27 @@
 """Handle incoming spam messages."""
 
+import aiohttp
+
 from ..handler import Handler
 from ..packets import BanPacket, MessagePacket
+
+BASE_URL = "https://beam.pro/api/v1/channels/{username}"
+
+
+async def get_user_id(username):
+    async with aiohttp.get(BASE_URL.format(username=username)) as response:
+        if response.status == 404:
+            return 0
+        return (await response.json())["id"]
 
 
 class SpamHandler(Handler):
     """Spam handler."""
 
-    def __init__(self):
+    def __init__(self, api):
         super().__init__()
+
+        self.api = api
 
         self.config = {
             "max_score": 16,
@@ -20,7 +33,11 @@ class SpamHandler(Handler):
         """Handle message events."""
 
         if packet.role >= 4:
-            return None
+            return
+
+        user_id = await get_user_id(packet.user)
+        if (await self.api.get_trust(user_id)).status == 200:
+            return
 
         exceeds_caps = self.check_caps(''.join(
             chunk.text for chunk in packet if

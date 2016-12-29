@@ -3,7 +3,20 @@ import pytest
 from cactusbot.handlers import SpamHandler
 from cactusbot.packets import MessagePacket
 
-spam_handler = SpamHandler()
+async def get_user_id(_):
+    return 0
+
+
+class MockAPI:
+
+    async def get_trust(self, _):
+
+        class Response:
+            status = 404
+
+        return Response()
+
+spam_handler = SpamHandler(MockAPI())
 
 
 @pytest.mark.asyncio

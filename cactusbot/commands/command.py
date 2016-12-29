@@ -38,6 +38,11 @@ class Command:
     Using the ``False`` annotation on `*args` signifies that no arguments are
     required to successfully execute the command.
 
+    An asynchronous function may be used as a validation annotation, as well.
+    The function is passed the command argument. If an exception is not raised,
+    the return value of the function is passed to the command. Otherwise, an
+    error message is returned.
+
     Keyword-only arguments should be annotated with the requested metadata.
 
         =========   =======================================================
@@ -241,7 +246,7 @@ class Command:
 
         self._check_safe(function, *args)
 
-        args = self._clean_args(function, *args)
+        args = await self._clean_args(function, *args)
         if isinstance(args, str):
             return args
         kwargs = self._clean_kwargs(function, **meta)
@@ -273,7 +278,7 @@ class Command:
         return True
 
     @staticmethod
-    def _clean_args(function, *args):
+    async def _clean_args(function, *args):
 
         params = inspect.signature(function).parameters.values()
 
@@ -289,10 +294,8 @@ class Command:
                 if isinstance(arg.annotation, str):
                     annotation = arg.annotation
                     if annotation.startswith('?'):
-                        if annotation[1:] in REGEXES:
-                            annotation = REGEXES[annotation[1:]]
-                        else:
-                            annotation = ""
+                        assert annotation[1:] in REGEXES, "Invalid shortcut"
+                        annotation = REGEXES[annotation[1:]]
                     match = re.match('^' + annotation + '$', args[index])
                     if match is None:
                         return error_response
@@ -304,7 +307,7 @@ class Command:
                             args[index] = groups
                 elif callable(arg.annotation):
                     try:
-                        args[index] = arg.annotation(args[index])
+                        args[index] = await arg.annotation(args[index])
                     except Exception:
                         return error_response
                 else:

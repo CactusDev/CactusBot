@@ -29,7 +29,7 @@ handlers = Handlers(
     LoggingHandler(),
     ResponseHandler(USERNAME),
     EventHandler(CACHE_DATA, api),
-    SpamHandler(),
+    SpamHandler(api),
     CommandHandler(CHANNEL, api)
 )
 
