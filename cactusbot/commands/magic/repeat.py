@@ -13,7 +13,7 @@ class Repeat(Command):
                   *_: False, packet: "packet"):
         """Add a repeat."""
 
-        _, _, _, _, packet_args = packet.split(maximum=4)
+        _, _, _, packet_args = packet.split(maximum=3)
         response = await self.api.add_repeat(
             command, int(period), packet_args.json["message"])
 

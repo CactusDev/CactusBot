@@ -65,7 +65,8 @@ class CommandHandler(Handler):
 
                 for command, args in hyphenated_options:
 
-                    command = MessagePacket.join(*command, sep='-').text[1:]
+                    command = MessagePacket.join(*command,
+                                                 separator='-').text[1:]
                     args = tuple(arg.text for arg in args)
 
                     response = await self.custom_response(
