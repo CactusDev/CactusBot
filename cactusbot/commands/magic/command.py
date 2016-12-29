@@ -72,7 +72,7 @@ class Meta(Command):
 
     @Command.command(role="moderator")
     async def count(self, command: r'?command',
-                    action: r"([=+-]?)([1-9]\d*)"=None):
+                    action: r"([=+-]?)([0-9]\d*)"=None):
         """Update the count of a command."""
 
         if action is None:
