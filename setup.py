@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 if __name__ == "__main__":
-    with open("README.md") as file:
+    with open("README.md", encoding="utf-8") as file:
         description = file.read()
 
     setup(
