@@ -19,8 +19,6 @@ class Meta(Command):
         """Add a command."""
 
         symbol, name = command
-        print(name)
-        print(symbol)
 
         user_level = self.ROLES.get(symbol, 1)
 
