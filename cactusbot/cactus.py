@@ -4,7 +4,7 @@ import asyncio
 import logging
 import time
 
-from .sepal import Sepal, SepalParser
+from .sepal import Sepal
 
 __version__ = "v0.4-dev"
 
