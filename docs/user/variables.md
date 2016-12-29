@@ -14,10 +14,10 @@ The `%NAME%` variable is replaced with the name of the user who ran the command
 The `%ARGN%` variable is replaced with the `N`th argument passed with the command, where `N` is an integer.
 
 ```
-[ParadigmShift3d] !command add give %NAME% gives you %ARG1%!
-[CactusBot] Command !give added.
-[2Cubed] !give potatoes!
-[CactusBot] 2Cubed gives you potatoes!!
+[ParadigmShift3d] !command add throw %ARG2% you %ARG1%!
+[CactusBot] Command !throw added.
+[Alkali_Metal] !throw potato Innectic,
+[CactusBot] Innectic, you potato!
 ```
 
 ## `%ARGS%`
