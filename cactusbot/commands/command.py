@@ -12,7 +12,7 @@ ROLES = {
 }
 
 REGEXES = {
-    "command": r"!?\w{1,32}"
+    "command": r"!?[\w-]{1,32}"
 }
 
 
@@ -32,7 +32,7 @@ class Command:
         =============   ===================
         Shortcut        Regular Expression
         =============   ===================
-        ``?command``    ``!?\\w{1,32}``
+        ``?command``    ``!?[\\w-]{1,32}``
         =============   ===================
 
     Using the ``False`` annotation on `*args` signifies that no arguments are
