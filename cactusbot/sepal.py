@@ -53,14 +53,11 @@ class Sepal(WebSocket):
         assert self.service is not None, "Must have a service to handle"
 
         if "event" not in packet:
-            print("no event")
             return
 
         event = packet["event"]
-        print(event)
 
         if not hasattr(self.parser, "parse_" + event.lower()):
-            print(self.parser)
             return
 
         data = await getattr(self.parser, "parse_" + event)(packet)
