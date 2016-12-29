@@ -22,7 +22,8 @@ class BeamParser:
         "Banned": 0
     }
 
-    with open(path.join(path.dirname(__file__), "emoji.json"), encoding="utf-8") as file:
+    with open(path.join(path.dirname(__file__), "emoji.json"),
+              encoding="utf-8") as file:
         EMOJI = json.load(file)
 
     @classmethod
