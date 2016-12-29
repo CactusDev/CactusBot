@@ -48,6 +48,9 @@ class Command:
         packet      The entire :obj:`MessagePacket`.
         =========   =======================================================
 
+    The ``COMMAND`` attribute is required, and should be set to the command
+    name string.
+
     Parameters
     ----------
     api : :obj:`CactusAPI` or :obj:`None`
@@ -173,6 +176,8 @@ class Command:
         role : :obj:`str` or :obj:`int`, default ``1``
             The minimum role required to run the command.
             String capitalization is ignored.
+        **meta
+            Custom meta filters. Any keyword arguments are valid.
 
             =======   ===========
             Number    String
