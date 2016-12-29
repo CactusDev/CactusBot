@@ -14,10 +14,7 @@ class Cactus(Command):
     async def default(self):
         """Default response."""
 
-        return MessagePacket(
-            ("text", "Ohai! I'm CactusBot! "),
-            ("emoji", ":cactus:", ":cactus:")
-        )
+        return MessagePacket("Ohai! I'm CactusBot! ", ("emoji", "🌵"))
 
     @Command.command()
     async def docs(self):
