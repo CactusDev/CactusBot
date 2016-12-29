@@ -19,14 +19,21 @@ class Uptime(Command):
     async def default(self, *, channel: "channel"):
         """Default response."""
 
-        data = await (await aiohttp.get(
-            self.BEAM_MANIFEST_URL.format(channel=channel)
+        response = await (await aiohttp.get(
+            "https://beam.pro/api/v1/channels/{}".format(channel)
         )).json()
 
-        if "startedAt" in data:
-            time = datetime.datetime.utcnow() - datetime.datetime.strptime(
-                data["startedAt"], "%Y-%m-%dT%H:%M:%S.%fZ")
-            time -= datetime.timedelta(microseconds=time.microseconds)
-            return "Channel has been live for {}.".format(time)
+        if "id" in response:
+            print(response["id"])
+            data = await (await aiohttp.get(
+                self.BEAM_MANIFEST_URL.format(channel=response["id"])
+            )).json()
+
+            print(data)
+            if "startedAt" in data:
+                time = datetime.datetime.utcnow() - datetime.datetime.strptime(
+                    data["startedAt"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                time -= datetime.timedelta(microseconds=time.microseconds)
+                return "Channel has been live for {}.".format(time)
 
         return "Channel is offline."
