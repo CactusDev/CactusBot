@@ -8,12 +8,12 @@ class Repeat(Command):
 
     COMMAND = "repeat"
 
-    @Command.command()
-    async def add(self, period: r"[1-9]\d*", command: r"!?\w{1,32}",
+    @Command.command(role="moderator")
+    async def add(self, period: r"[1-9]\d*", command: "?command",
                   *_: False, packet: "packet"):
         """Add a repeat."""
 
-        _, _, _, _, packet_args = packet.split(maximum=4)
+        _, _, _, packet_args = packet.split(maximum=3)
         response = await self.api.add_repeat(
             command, int(period), packet_args.json["message"])
 
@@ -21,7 +21,7 @@ class Repeat(Command):
             return "Repeat !{command} added on interval {period}.".format(
                 command=command, period=period)
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def remove(self, repeat: r'[1-9]\d*'=None):
         """Remove a repeat"""
 
@@ -32,7 +32,7 @@ class Repeat(Command):
         elif response.status == 404:
             return "Repeat with ID {} doesn't exist.".format(repeat)
 
-    @Command.command("list")
+    @Command.command("list", role="moderator")
     async def list_repeats(self):
         """List all repeats."""
 

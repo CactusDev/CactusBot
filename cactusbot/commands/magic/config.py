@@ -60,17 +60,17 @@ class Config(Command):
     @Command.command()
     class Spam(Command):
 
-        @Command.command()
+        @Command.command(role="moderator")
         async def urls(self, value):
 
             if value in ("on", "allow", "enable", "true"):
                 await self.update_config(
-                    "announce", "allowUrls", "announce", True)
+                    self, "announce", "allowUrls", "announce", True)
                 return "URLs are now allowed."
 
             elif value in ("off", "disallow", "disable", "false"):
                 await self.update_config(
-                    "announce", "allowUrls", "announce", False)
+                    self, "announce", "allowUrls", "announce", False)
                 return "URLs are now disallowed."
 
             else:
@@ -80,7 +80,7 @@ class Config(Command):
         async def emoji(self, value: r"\d+"):
 
             await self.update_config(
-                "announce", "maxEmoji", "announce", int(value))
+                self, "announce", "maxEmoji", "announce", int(value))
 
             return "Maximum number of emoji is now {value}.".format(
                 value=value)

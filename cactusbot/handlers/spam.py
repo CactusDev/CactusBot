@@ -32,7 +32,7 @@ class SpamHandler(Handler):
     async def on_message(self, packet):
         """Handle message events."""
 
-        if packet.role >= 50:  # FIXME: Replace with actual value
+        if packet.role >= 4:
             return
 
         user_id = await get_user_id(packet.user)

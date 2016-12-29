@@ -8,7 +8,7 @@ class Alias(Command):
 
     COMMAND = "alias"
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def add(self, alias: "?command", command: "?command", *args: False,
                   raw: "packet"):
         """Add a new command alias."""
@@ -22,7 +22,7 @@ class Alias(Command):
         elif response.status == 200:
             return "Alias {} for command {} updated.".format(alias, command)
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def remove(self, alias: "?command"):
         """Remove a command alias."""
 

@@ -15,7 +15,7 @@ async def test_on_message():
 
     assert (await spam_handler.on_message(MessagePacket(
         "This is what one hundred emoji looks like!",
-        *(("emoji", ":open_mouth:"),) * 100
+        *(("emoji", "😮"),) * 100
     )))[0].text == "Please do not spam emoji."
 
     assert (await spam_handler.on_message(MessagePacket(
@@ -52,39 +52,37 @@ def test_check_emoji():
     ))
 
     assert not spam_handler.check_emoji(MessagePacket(
-        "Wow, that was great!",
-        ("emoji", ":smile:")
+        "Wow, that was great!", ("emoji", "😄")))
+
+    assert not spam_handler.check_emoji(MessagePacket(
+        *(("emoji", "🌵"),) * 6
     ))
 
     assert not spam_handler.check_emoji(MessagePacket(
-        *(("emoji", ":cactus:"),) * 6
-    ))
-
-    assert not spam_handler.check_emoji(MessagePacket(
-        ("emoji", ":smiley:"),
-        ("emoji", ":stuck_out_tongue:"),
-        ("emoji", ":cactus:"),
-        ("emoji", ":hamster:"),
-        ("emoji", ":potato:"),
-        ("emoji", ":green_heart:")
+        ("emoji", "😃"),
+        ("emoji", "😛"),
+        ("emoji", "🌵"),
+        ("emoji", "🐹"),
+        ("emoji", "🥔"),
+        ("emoji", "💚")
     ))
 
     assert spam_handler.check_emoji(MessagePacket(
-        *(("emoji", ":cactus:"),) * 7
+        *(("emoji", "🌵"),) * 7
     ))
 
     assert spam_handler.check_emoji(MessagePacket(
-        ("emoji", ":smiley:"),
-        ("emoji", ":stuck_out_tongue:"),
-        ("emoji", ":cactus:"),
-        ("emoji", ":hamster:"),
-        ("emoji", ":potato:"),
-        ("emoji", ":green_heart:"),
-        ("emoji", ":sunglasses:")
+        ("emoji", "😃"),
+        ("emoji", "😛"),
+        ("emoji", "🌵"),
+        ("emoji", "🐹"),
+        ("emoji", "🥔"),
+        ("emoji", "💚"),
+        ("emoji", "😎")
     ))
 
     assert spam_handler.check_emoji(MessagePacket(
-        *(("emoji", ":smile:"),) * 100
+        *(("emoji", "😄"),) * 100
     ))
 
 

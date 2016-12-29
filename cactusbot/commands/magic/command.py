@@ -9,17 +9,18 @@ class Meta(Command):
     COMMAND = "command"
 
     ROLES = {
-        '+': 50,
-        '$': 20
+        '+': 4,
+        '$': 2
     }
 
-    @Command.command()
-    async def add(self, command: r'!?([+$]?)(.+)', *response, raw: "packet"):
+    @Command.command(role="moderator")
+    async def add(self, command: r'!?([+$]?)(\w{1,32)', *response,
+                  raw: "packet"):
         """Add a command."""
 
         symbol, name = command
 
-        user_level = self.ROLES.get(symbol, 0)
+        user_level = self.ROLES.get(symbol, 1)
 
         raw.role = user_level  # HACK
         raw.target = None
@@ -32,7 +33,7 @@ class Meta(Command):
         elif data["meta"].get("created"):
             return "Added command !{}.".format(name)
 
-    @Command.command()
+    @Command.command(role="moderator")
     async def remove(self, name: "?command"):
         """Remove a command."""
         response = await self.api.remove_command(name)
@@ -40,7 +41,7 @@ class Meta(Command):
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.command("list")
+    @Command.command("list", role="moderator")
     async def list_commands(self):
         """List all custom commands."""
         response = await self.api.get_command()
@@ -53,39 +54,39 @@ class Meta(Command):
             ))
         return "No commands added!"
 
-    @Command.command()
-    async def enable(self, command: r'!?\w{1,32}'):
+    @Command.command(role="moderator")
+    async def enable(self, command: "?command"):
         """Enable a command."""
 
         response = await self.api.toggle_command(command, True)
         if response.status == 200:
             return "Command !{} has been enabled.".format(command)
 
-    @Command.command()
-    async def disable(self, command: r'!?\w{1,32}'):
+    @Command.command(role="moderator")
+    async def disable(self, command: "?command"):
         """Disable a command."""
 
         response = await self.api.toggle_command(command, False)
         if response.status == 200:
             return "Command !{} has been disabled.".format(command)
 
-    @Command.command()
-    async def count(self, command: r'!?\w{1,32}', action=None):
-        """Set, add, remove the count of a command."""
+    @Command.command(role="moderator")
+    async def count(self, command: r'?command',
+                    action: r"([=+-]?)([1-9]\d*)"=None):
+        """Update the count of a command."""
 
         if action is None:
             response = await self.api.get_command(command)
             data = await response.json()
             if response.status == 404:
-                return "The command !{} doesn't exist!"
+                return "Command !{} does not exist.".format(command)
             elif response.status == 200:
-                return "!{command}'s count is: {count}".format(
+                return "!{command}'s count is {count}.".format(
                     command=command, count=data["data"]["attributes"]["count"])
 
-        if action[0] not in ("-", "+", "="):
-            return "Invalid action! (-, +, =)"
+        operator, value = action
+        action_string = (operator or '=') + value
 
-        if not len(action) == 2:
-            response = self.api.update_command_count(command, action)
-            if response.status == 200:
-                return "Count updated."
+        response = await  self.api.update_command_count(command, action_string)
+        if response.status == 200:
+            return "Count updated."

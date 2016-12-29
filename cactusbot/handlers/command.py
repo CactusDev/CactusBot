@@ -59,21 +59,49 @@ class CommandHandler(Handler):
 
             else:
 
-                response = await self.api.get_command(command)
+                split = packet.split()
+                hyphenated_options = (((split[:index]), split[index:])
+                                      for index in range(len(split), 0, -1))
 
-                if response.status == 404:
-                    return MessagePacket("Command not found.",
-                                         target=packet.user)
+                for command, args in hyphenated_options:
 
+                    command = MessagePacket.join(*command,
+                                                 separator='-').text[1:]
+                    args = tuple(arg.text for arg in args)
+
+                    response = await self.custom_response(
+                        packet, command, *args, **data)
+
+                    if response is not None:
+                        return response
+
+                return MessagePacket("Command not found.", target=packet.user)
+
+    async def custom_response(self, _packet, command, *args, **data):
+
+        response = await self.api.get_command(command)
+        if response.status == 404:
+            response = await self.api.get_command_alias(command)
+
+            if response.status == 404:
+                return None
+            else:
                 json = await response.json()
-                json = json["data"]["attributes"]["response"]
-                return self._inject(MessagePacket(
-                    *json.pop("message"),
-                    **{
-                        **json,
-                        "target": packet.user if packet.target else None
-                    }
-                ), command, *args, **data)
+
+                args = MessagePacket(
+                    *json["data"]["attributes"]["arguments"]
+                ).text.split() + args
+
+                json = json["data"]["attributes"]["command"][
+                    "response"]
+        else:
+            json = await response.json()
+            json = json["data"]["attributes"]["response"]
+
+        json["target"] = _packet.user if _packet.target else None
+
+        return self._inject(MessagePacket.from_json(json),
+                            command, *args, **data)
 
     def _inject(self, _packet, *args, **data):
         """Inject targets into a packet."""
