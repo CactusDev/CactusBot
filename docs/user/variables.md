@@ -17,6 +17,7 @@ The `%ARGN%` variable is replaced with the `N`th argument passed with the comman
 [ParadigmShift3d] !command add give %NAME% gives you %ARG1%!
 [CactusBot] Command !give added.
 [2Cubed] !give potatoes!
+[CactusBot] 2Cubed gives you potatoes!!
 ```
 
 ## `%ARGS%`
@@ -44,7 +45,7 @@ The `%CHANNEL%` variable is replaced with the name of the channel
 
 ```
 [Rival_Laura] !command add channel This channel is %CHANNEL%
-[CactusBot] Command !channel aded. 
+[CactusBot] Command !channel added. 
 [Epicness] !channel 
 [CactusBot] This channel is Xyntak
 ```

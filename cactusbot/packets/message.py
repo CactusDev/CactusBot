@@ -313,7 +313,7 @@ class MessagePacket(Packet):
 
         Parameters
         ----------
-        seperator : :obj:`str`, default `' '`
+        separator : :obj:`str`, default `' '`
             The characters to split the string with.
         maximum : :obj:`int` or :obj:`None`
             The maximum number of splits to perform.

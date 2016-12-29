@@ -10,7 +10,7 @@ Makes all letters uppercase in the variable
 ```
 
 ## `lower`
-Makes all letters lowecase in the varible
+Makes all letters lowercase in the varible
 
 ```
 %NAME|lower% -> 2cubed
