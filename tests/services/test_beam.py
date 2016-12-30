@@ -252,7 +252,7 @@ def test_synthesize():
         "! ",
         ("emoji", "🌵"),
         " Check out ",
-        ("link", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
+        ("url", "https://cactusbot.rtfd.org", "cactusbot.rtfd.org"),
         "!"
     )) == (("Hey, @Stanley! :cactus Check out cactusbot.rtfd.org!",), {})
 

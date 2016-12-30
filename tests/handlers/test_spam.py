@@ -33,7 +33,7 @@ async def test_on_message():
 
     assert (await spam_handler.on_message(MessagePacket(
         "Check out my amazing Twitter!",
-        ("link", "twitter.com/CactusDevTeam",
+        ("url", "twitter.com/CactusDevTeam",
          "https://twitter.com/CactusDevTeam")
     )))[0].text == "Please do not post URLs."
 
@@ -102,14 +102,14 @@ def test_check_emoji():
 def test_check_urls():
 
     assert not spam_handler.contains_urls(MessagePacket(
-        "This message contains no links."
+        "This message contains no URLs."
     ))
 
     assert not spam_handler.contains_urls(MessagePacket(
-        "google.com was not parsed as a link, and is therefore 'fine'."
+        "google.com was not parsed as a URL, and is therefore 'fine'."
     ))
 
     assert spam_handler.contains_urls(MessagePacket(
         "You should go check out ",
-        ("link", "cactusbot.rtfd.org", "https://cactusbot.rtfd.org")
+        ("url", "cactusbot.rtfd.org", "https://cactusbot.rtfd.org")
     ))

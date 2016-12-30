@@ -332,7 +332,7 @@ class MessagePacket(Packet):
         'I would like <number> 😃s.'
         """
         for index, chunk in enumerate(self.message):
-            if chunk.type in ("text", "link"):
+            if chunk.type in ("text", "url"):
                 self.message[index] = self.message[index]._replace(
                     text=re.sub(pattern, repl, chunk.text))
         return self
