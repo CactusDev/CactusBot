@@ -9,13 +9,10 @@ class Repeat(Command):
     COMMAND = "repeat"
 
     @Command.command(role="moderator")
-    async def add(self, period: r"[1-9]\d*", command: "?command",
-                  *_: False, packet: "packet"):
+    async def add(self, period: r"[1-9]\d*", command: "?command"):
         """Add a repeat."""
 
-        _, _, _, packet_args = packet.split(maximum=3)
-        response = await self.api.add_repeat(
-            command, int(period), packet_args.json["message"])
+        response = await self.api.add_repeat(command, int(period))
 
         if response.status == 201:
             return "Repeat !{command} added on interval {period}.".format(

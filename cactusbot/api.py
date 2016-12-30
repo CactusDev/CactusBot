@@ -10,6 +10,17 @@ class CactusAPI(API):
 
     URL = "https://cactus.exoz.one/api/v1/"
 
+    SCOPES = {
+        "alias:create", "alias:details", "alias:manage", "alias:list",
+        "command:create", "command:details", "command:manage",
+        "command:list",
+        "config:create", "config:details", "config:manage", "config:list",
+        "quote:create", "quote:details", "quote:manage", "quote:list",
+        "repeat:create", "repeat:details", "repeat:manage", "repeat:list",
+        "social:create", "social:details", "social:manage", "social:list",
+        "trust:create", "trust:details", "trust:manage", "trust:list",
+    }
+
     def __init__(self, token, auth_token="", **kwargs):
         super().__init__(**kwargs)
 
@@ -170,17 +181,16 @@ class CactusAPI(API):
         return await self.patch("/user/{user}/config".format(
             user=self.token), data=json.dumps(value))
 
-    async def add_repeat(self, command, period, args):
+    async def add_repeat(self, command, period):
         """Add a repeat."""
 
         data = {
             "commandName": command,
-            "period": period,
-            "arguments": args
+            "period": period
         }
 
-        return await self.post("/user/{user}/repeat".format(user=self.token),
-                               data=json.dumps(data))
+        return await self.patch("/user/{user}/repeat/{command}".format(
+            user=self.token, command=command), data=json.dumps(data))
 
     async def remove_repeat(self, repeat):
         """Remove a repeat."""

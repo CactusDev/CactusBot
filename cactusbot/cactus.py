@@ -33,25 +33,22 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 class Cactus:
     """Run CactusBot safely."""
 
-    def __init__(self, service, *, debug="INFO"):
+    def __init__(self, service):
         super().__init__()
 
         self.logger = logging.getLogger(__name__)
 
         self.service = service
 
-        self.debug = debug  # XXX: find purpose or remove
-
     async def run(self, api, api_token, api_password, *auth):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
 
-        await api.login(api_password, "command:create", "command:details")
+        await api.login(api_password, *api.SCOPES)
 
         sepal = Sepal(api_token, self.service)
 
-        # TODO: Add support for multiple services
         try:
             await sepal.connect()
             asyncio.ensure_future(sepal.read(sepal.handle))
