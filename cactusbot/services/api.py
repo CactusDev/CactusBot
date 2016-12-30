@@ -27,12 +27,13 @@ class API(ClientSession):
 
         async with super().request(method, url, **kwargs) as response:
             try:
-                await response.text()
+                text = await response.text()
             except json.decoder.JSONDecodeError:
                 self.logger.warning("Response was not JSON!")
                 self.logger.debug(response.text)
                 raise ClientHttpProcessingError("Response was not JSON!")
             else:
+                self.logger.debug(text)
                 return response
 
     async def get(self, endpoint, **kwargs):
