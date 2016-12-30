@@ -70,7 +70,7 @@ class SpamHandler(Handler):
         if packet.kwargs["key"] == "spam":
             self.config["max_emoji"] = packet.kwargs["values"]["maxEmoji"]
             self.config["max_score"] = packet.kwargs["values"]["maxCapsScore"]
-            self.config["allow_urls"] = packet.kwargs["values"]["allowLinks"]
+            self.config["allow_urls"] = packet.kwargs["values"]["allowUrls"]
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""
@@ -85,4 +85,4 @@ class SpamHandler(Handler):
     def contains_urls(self, packet):
         """Check for URLs in the message."""
         return not self.config["allow_urls"] and any(
-            chunk.type == "link" for chunk in packet)
+            chunk.type == "url" for chunk in packet)
