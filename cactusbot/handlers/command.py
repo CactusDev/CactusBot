@@ -78,6 +78,7 @@ class CommandHandler(Handler):
                 return MessagePacket("Command not found.", target=packet.user)
 
     async def custom_response(self, _packet, command, *args, **data):
+        """Generate a custom response."""
 
         response = await self.api.get_command(command)
         if response.status == 200:
@@ -98,7 +99,10 @@ class CommandHandler(Handler):
                 json = json["data"]["attributes"]["command"]
 
             else:
-                return
+                return MessagePacket(
+                    ("text", "Command not found."),
+                    target=_packet.user
+                )
 
         json["target"] = _packet.user if _packet.target else None
 
