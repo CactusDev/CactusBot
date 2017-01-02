@@ -32,7 +32,7 @@ class CactusAPI(API):
 
         headers = {
             "X-Auth-Token": self.token,
-            "X-Auth-JWT": self.auth_token
+            "X-Auth-Key": self.auth_token
         }
 
         if is_json:
