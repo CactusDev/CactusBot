@@ -7,13 +7,13 @@
    :caption: User
 
    !command<user/command.md>
-   !config<user/config.md>
-   !quote<user/quote.md>
-   !repeat<user/repeat.md>
-   !social<user/social.md>
-   !trust<user/trust.md>
    Variables<user/variables.md>
-   Filters<user/filters.md>
+   !alias<user/alias.md>
+   !repeat<user/repeat.md>
+   !quote<user/quote.md>
+   !social<user/social.md>
+   !config<user/config.md>
+   !trust<user/trust.md>
 
 .. toctree::
    :maxdepth: 2
