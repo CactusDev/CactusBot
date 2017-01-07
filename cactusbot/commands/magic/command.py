@@ -49,8 +49,8 @@ class Meta(Command):
         if response.status == 200:
             commands = (await response.json())["data"]
             return "Commands: {}".format(', '.join(sorted(
-                command["attributes"]["name"] for
-                command in commands
+                command["attributes"]["name"] for command in commands
+                if command.get("type") == "command"
             )))
         return "No commands added!"
 
