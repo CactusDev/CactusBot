@@ -87,6 +87,6 @@ class Meta(Command):
         operator, value = action
         action_string = (operator or '=') + value
 
-        response = await  self.api.update_command_count(command, action_string)
+        response = await self.api.update_command_count(command, action_string)
         if response.status == 200:
             return "Count updated."
