@@ -39,7 +39,7 @@ class Alias(Command):
 
         if response.status == 200:
             commands = (await response.json())["data"]
-            return "Commands: {}".format(', '.join(sorted(
+            return "Aliases: {}.".format(', '.join(sorted(
                 "{} ({})".format(
                     command["attributes"]["name"],
                     command["attributes"]["commandName"])
