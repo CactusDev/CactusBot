@@ -31,7 +31,7 @@ class Quote(Command):
         """Add a quote."""
         response = await self.api.add_quote(' '.join(quote))
         data = await response.json()
-        return "Added quote with ID {}.".format(
+        return "Added quote #{}.".format(
             data["data"]["attributes"]["quoteId"])
 
     @Command.command(role="moderator")
@@ -39,8 +39,8 @@ class Quote(Command):
         """Edit a quote based on ID."""
         response = await self.api.edit_quote(quote_id, ' '.join(quote))
         if response.status == 201:
-            return "Added quote with ID {}.".format(quote_id)
-        return "Edited quote with ID {}.".format(quote_id)
+            return "Added quote #{}.".format(quote_id)
+        return "Edited quote #{}.".format(quote_id)
 
     @Command.command(role="moderator")
     async def remove(self, quote_id: r'[1-9]\d*'):
@@ -48,7 +48,7 @@ class Quote(Command):
         response = await self.api.remove_quote(quote_id)
         if response.status == 404:
             return "Quote {} does not exist!".format(quote_id)
-        return "Removed quote with ID {}.".format(quote_id)
+        return "Removed quote #{}.".format(quote_id)
 
     @Command.command(hidden=True, role="subscriber")
     async def inspirational(self):

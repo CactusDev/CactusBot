@@ -1,39 +1,44 @@
-# `!social [service]`
-Minimum Role Required: **Moderator**
+# `!social`
 
-Retrieve a social URL. If `service` is provided, the service will be returned
+Store and retrieve social data.
+
+## `!social [services...]`
+
+Retrieve the URL for social services.
+
+If any `services` are provided, the data for only those will be returned. Otherwise, all social URLs will be returned.
 
 ```
 [cass3rz] !social
-[CactusBot] Twitter: https://twitter.com/innectic, Github: https://github.com/innectic
+[CactusBot] Twitter: https://twitter.com/Innectic, Github: https://github.com/Innectic
 ```
 
 ```
 [innectic] !social github
-[CactusBot] GitHub: https://github.com/innectic
+[CactusBot] Github: https://github.com/Innectic
 ```
-
 
 ## `!social add <service> <url>`
 
 Minimum Role Required: **Moderator**
 
-Add a social service
+Store a social URL.
 
 ```
 [eenofonn] !social add twitter https://twitter.com/eenofonn
-[CactusBot] Added social service twitter
+[CactusBot] Added social service twitter.
+
 [duke] !social twitter
 [CactusBot] Twitter: https://twitter.com/eenofonn
 ```
 
 ## `!social remove <service>`
+
 Minimum Role Required: **Moderator**
 
-Remove a social service
+Remove a social URL.
 
 ```
-[Daegda] !social remove twitter
-[CactusBot] Removed social service twitter.
-[eenofonn] Why have you done this
+[Daegda] !social remove twitch
+[CactusBot] Removed social service twitch.
 ```

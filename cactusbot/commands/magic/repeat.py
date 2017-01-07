@@ -39,5 +39,5 @@ class Repeat(Command):
         if not data:
             return "There are no active repeats in this channel."
 
-        return "Active repeats in this channel: {}".format(', '.join(
+        return "Active repeats: {}.".format(', '.join(
             repeat["attributes"]["commandName"] for repeat in data))
