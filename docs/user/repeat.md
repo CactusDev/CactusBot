@@ -1,32 +1,37 @@
 # `!repeat`
+
 Minimum Role Required: **Moderator**
 
-Repeat a command every so often
+Send the contents of a command at a set interval.
 
-## `!repeat add <interval> <command> [args]`
-Create a repeating command
+## `!repeat add <interval> <command>`
 
- - `interval` is the amount of time between messages, in seconds. Minimum is `60`
- - `command` is the command to be repeated on the interval
- - `args` is the optional arguments to call the command with
+Add a repeat for a specific command.
+
+- `interval` is the amount of time between messages, in seconds. The minimum is `60`.
+- `command` is the command response to send at the interval.
 
 ```
-[misterjoker] - !repeat add 120 waffle ParadigmShift3d
-[CactusBot] Repeating command !waffle every 120 seconds.
+[misterjoker] !repeat add 1200 waffle
+[CactusBot] Repeat !waffle added on interval 1200.
 [ParadigmShift3d] Yay! Time to eat all the waffles. :D
 ```
 
 ## `!repeat remove <command>`
-Remove a repeating command
+
+Remove a repeat.
 
 ```
 [AlphaBravoKilo] !repeat remove waffle
 [CactusBot] Repeat for command !waffle has been removed.
+[Innectic] Aww... no more waffles.
 ```
 
 ## `!repeat list`
-List all repeating commands in a channel.
+
+List all repeats.
 
 ```
 [impulseSV] !repeat list
 [CactusBot] Active repeats: waffle, kittens.
+```
