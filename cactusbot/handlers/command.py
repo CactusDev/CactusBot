@@ -3,6 +3,7 @@
 import random
 
 from ..commands import COMMANDS
+from ..commands.command import ROLES
 from ..handler import Handler
 from ..packets import MessagePacket
 
@@ -100,7 +101,15 @@ class CommandHandler(Handler):
             else:
                 return
 
-        json["target"] = _packet.user if _packet.target else None
+        if _packet.role < json["response"]["role"]:
+            return MessagePacket(
+                "Role level '{role}' or higher required.".format(
+                    role=ROLES[max(k for k in ROLES.keys()
+                                   if k <= json["response"]["role"])]),
+                target=_packet.user if _packet.target else None
+            )
+
+        json["response"]["target"] = _packet.user if _packet.target else None
 
         await self.api.update_command_count(command_name, "+1")
         if "count" not in data:
