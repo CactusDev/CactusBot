@@ -27,7 +27,7 @@ class CactusAPI(API):
         self.token = token
         self.auth_token = auth_token
 
-    async def request(self, method, endpoints, is_json=True, **kwargs):
+    async def request(self, method, endpoint, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
 
         headers = {
@@ -43,7 +43,10 @@ class CactusAPI(API):
         else:
             kwargs["headers"] = headers
 
-        return await super().request(method, endpoints, **kwargs)
+        return await super().request(method, endpoint, **kwargs)
+
+    async def get(self, endpoint, **kwargs):
+        return await self.request("GET", endpoint, is_json=False, **kwargs)
 
     async def login(self, password, *scopes):
         """Authenticate."""
@@ -173,7 +176,7 @@ class CactusAPI(API):
                 token=self.token), data=json.dumps({"keys": keys}))
 
         return await self.get("/user/{token}/config".format(
-            token=self.token), is_json=False)
+            token=self.token))
 
     async def update_config(self, value):
         """Update config attributes."""
