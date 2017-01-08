@@ -295,13 +295,12 @@ class MessagePacket(Packet):
         'Goodbye, Python 2!'
         """
         for index, chunk in enumerate(self.message):
-            if chunk.type == "text":
-                for old, new in values.items():
-                    if new is not None:
-                        new_text = chunk.text.replace(old, new)
-                        self.message[index] = self.message[index]._replace(
-                            data=new_text, text=new_text)
-                        chunk = self.message[index]
+            for old, new in values.items():
+                if new is not None:
+                    new_text = chunk.text.replace(old, new)
+                    self.message[index] = self.message[index]._replace(
+                        data=new_text, text=new_text)
+                    chunk = self.message[index]
         return self
 
     def sub(self, pattern, repl):
