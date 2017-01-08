@@ -28,10 +28,9 @@ class Meta(Command):
             name, raw.split(maximum=3)[-1].json, user_level=user_level)
         data = await response.json()
 
-        if data["meta"].get("updated"):
-            return "Updated command !{}.".format(name)
-        elif data["meta"].get("created"):
+        if data["meta"].get("created"):
             return "Added command !{}.".format(name)
+        return "Updated command !{}.".format(name)
 
     @Command.command(role="moderator")
     async def remove(self, name: "?command"):
