@@ -1,6 +1,7 @@
 """Alias command."""
 
 from . import Command
+from ...packets import MessagePacket
 
 
 class Alias(Command):
@@ -9,11 +10,12 @@ class Alias(Command):
     COMMAND = "alias"
 
     @Command.command(role="moderator")
-    async def add(self, alias: "?command", command: "?command", *args: False,
+    async def add(self, alias: "?command", command: "?command", *_: False,
                   raw: "packet"):
         """Add a new command alias."""
 
-        _, _, _, _, packet_args = raw.split(maximum=4)
+        _, _, _, _, *args = raw.split()
+        packet_args = MessagePacket.join(*args, separator=' ')
 
         response = await self.api.add_alias(command, alias, packet_args.json)
 
