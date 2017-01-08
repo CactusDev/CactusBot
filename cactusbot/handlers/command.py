@@ -90,10 +90,13 @@ class CommandHandler(Handler):
         json = await response.json()
 
         if json["data"].get("type") == "aliases":
-            args = (args[0], *tuple(MessagePacket(
-                *json["data"]["attributes"]["arguments"]
-            ).text.split()), *args[1:])
+
             command = json["data"]["attributes"]["commandName"]
+
+            if "arguments" in json["data"]["attributes"]:
+                args = (args[0], *tuple(MessagePacket(
+                    *json["data"]["attributes"]["arguments"]
+                ).text.split()), *args[1:])
 
         json = json["data"]["attributes"]
 

@@ -15,14 +15,21 @@ class Alias(Command):
         """Add a new command alias."""
 
         _, _, _, _, *args = raw.split()
-        packet_args = MessagePacket.join(*args, separator=' ')
 
-        response = await self.api.add_alias(command, alias, packet_args.json)
+        if args:
+            packet_args = MessagePacket.join(
+                *args, separator=' ').json["message"]
+        else:
+            packet_args = None
+
+        response = await self.api.add_alias(command, alias, packet_args)
 
         if response.status == 201:
             return "Alias !{} for !{} created.".format(alias, command)
         elif response.status == 200:
             return "Alias !{} for command !{} updated.".format(alias, command)
+        elif response.status == 404:
+            return "Command !{} does not exist.".format(command)
 
     @Command.command(role="moderator")
     async def remove(self, alias: "?command"):
