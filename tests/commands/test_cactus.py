@@ -3,7 +3,7 @@ import pytest
 from cactusbot.api import CactusAPI
 from cactusbot.commands.magic import Cactus
 
-cactus = Cactus(CactusAPI("test_token"))
+cactus = Cactus(CactusAPI("test_token", "test_password"))
 
 
 @pytest.mark.asyncio
