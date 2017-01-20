@@ -11,21 +11,21 @@ class CactusAPI(API):
     URL = "https://cactus.exoz.one/api/v1/"
 
     SCOPES = {
-        "alias:create", "alias:details", "alias:manage", "alias:list",
-        "command:create", "command:details", "command:manage",
-        "command:list",
-        "config:create", "config:details", "config:manage", "config:list",
-        "quote:create", "quote:details", "quote:manage", "quote:list",
-        "repeat:create", "repeat:details", "repeat:manage", "repeat:list",
-        "social:create", "social:details", "social:manage", "social:list",
-        "trust:create", "trust:details", "trust:manage", "trust:list",
+        "alias:create", "alias:manage",
+        "command:create", "command:manage",
+        "config:create", "config:manage",
+        "quote:create", "quote:manage",
+        "repeat:create", "repeat:manage",
+        "social:create", "social:manage",
+        "trust:create", "trust:manage",
     }
 
-    def __init__(self, token, auth_token="", **kwargs):
+    def __init__(self, token, password, auth_token="", **kwargs):
         super().__init__(**kwargs)
 
         self.token = token
         self.auth_token = auth_token
+        self.password = password
 
     async def request(self, method, endpoint, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
@@ -43,7 +43,14 @@ class CactusAPI(API):
         else:
             kwargs["headers"] = headers
 
-        return await super().request(method, endpoint, **kwargs)
+        response = await super().request(method, endpoint, **kwargs)
+
+        if response.status == 401:
+            reauth = await self.login(self.password, *self.SCOPES)
+            if reauth.status == 200:
+                self.auth_token = (await reauth.json()).get("token")
+
+        return response
 
     async def get(self, endpoint, **kwargs):
         return await self.request("GET", endpoint, is_json=False, **kwargs)
@@ -59,7 +66,11 @@ class CactusAPI(API):
 
         response = await self.post("/login", data=json.dumps(data))
 
-        self.auth_token = (await response.json())["token"]
+        auth_response = await response.json()
+        if response.status == 404:
+            raise ValueError(auth_response["errors"])
+        else:
+            self.auth_token = auth_response.get("token")
 
         return response
 

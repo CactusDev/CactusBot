@@ -46,6 +46,8 @@ class BeamHandler:
         self.api.channel = self.channel  # HACK
 
         user = await self.api.login(*auth)
+        if "id" not in user:
+            raise ValueError("Authentication with Beam failed!")
         chat = await self.api.get_chat(channel["id"])
 
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
