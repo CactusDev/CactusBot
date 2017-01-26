@@ -19,7 +19,7 @@ class Repeat(Command):
                 command=command, period=period)
 
     @Command.command(role="moderator")
-    async def remove(self, repeat: r'[1-9]\d*'=None):
+    async def remove(self, repeat: "?command"):
         """Remove a repeat"""
 
         response = await self.api.remove_repeat(repeat)
