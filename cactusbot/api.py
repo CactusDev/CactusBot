@@ -55,8 +55,11 @@ class CactusAPI(API):
     async def get(self, endpoint, **kwargs):
         return await self.request("GET", endpoint, is_json=False, **kwargs)
 
-    async def login(self, password, *scopes):
+    async def login(self, *scopes, password=None):
         """Authenticate."""
+
+        if password is None:
+            password = self.password
 
         data = {
             "token": self.token,

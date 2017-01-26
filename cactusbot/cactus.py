@@ -40,14 +40,14 @@ class Cactus:
 
         self.service = service
 
-    async def run(self, api, api_token, api_password, *auth):
+    async def run(self, api, *auth):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
 
-        await api.login(api_password, *api.SCOPES)
+        await api.login(*api.SCOPES)
 
-        sepal = Sepal(api_token, self.service)
+        sepal = Sepal(api.token, self.service)
 
         try:
             await sepal.connect()

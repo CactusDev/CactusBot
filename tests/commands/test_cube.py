@@ -50,7 +50,7 @@ async def test_cube():
         "lots³ · of³ · taco³ · salad³ · 😃³"
     )
 
-temmie = Temmie(CactusAPI("test_token"))
+temmie = Temmie(CactusAPI("test_token", "test_password"))
 
 
 @pytest.mark.asyncio
