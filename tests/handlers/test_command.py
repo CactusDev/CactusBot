@@ -4,7 +4,8 @@ from cactusbot.api import CactusAPI
 from cactusbot.handlers import CommandHandler
 from cactusbot.packets import MessagePacket
 
-command_handler = CommandHandler("TestChannel", CactusAPI("test_token"))
+command_handler = CommandHandler(
+    "TestChannel", CactusAPI("test_token", "test_password"))
 
 
 def verify(message, expected, *args, **kwargs):
