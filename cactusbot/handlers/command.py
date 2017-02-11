@@ -89,9 +89,6 @@ class CommandHandler(Handler):
 
         json = await response.json()
 
-        if not json["data"]["attributes"].get("enabled"):
-            return MessagePacket("Command is disabled.", target=_packet.user)
-
         if json["data"].get("type") == "aliases":
 
             command = json["data"]["attributes"]["commandName"]
@@ -102,6 +99,9 @@ class CommandHandler(Handler):
                 ).text.split()), *args[1:])
 
         json = json["data"]["attributes"]
+
+        if not json.get("enabled", True):
+            return MessagePacket("Command is disabled.", target=_packet.user)
 
         if _packet.role < json["response"]["role"]:
             return MessagePacket(
