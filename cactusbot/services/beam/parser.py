@@ -104,7 +104,7 @@ class BeamParser:
                         not packet[index + 1].startswith(' ')):
                     message += ' '
             elif component.type == "tag":
-                message += '@' + component.text
+                message += component.text
             else:
                 message += component.text
 
