@@ -65,12 +65,12 @@ class Config(Command):
 
             if value in ("on", "allow", "enable", "true"):
                 await self.update_config(
-                    self, "announce", "allowUrls", "announce", True)
+                    self, "spam", "allowUrls", True)
                 return "URLs are now allowed."
 
             elif value in ("off", "disallow", "disable", "false"):
                 await self.update_config(
-                    self, "announce", "allowUrls", "announce", False)
+                    self, "spam", "allowUrls", False)
                 return "URLs are now disallowed."
 
             else:
@@ -80,7 +80,7 @@ class Config(Command):
         async def emoji(self, value: r"\d+"):
 
             await self.update_config(
-                self, "announce", "maxEmoji", "announce", int(value))
+                self, "spam", "maxEmoji", int(value))
 
             return "Maximum number of emoji is now {value}.".format(
                 value=value)
@@ -89,17 +89,15 @@ class Config(Command):
         async def caps(self, value: r"\d+"):
 
             await self.update_config(
-                "announce", "maxCapsScore", "announce", int(value))
+                self, "spam", "maxCapsScore", int(value))
 
             return "Maximum capitals score is now {value}.".format(
                 value=value)
 
-    async def update_config(self, scope, kind, field, value):
+    async def update_config(self, scope, field, value):
         return await self.api.update_config({
             scope: {
-                kind: {
-                    field: value
-                }
+                field: value
             }
         })
 
