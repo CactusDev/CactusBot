@@ -40,7 +40,7 @@ class EventPacket(Packet):
         --------
         >>> import pprint
         >>> pprint.pprint(EventPacket("follow", "Stanley").json)
-        {'event': 'follow', 'success': True, 'user': 'Stanley'}
+        {'event': 'follow', 'streak': 1, 'success': True, 'user': 'Stanley'}
         """
         return {
             "user": self.user,
