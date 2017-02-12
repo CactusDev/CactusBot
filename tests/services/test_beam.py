@@ -116,7 +116,8 @@ def test_parse_follow():
     }).json == {
         "user": "Stanley",
         "event": "follow",
-        "success": True
+        "success": True,
+        "streak": 1
     }
 
     assert BeamParser.parse_follow({
@@ -169,7 +170,8 @@ def test_parse_follow():
     }).json == {
         "user": "Stanley",
         "event": "follow",
-        "success": False
+        "success": False,
+        "streak": 1
     }
 
 
@@ -199,7 +201,8 @@ def test_parse_subscribe():
     }).json == {
         "user": "Innectic",
         "event": "subscribe",
-        "success": True
+        "success": True,
+        "streak": 1
     }
 
 
@@ -240,7 +243,8 @@ def test_parse_host():
     }).json == {
         "user": "Stanley",
         "event": "host",
-        "success": True
+        "success": True,
+        "streak": 1
     }
 
 
