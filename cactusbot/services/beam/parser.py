@@ -50,7 +50,7 @@ class BeamParser:
                 chunk["data"] = component["url"]
                 message.append(chunk)
             elif component["type"] == "tag":
-                chunk["data"] = str(component["id"])
+                chunk["data"] = component["username"]
                 message.append(chunk)
             elif component["text"]:
                 chunk["data"] = component["text"]
@@ -89,7 +89,7 @@ class BeamParser:
 
     @classmethod
     def synthesize(cls, packet):
-        """Create a Cactus MessagePacket from Beam packets."""
+        """Create a Beam packet from a :obj:`MessagePacket`."""
 
         message = ""
         emoji = dict(zip(cls.EMOJI.values(), cls.EMOJI.keys()))
@@ -104,7 +104,7 @@ class BeamParser:
                         not packet[index + 1].startswith(' ')):
                     message += ' '
             elif component.type == "tag":
-                message += component.text
+                message += '@' + component.data
             else:
                 message += component.text
 

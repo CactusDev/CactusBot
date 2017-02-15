@@ -298,8 +298,9 @@ class MessagePacket(Packet):
             for old, new in values.items():
                 if new is not None:
                     new_text = chunk.text.replace(old, new)
+                    new_data = new_text if chunk.type == "text" else chunk.data
                     self.message[index] = self.message[index]._replace(
-                        data=new_text, text=new_text)
+                        data=new_data, text=new_text)
                     chunk = self.message[index]
         return self
 
