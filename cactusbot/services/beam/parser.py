@@ -104,7 +104,8 @@ class BeamParser:
                         not packet[index + 1].startswith(' ')):
                     message += ' '
             elif component.type == "tag":
-                message += component.text
+                data = component.data.replace('@', '') # HACK?
+                message += '@' + data
             else:
                 message += component.text
 
