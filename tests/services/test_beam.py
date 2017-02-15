@@ -232,7 +232,7 @@ def test_parse_resubscribe():
         "until": '2017-03-13T21:02:25.000Z'
     }).json == {
         "user": "Innectic",
-        "event": "resubscribe",
+        "event": "subscribe",
         "success": True,
         "streak": 3
     }
