@@ -205,6 +205,38 @@ def test_parse_subscribe():
         "streak": 1
     }
 
+def test_parse_resubscribe():
+
+    assert BeamParser.parse_resubscribe({
+        "totalMonths": 3,
+        "user": {
+            "level": 88,
+            "social": {
+                "player": "https://player.me/innectic",
+                "twitter": "https://twitter.com/Innectic",
+                "verified": []
+            },
+            "id": 20621,
+            "username": 'Innectic',
+            "verified": True,
+            "experience": 97980,
+            "sparks": 174519,
+            "avatarUrl": 'https://uploads.beam.pro/avatar/20621.jpg',
+            "bio": 'Broadcasting Daily at 10 AM PST. Join in on fun with mostly Minecraft.',
+            "primaryTeam": 89,
+            "createdAt": '2016-08-27T02:11:24.000Z',
+            'updatedAt': '2016-08-27T02:11:24.000Z',
+            "deletedAt": None
+        },
+        "since": '2016-11-12T20:01:55.000Z',
+        "until": '2017-03-13T21:02:25.000Z'
+    }).json == {
+        "user": "Innectic",
+        "event": "resubscribe",
+        "success": True,
+        "streak": 3
+    }
+
 
 def test_parse_host():
 
