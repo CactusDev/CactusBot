@@ -32,6 +32,7 @@ class BeamConstellation(WebSocket):
                 "channel:{channel}:status",
                 "channel:{channel}:followed",
                 "channel:{channel}:subscribed",
+                "channel:{channel}:resubscribed",
                 "channel:{channel}:hosted",
                 "user:{user}:followed",
                 "user:{user}:subscribed",

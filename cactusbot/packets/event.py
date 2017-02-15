@@ -16,12 +16,13 @@ class EventPacket(Packet):
         Whether or not the event was positive or successful.
     """
 
-    def __init__(self, event_type, user, success=True):
+    def __init__(self, event_type, user, success=True, streak=1):
         super().__init__()
 
         self.event_type = event_type
         self.user = user
         self.success = success
+        self.streak = streak
 
     def __str__(self):
         return "<Event: {} - {}>".format(self.user, self.event_type)
@@ -39,10 +40,11 @@ class EventPacket(Packet):
         --------
         >>> import pprint
         >>> pprint.pprint(EventPacket("follow", "Stanley").json)
-        {'event': 'follow', 'success': True, 'user': 'Stanley'}
+        {'event': 'follow', 'streak': 1, 'success': True, 'user': 'Stanley'}
         """
         return {
             "user": self.user,
             "event": self.event_type,
-            "success": self.success
+            "success": self.success,
+            "streak": self.streak
         }
