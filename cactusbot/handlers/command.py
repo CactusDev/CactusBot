@@ -100,6 +100,9 @@ class CommandHandler(Handler):
 
         json = json["data"]["attributes"]
 
+        if not json.get("enabled", True):
+            return MessagePacket("Command is disabled.", target=_packet.user)
+
         if _packet.role < json["response"]["role"]:
             return MessagePacket(
                 "Role level '{role}' or higher required.".format(

@@ -82,6 +82,13 @@ class BeamParser:
         return EventPacket("subscribe", packet["user"]["username"])
 
     @classmethod
+    def parse_resubscribe(cls, packet):
+        """Parse resubscribe packet."""
+
+        return EventPacket("subscribe", packet["user"]["username"],
+                           streak=packet["totalMonths"])
+
+    @classmethod
     def parse_host(cls, packet):
         """Parse host packet."""
 

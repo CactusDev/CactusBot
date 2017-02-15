@@ -35,6 +35,7 @@ class BeamHandler:
         self.constellation_events = {
             "channel:followed": "follow",
             "channel:subscribed": "subscribe",
+            "channel:resubscribed": "resubscribe",
             "channel:hosted": "host"
         }
 
