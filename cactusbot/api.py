@@ -8,7 +8,8 @@ from .services.api import API
 class CactusAPI(API):
     """Interact with CactusAPI."""
 
-    URL = "https://cactus.exoz.one/api/v1/"
+    # URL = "https://cactus.exoz.one/api/v1/"
+    URL = "http://localhost:8000/api/v1/"
 
     SCOPES = {
         "alias:create", "alias:manage",
