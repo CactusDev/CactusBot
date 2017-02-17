@@ -8,8 +8,7 @@ from .services.api import API
 class CactusAPI(API):
     """Interact with CactusAPI."""
 
-    # URL = "https://cactus.exoz.one/api/v1/"
-    URL = "http://localhost:8000/api/v1/"
+    URL = "https://cactus.exoz.one/api/v1/"
 
     SCOPES = {
         "alias:create", "alias:manage",
@@ -21,12 +20,14 @@ class CactusAPI(API):
         "trust:create", "trust:manage",
     }
 
-    def __init__(self, token, password, auth_token="", **kwargs):
+    def __init__(self, token, password, auth_token="",
+                 url="https://cactus.exoz.one/api/v1/", **kwargs):
         super().__init__(**kwargs)
 
         self.token = token
         self.auth_token = auth_token
         self.password = password
+        self.URL = url
 
     async def request(self, method, endpoint, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
