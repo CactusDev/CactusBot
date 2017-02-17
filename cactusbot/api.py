@@ -20,8 +20,7 @@ class CactusAPI(API):
         "trust:create", "trust:manage",
     }
 
-    def __init__(self, token, password, auth_token="",
-                 url="https://cactus.exoz.one/api/v1/", **kwargs):
+    def __init__(self, token, password, url=URL, auth_token="", **kwargs):
         super().__init__(**kwargs)
 
         self.token = token
