@@ -13,7 +13,8 @@ CHANNEL = "ChannelName"
 
 API_TOKEN = "CactusAPI_Token"
 API_PASSWORD = "CactusAPI_Password"
-api = CactusAPI(API_TOKEN, API_PASSWORD)
+API_URL = "https://cactus.exoz.one/api/v1/"
+api = CactusAPI(API_TOKEN, API_PASSWORD, url=API_URL)
 
 # CACHE_FOLLOWS: Cache to remove chat spam (Default: False)
 # CACHE_FOLLOWS_TIME: How long in minutes before resending message
