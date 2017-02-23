@@ -124,11 +124,11 @@ Start CactusBot:
 
 # Authors
 
-2Cubed - [@2Cubed](twitter.com/2CubedTech)
+2Cubed - [@2Cubed](https://twitter.com/2CubedTech)
 
-Innectic - [@Innectic](twitter.com/Innectic)
+Innectic - [@Innectic](https://twitter.com/Innectic)
 
-ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
+ParadigmShift3d - [@ParadigmShift3d](https://twitter.com/ParadigmShift3d)
 
 # Releases
 
