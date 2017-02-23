@@ -3,7 +3,7 @@
 CactusBot is a next-generation ChatBot for LiveStreams.
 Harnessing the power of open-source, and extraordinary community to shape its path
 
-![alt text](./assets/terminal.png)
+![screenshot of the bot running in a terminal](./assets/terminal.png)
 
 # Installation
 
