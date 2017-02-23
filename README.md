@@ -134,6 +134,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
 
 ## 0.3.6:
 
+#### Released: Oct, 1st, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.6) 
+
 ### Fixed
  - Friend command regex (again)
 
@@ -145,6 +148,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
 
 ## 0.3.5:
 
+#### Released: September, 2st, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.5) 
+
 ### Fixed
  - `!friend` command regex
  - Websocket reconnections
@@ -155,12 +161,18 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
 
 ## 0.3.4:
 
+#### Released: July, 31st, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.4) 
+
 ### Fixed
  - Beam CSRF token usage.
  - Message removal
  - `!repeat` command
 
 ## 0.3.3:
+
+#### Released: July, 21st, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.3) 
 
 ### Added
  - Documentation is in the bot now
@@ -171,6 +183,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
  - Social command
 
 ## 0.3.2:
+
+#### Released: July , 16th, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.2) 
 
 ### Added
  - ADD: User loading into the database on bot start
@@ -187,6 +202,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
  - `silent` is now `quiet`
 
 ## 0.3.1:
+
+#### Released: April, 10th, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.1) 
 
 ### Added
  - Uptime command
@@ -205,6 +223,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
 
 ## 0.3.0:
 
+#### Released: April, 9th, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3) 
+
 ### Added
  - Repeating commands
  - Following and subscriptions notifications
@@ -221,6 +242,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
 
 ## 0.2.1:
 
+#### Released: March, 27th, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.2.1) 
+
 ### Fixed
  - Spam protection command
 
@@ -232,6 +256,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
 
 ## 0.2.0:
 
+#### Released: March, 27th, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.2) 
+
 ### Added
  - Command permissions
  - Spam protection
@@ -240,6 +267,9 @@ ParadigmShift3d - [@ParadigmShift3d](twitter.com/ParadigmShift3d)
  - Config organizations
 
 ## 0.1.0
+
+#### Released: March, 5th, 2016
+#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.1) 
 
 ### Added
  - Custom commands
