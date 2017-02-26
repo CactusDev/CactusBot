@@ -33,26 +33,27 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 class Cactus:
     """Run CactusBot safely."""
 
-    def __init__(self, service):
+    def __init__(self, services):
         super().__init__()
 
         self.logger = logging.getLogger(__name__)
 
-        self.service = service
+        self.services = services
 
-    async def run(self, api, *auth):
+    async def run(self, api):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
 
         await api.login(*api.SCOPES)
 
-        sepal = Sepal(api.token, self.service)
-
         try:
-            await sepal.connect()
-            asyncio.ensure_future(sepal.read(sepal.handle))
-            await self.service.run(*auth)
+            for service in self.services:
+                sepal = Sepal(api.token, service)
+                await sepal.connect()
+
+                asyncio.ensure_future(sepal.read(sepal.handle))
+                await service.run()
 
         except KeyboardInterrupt:
             self.logger.info("Removing thorns... done.")

@@ -7,6 +7,8 @@ from ..commands.command import ROLES
 from ..handler import Handler
 from ..packets import MessagePacket
 
+from ..services.beam.config import CHANNEL
+
 
 class CommandHandler(Handler):
     """Command handler."""
@@ -22,10 +24,12 @@ class CommandHandler(Handler):
         "shuffle": lambda text: ''.join(random.sample(text, len(text)))
     }
 
-    def __init__(self, channel, api):
+    def __init__(self, api):
         super().__init__()
 
-        self.channel = channel
+        self.channel = CHANNEL # HACK: API needs to support multiple services
+                               # and have some sort of a mapping to each
+                               # service name to the name in the api
         self.api = api
 
         self.magics = {command.COMMAND: command(api) for command in COMMANDS}

@@ -10,11 +10,13 @@ from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
 
+from .config import CHANNEL, USERNAME, PASSWORD
+
 
 class BeamHandler:
     """Handle data from Beam services."""
 
-    def __init__(self, channel, handlers):
+    def __init__(self, handlers):
 
         self.logger = logging.getLogger(__name__)
 
@@ -22,7 +24,6 @@ class BeamHandler:
         self.parser = BeamParser()
         self.handlers = handlers  # HACK, potentially
 
-        self._channel = channel
         self.channel = ""
 
         self.chat = None
@@ -39,14 +40,14 @@ class BeamHandler:
             "channel:hosted": "host"
         }
 
-    async def run(self, *auth):
+    async def run(self):
         """Connect to Beam chat and handle incoming packets."""
 
-        channel = await self.api.get_channel(self._channel)
+        channel = await self.api.get_channel(CHANNEL)
         self.channel = str(channel["id"])
         self.api.channel = self.channel  # HACK
 
-        user = await self.api.login(*auth)
+        user = await self.api.login(USERNAME, PASSWORD)
         if "id" not in user:
             raise ValueError("Authentication with Beam failed!")
         chat = await self.api.get_chat(channel["id"])
