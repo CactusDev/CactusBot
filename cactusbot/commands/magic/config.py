@@ -5,6 +5,7 @@ from .command import Command
 VALID_TOGGLE_ON_STATES = ("on", "allow", "enable", "true")
 VALID_TOGGLE_OFF_STATES = ("off", "disallow", "disable", "false")
 
+
 async def _update_config(api, scope, field, value):
     return await api.update_config({
         scope: {
