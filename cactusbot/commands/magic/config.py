@@ -2,75 +2,81 @@
 
 from .command import Command
 
+VALID_TOGGLE_ON_STATES = ("on", "allow", "enable", "true")
+VALID_TOGGLE_OFF_STATES = ("off", "disallow", "disable", "false")
+
+async def _update_config(api, scope, field, value):
+    return await api.update_config({
+        scope: {
+            field: value
+        }
+    })
+
 
 class Config(Command):
     """Config command"""
 
     COMMAND = "config"
 
-    @Command.command()
-    async def announce(self, kind, *args):
-        """Announce subcommand."""
+    @Command.command(role="moderator")
+    class Announce(Command):
+        """Announce sub command."""
 
-        if kind.lower() not in ("follow", "subscribe", "host"):
-            return "Invalid announcement type: '{kind}'.".format(kind=kind)
+        @Command.command()
+        async def follow(self, value):
+            """Follow subcommand."""
 
-        if args[0] == "toggle" and len(args) <= 2:
-
-            if len(args) == 1:
-
-                current_value = (
-                    await (
-                        await self.api.get_config("announce:" + kind)
-                    ).json()
-                )["data"]["announce"][kind]["announce"]
-
-                await self.update_config(
-                    "announce", kind, "announce", not current_value
-                )
-
-                return "{kind} announcements are now {pre}abled.".format(
-                    kind=kind.title(), pre=('dis', 'en')[not current_value])
-
-            if args[1].lower() in ("on", "enable", "true"):
-
-                await self.update_config(
-                    "announce", kind, "announce", True)
-
-                return "{kind} announcements are now enabled.".format(
-                    kind=kind.title())
-
-            elif args[1].lower() in ("off", "disable", "false"):
-
-                await self.update_config(
-                    "announce", kind, "announce", False)
-
-                return "{kind} announcements are now disabled.".format(
-                    kind=kind.title())
-
+            if value in VALID_TOGGLE_ON_STATES:
+                await _update_config(self.api, "announce", "follow", True)
+                return "Follow announcements are enabled."
+            elif value in VALID_TOGGLE_OFF_STATES:
+                await _update_config(self.api, "announce", "follow", False)
+                return "Follow announcements are disabled."
             else:
-                return "Invalid toggle state: '{state}'.".format(state=args[1])
+                return "Invalid boolean value: '{value}'".format(value=value)
 
-        response = await self.update_config(
-            "announce", kind, "message", ' '.join(args))
+        @Command.command()
+        async def subscribe(self, value):
+            """Subscribe subcommand."""
 
-        if response.status == 200:
-            return "Updated announcment."
+            if value in VALID_TOGGLE_ON_STATES:
+                await _update_config(self.api, "announce", "subscribe", True)
+                return "Subscribe announcements are enabled."
+            elif value in VALID_TOGGLE_OFF_STATES:
+                await _update_config(self.api, "announce", "subscribe", False)
+                return "Subscribe announcements are disabled."
+            else:
+                return "Invalid boolean value: '{value}'".format(value=value)
 
-    @Command.command()
+        @Command.command()
+        async def host(self, value):
+            """Host subcommand."""
+
+            if value in VALID_TOGGLE_ON_STATES:
+                await _update_config(self.api, "announce", "host", True)
+                return "Host announcements are enabled."
+            elif value in VALID_TOGGLE_OFF_STATES:
+                await _update_config(self.api, "announce", "host", False)
+                return "Host announcements are disabled."
+            else:
+                return "Invalid boolean value: '{value}'".format(value=value)
+
+    @Command.command(role="moderator")
     class Spam(Command):
+        """Spam subcommand."""
 
-        @Command.command(role="moderator")
+        @Command.command()
         async def urls(self, value):
+            """Urls subcommand."""
 
-            if value in ("on", "allow", "enable", "true"):
-                await self.update_config(
-                    self, "spam", "allowUrls", True)
+            if value in VALID_TOGGLE_ON_STATES:
+                await _update_config(
+                    self.api, "spam", "allowUrls", True)
                 return "URLs are now allowed."
 
-            elif value in ("off", "disallow", "disable", "false"):
-                await self.update_config(
-                    self, "spam", "allowUrls", False)
+            elif value in VALID_TOGGLE_OFF_STATES:
+                await _update_config(
+                    self.api, "spam", "allowUrls", False)
                 return "URLs are now disallowed."
 
             else:
@@ -78,27 +84,20 @@ class Config(Command):
 
         @Command.command()
         async def emoji(self, value: r"\d+"):
+            """Emoji subcommand."""
 
-            await self.update_config(
-                self, "spam", "maxEmoji", int(value))
+            await _update_config(
+                self.api, "spam", "maxEmoji", int(value))
 
             return "Maximum number of emoji is now {value}.".format(
                 value=value)
 
         @Command.command()
         async def caps(self, value: r"\d+"):
+            """Caps subcommand."""
 
-            await self.update_config(
-                self, "spam", "maxCapsScore", int(value))
+            await _update_config(
+                self.api, "spam", "maxCapsScore", int(value))
 
             return "Maximum capitals score is now {value}.".format(
                 value=value)
-
-    async def update_config(self, scope, field, value):
-        return await self.api.update_config({
-            scope: {
-                field: value
-            }
-        })
-
-    Spam.update_config = update_config
