@@ -20,12 +20,13 @@ class CactusAPI(API):
         "trust:create", "trust:manage",
     }
 
-    def __init__(self, token, password, auth_token="", **kwargs):
+    def __init__(self, token, password, url=URL, auth_token="", **kwargs):
         super().__init__(**kwargs)
 
         self.token = token
         self.auth_token = auth_token
         self.password = password
+        self.URL = url
 
     async def request(self, method, endpoint, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
