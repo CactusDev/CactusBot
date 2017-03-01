@@ -1,8 +1,7 @@
 
-## 0.3.6:
+## [0.3.6](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.6)
 
 #### Released: October 1st, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.6) 
 
 ### Fixed
  - Friend command regex (again)
@@ -13,10 +12,9 @@
 ### Removed
  - Liveloading
 
-## 0.3.5:
+## [0.3.5](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.5)
 
 #### Released: September 2nd, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.5) 
 
 ### Fixed
  - `!friend` command regex
@@ -26,20 +24,18 @@
 ### Removed
  - Unused statistics
 
-## 0.3.4:
+## [0.3.4](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.4)
 
-#### Released: July 31st, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.4) 
+#### Released: July 31st, 2016 
 
 ### Fixed
  - Beam CSRF token usage.
  - Message removal
  - `!repeat` command
 
-## 0.3.3:
+## [0.3.3](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.3)
 
 #### Released: July 21st, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.3) 
 
 ### Added
  - Documentation is in the bot now
@@ -49,10 +45,9 @@
  - Cube command crashing when no arguments are present
  - Social command
 
-## 0.3.2:
+## [0.3.2](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.2)
 
-#### Released: July 16th, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.2) 
+#### Released: July 16th, 2016 
 
 ### Added
  - User loading into the database on bot start
@@ -68,10 +63,9 @@
 ### Changed
  - `silent` is now `quiet`
 
-## 0.3.1:
+## [0.3.1](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.1)
 
-#### Released: April 10th, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.1) 
+#### Released: April 10th, 2016 
 
 ### Added
  - Uptime command
@@ -88,10 +82,9 @@
 ### Changed
  - Command prefix limit to 1
 
-## 0.3.0:
+## [0.3.0](https://github.com/CactusDev/CactusBot/releases/tag/v0.3)
 
 #### Released: April 9th, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3) 
 
 ### Added
  - Repeating commands
@@ -107,10 +100,9 @@
 ### Changed
  - Move from `asyncio` to `tornado`
 
-## 0.2.1:
+## [0.2.1](https://github.com/CactusDev/CactusBot/releases/tag/v0.2.1)
 
 #### Released: March 27th, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.2.1) 
 
 ### Fixed
  - Spam protection command
@@ -121,10 +113,9 @@
 ### Added
  - `autorestart` to config
 
-## 0.2.0:
+## [0.2.0](https://github.com/CactusDev/CactusBot/releases/tag/v0.2)
 
 #### Released: March 27th, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.2) 
 
 ### Added
  - Command permissions
@@ -133,10 +124,9 @@
 ### Changed
  - Config organizations
 
-## 0.1.0
+## [0.1.0](https://github.com/CactusDev/CactusBot/releases/tag/v0.1)
 
-#### Released: March 5th, 2016
-#### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.1) 
+#### Released: March 5th, 2016 
 
 ### Added
  - Custom commands
