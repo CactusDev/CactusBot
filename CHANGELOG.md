@@ -1,7 +1,7 @@
 
 ## 0.3.6:
 
-#### Released: Oct, 1st, 2016
+#### Released: October 1st, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.6) 
 
 ### Fixed
@@ -15,7 +15,7 @@
 
 ## 0.3.5:
 
-#### Released: September, 2st, 2016
+#### Released: September 2nd, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.5) 
 
 ### Fixed
@@ -28,7 +28,7 @@
 
 ## 0.3.4:
 
-#### Released: July, 31st, 2016
+#### Released: July 31st, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.4) 
 
 ### Fixed
@@ -38,7 +38,7 @@
 
 ## 0.3.3:
 
-#### Released: July, 21st, 2016
+#### Released: July 21st, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.3) 
 
 ### Added
@@ -51,12 +51,12 @@
 
 ## 0.3.2:
 
-#### Released: July , 16th, 2016
+#### Released: July 16th, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.2) 
 
 ### Added
- - ADD: User loading into the database on bot start
- - ADD: Hosting alerts
+ - User loading into the database on bot start
+ - Hosting alerts
 
 ### Fixed
  - Exponential-backoff for chat connections
@@ -70,7 +70,7 @@
 
 ## 0.3.1:
 
-#### Released: April, 10th, 2016
+#### Released: April 10th, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.1) 
 
 ### Added
@@ -90,7 +90,7 @@
 
 ## 0.3.0:
 
-#### Released: April, 9th, 2016
+#### Released: April 9th, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.3) 
 
 ### Added
@@ -109,7 +109,7 @@
 
 ## 0.2.1:
 
-#### Released: March, 27th, 2016
+#### Released: March 27th, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.2.1) 
 
 ### Fixed
@@ -123,7 +123,7 @@
 
 ## 0.2.0:
 
-#### Released: March, 27th, 2016
+#### Released: March 27th, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.2) 
 
 ### Added
@@ -135,7 +135,7 @@
 
 ## 0.1.0
 
-#### Released: March, 5th, 2016
+#### Released: March 5th, 2016
 #### [View](https://github.com/CactusDev/CactusBot/releases/tag/v0.1) 
 
 ### Added
