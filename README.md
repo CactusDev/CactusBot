@@ -21,11 +21,11 @@ Harnessing the power of open-source, and extraordinary community to shape its pa
 
 # Authors
 
-2Cubed - [@2Cubed](https://twitter.com/2CubedTech)
+[@2CubedTech](https://twitter.com/2CubedTech)
 
-Innectic - [@Innectic](https://twitter.com/Innectic)
+[@Innectic](https://twitter.com/Innectic)
 
-ParadigmShift3d - [@ParadigmShift3d](https://twitter.com/ParadigmShift3d)
+[@ParadigmShift3d](https://twitter.com/ParadigmShift3d)
 
 # Releases
 
