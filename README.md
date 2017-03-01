@@ -5,6 +5,10 @@ Harnessing the power of open-source, and extraordinary community to shape its pa
 
 ![screenshot of the bot running in a terminal](./assets/terminal.png)
 
+## CactusBot in action
+
+![gif of CactusBot running in Beam chat](./assets/action.gif)
+
 # Installation
 
 *PYTHON 3.5 OR GREATER IS REQUIRED. ANY VERSION LOWER IS NOT SUPPORTED.*
