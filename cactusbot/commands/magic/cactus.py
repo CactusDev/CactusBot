@@ -4,6 +4,8 @@
 from . import Command
 from ...packets import MessagePacket
 
+from ...cactus import __version__
+
 
 class Cactus(Command):
     """Ouch! That's pokey!"""
@@ -83,3 +85,9 @@ class Cactus(Command):
 
         return ("Try our docs (!cactus docs). If that doesn't help, tweet at"
                 " us (!cactus twitter)!")
+
+    @Command.command()
+    async def version(self):
+        """Verson of the bot."""
+
+        return "CactusBot {version}".format(version=__version__)
