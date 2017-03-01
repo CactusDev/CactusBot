@@ -17,6 +17,11 @@ class Repeat(Command):
         if response.status == 201:
             return "Repeat !{command} added on interval {period}.".format(
                 command=command, period=period)
+        elif response.status == 409:
+            return "Repeat already exists!"
+        else:
+            return (await response.json()).get("errors",
+                                               "Unknown error occured")
 
     @Command.command(role="moderator")
     async def remove(self, repeat: "?command"):
@@ -40,4 +45,5 @@ class Repeat(Command):
             return "There are no active repeats in this channel."
 
         return "Active repeats: {}.".format(', '.join(
-            repeat["attributes"]["commandName"] for repeat in data))
+            repeat["attributes"]["commandName"] + " {}".format(
+                repeat["attributes"]["period"]) for repeat in data))

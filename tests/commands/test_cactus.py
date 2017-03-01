@@ -3,6 +3,8 @@ import pytest
 from cactusbot.api import CactusAPI
 from cactusbot.commands.magic import Cactus
 
+from cactusbot.cactus import __version__
+
 cactus = Cactus(CactusAPI("test_token", "test_password"))
 
 
@@ -51,3 +53,7 @@ async def test_help():
     assert (await cactus("help")) == (
         "Try our docs (!cactus docs). "
         "If that doesn't help, tweet at us (!cactus twitter)!")
+
+@pytest.mark.asyncio
+async def test_version():
+    assert (await cactus("version")) == "CactusBot {version}".format(version=__version__)
