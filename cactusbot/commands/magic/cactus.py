@@ -88,6 +88,6 @@ class Cactus(Command):
 
     @Command.command()
     async def version(self):
-        """Verson of the bot."""
+        """Version of the bot."""
 
         return "CactusBot {version}".format(version=__version__)
