@@ -26,7 +26,8 @@ class SpamHandler(Handler):
         self.config = {
             "max_score": 16,
             "max_emoji": 6,
-            "allow_urls": False
+            "allow_urls": False,
+            "whitelisted_urls": []
         }
 
     async def on_message(self, packet):
@@ -67,10 +68,12 @@ class SpamHandler(Handler):
     async def on_config(self, packet):
         """Handle config update events."""
 
+        values = packet.kwargs["values"]
         if packet.kwargs["key"] == "spam":
-            self.config["max_emoji"] = packet.kwargs["values"]["maxEmoji"]
-            self.config["max_score"] = packet.kwargs["values"]["maxCapsScore"]
-            self.config["allow_urls"] = packet.kwargs["values"]["allowUrls"]
+            self.config["max_emoji"] = values["maxEmoji"]
+            self.config["max_score"] = values["maxCapsScore"]
+            self.config["allow_urls"] = values["allowUrls"]
+            self.config["whitelisted_urls"] = values["whitelistedUrls"]
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""
@@ -85,4 +88,6 @@ class SpamHandler(Handler):
     def contains_urls(self, packet):
         """Check for URLs in the message."""
         return not self.config["allow_urls"] and any(
-            chunk.type == "url" for chunk in packet)
+            chunk.type == "url"
+            and chunk.data not in self.config["whitelisted_urls"]
+            for chunk in packet)

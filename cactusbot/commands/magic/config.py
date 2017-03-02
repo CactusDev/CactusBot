@@ -116,13 +116,3 @@ class Config(Command):
             )
 
             return "Added {url} to the whitelist.".format(url=url)
-
-        @Command.command()
-        async def word(self, word):
-            """Whitelist a word in chat."""
-
-            await _update_config(
-                self.api, "spam", "whitelistedWords", word
-            )
-
-            return "Added {word} to the whitelist.".format(word=word)
