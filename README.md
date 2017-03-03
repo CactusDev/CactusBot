@@ -1,7 +1,7 @@
 # CactusBot
 
 CactusBot is a next-generation chat bot for live streams.
-Harnessing the power of open-source, and extraordinary community to shape its path
+Harnessing the power of open-source, and an extraordinary community to shape its path
 
 ![screenshot of the bot running in a terminal](./assets/terminal.png)
 
@@ -13,9 +13,9 @@ Harnessing the power of open-source, and extraordinary community to shape its pa
 
 *PYTHON 3.5 OR GREATER IS REQUIRED. ANY VERSION LOWER IS NOT SUPPORTED.*
 
-[Sepal Setup](https://github.com/cactusdev/sepal)
+[Sepal Setup](https://github.com/CactusDev/Sepal)
 
-[CactusAPI Setup](https://github.com/cactusdev/cactusapi)
+[CactusAPI Setup](https://github.com/CactusDev/CactusAPI)
 
 [CactusBot Setup](INSTALL.md)
 

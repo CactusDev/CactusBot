@@ -1,8 +1,8 @@
 
 ## Setup CactusBot:
 ```
-git clone https://github.com/cactusdev/cactusbot
-cd cactusbot
+git clone https://github.com/CactusDev/CactusBot
+cd CactusBot
 pip3 install -r requirements.txt
 cp config.template.py config.py
 ```
@@ -12,14 +12,18 @@ Next, open `config.py` with your favorite text editor, and set
 
 # Usage
 
-Start Sepal:
+## Start RethinkDB:
 
-`npm start`
+`rethinkdb`
 
-Start CactusAPI:
+## Start CactusAPI:
 
 `python run.py`
 
-Start CactusBot:
+## Start Sepal:
+
+`npm start`
+
+## Start CactusBot:
 
 `python run.py`
