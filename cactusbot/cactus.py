@@ -29,6 +29,7 @@ CACTUS_ART = r"""CactusBot initialized!
 Made by: 2Cubed, Innectic, and ParadigmShift3d
 """.format(version=__version__)
 
+
 async def run(api, service, *auth):
     """Run bot."""
 
