@@ -84,8 +84,8 @@ class EventHandler(Handler):
         if packet.success:
             if self.cache_follows:
                 if packet.user in self.cached_follows:
-                    since_follow = time.time() - self.cached_follows[packet.user]
-                    if since_follow >= self.cache_time:
+                    followed = time.time() - self.cached_follows[packet.user]
+                    if followed >= self.cache_time:
                         self.cached_follows[packet.user] = time.time()
                         return response
                 else:
