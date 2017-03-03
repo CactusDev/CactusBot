@@ -14,11 +14,13 @@ from .parser import BeamParser
 class BeamHandler:
     """Handle data from Beam services."""
 
-    def __init__(self, channel, handlers):
+    def __init__(self, channel, token, handlers):
 
         self.logger = logging.getLogger(__name__)
 
         self.api = BeamAPI()
+        self.api.authorize(token)
+
         self.parser = BeamParser()
         self.handlers = handlers  # HACK, potentially
 
@@ -41,24 +43,30 @@ class BeamHandler:
             "channel:hosted": "host"
         }
 
-    async def run(self, *auth):
+    async def run(self):
         """Connect to Beam chat and handle incoming packets."""
 
         channel = await self.api.get_channel(self._channel)
         self.channel = str(channel["id"])
         self.api.channel = self.channel  # HACK
 
-        user = await self.api.login(*auth)
-        if "id" not in user:
-            raise ValueError("Authentication with Beam failed!")
+        user_id = channel["userId"]
         chat = await self.api.get_chat(channel["id"])
+
+        bot_channel = await self.api.get_bot_channel()
+        bot_id = bot_channel["channel"]["userId"]
+
+        self.handle("username_update", bot_channel["channel"]["token"])
+
+        if "authkey" not in chat:
+            self.logger.error("Failed to authenticate with Beam!")
 
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
         await self.chat.connect(
-            user["id"], partial(self.api.get_chat, channel["id"]))
+            bot_id, partial(self.api.get_chat, channel["id"]))
         asyncio.ensure_future(self.chat.read(self.handle_chat))
 
-        self.constellation = BeamConstellation(channel["id"], user["id"])
+        self.constellation = BeamConstellation(channel["id"], user_id)
         await self.constellation.connect()
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))

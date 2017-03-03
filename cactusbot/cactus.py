@@ -40,7 +40,7 @@ class Cactus:
 
         self.service = service
 
-    async def run(self, api, *auth):
+    async def run(self, api, token):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)
@@ -52,7 +52,7 @@ class Cactus:
         try:
             await sepal.connect()
             asyncio.ensure_future(sepal.read(sepal.handle))
-            await self.service.run(*auth)
+            await self.service.run()
 
         except KeyboardInterrupt:
             self.logger.info("Removing thorns... done.")
