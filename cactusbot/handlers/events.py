@@ -1,6 +1,6 @@
 """Handle events"""
 
-import datetime
+import time
 
 from ..handler import Handler
 from ..packets import MessagePacket
@@ -13,7 +13,9 @@ class EventHandler(Handler):
         super().__init__()
 
         self.cache_follows = cache_data["CACHE_FOLLOWS"]
-        self.cached = []
+        self.cache_time = cache_data["CACHE_TIME"]
+        self.cached_follows = {}
+        self.cached_hosts = {}
 
         self.api = api
 
@@ -75,8 +77,14 @@ class EventHandler(Handler):
 
         if packet.success:
             if self.cache_follows:
-                if packet.user not in self.cached:
-                    self.cached.append(packet.user)
+                if packet.user in self.cached_follows:
+                    since_follow = time.time() - self.cached_follows[packet.user]
+                    print(since_follow)
+                    if since_follow >= self.cache_time:
+                        self.cached_follows[packet.user] = time.time()
+                        return response
+                else:
+                    self.cached_follows[packet.user] = time.time()
                     return response
             else:
                 return response
