@@ -440,6 +440,9 @@ Packet("c"), separator='-').text
         'a-b-c'
         """
 
+        if not packets:
+            return MessagePacket("")
+
         result = packets[0]
 
         for packet in packets[1:]:
