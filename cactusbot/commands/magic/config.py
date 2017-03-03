@@ -15,6 +15,7 @@ async def _update_config(api, scope, field, section, value):
         }
     })
 
+
 async def _update_spam_config(api, scope, field, value):
     return await api.update_config({
         scope: {
