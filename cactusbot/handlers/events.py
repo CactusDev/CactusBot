@@ -2,7 +2,6 @@
 
 import datetime
 
-from ..cached import CacheUtils
 from ..handler import Handler
 from ..packets import MessagePacket
 
@@ -13,10 +12,8 @@ class EventHandler(Handler):
     def __init__(self, cache_data, api):
         super().__init__()
 
-        self.cache = CacheUtils("caches/followers.json")
         self.cache_follows = cache_data["CACHE_FOLLOWS"]
-        self.follow_time = datetime.timedelta(
-            minutes=cache_data["CACHE_FOLLOWS_TIME"])
+        self.cached = []
 
         self.api = api
 
@@ -78,14 +75,8 @@ class EventHandler(Handler):
 
         if packet.success:
             if self.cache_follows:
-                now = datetime.datetime.utcnow()
-                if packet.user in self.cache:
-                    cache_time = self.cache[packet.user]
-                    if cache_time + self.follow_time <= now:
-                        self.cache[packet.user] = now.isoformat()
-                        return response
-                else:
-                    self.cache[packet.user] = now.isoformat()
+                if packet.user not in self.cached:
+                    self.cached.append(packet.user)
                     return response
             else:
                 return response
