@@ -17,7 +17,7 @@ class MultiStream(Command):
         """Create a multistream link using a list of channels, and services
         seperated by `:`.
 
-        !multistream beam:fun hitbox:streamer twitch:to youtube:watch
+        !multistream b:fun h:streamer t:to y:watch
         """
 
         link = _BASE_URL
