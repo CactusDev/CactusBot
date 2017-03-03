@@ -6,7 +6,7 @@ import logging
 from argparse import ArgumentParser
 from asyncio import get_event_loop
 
-from cactusbot import Cactus
+from cactusbot.cactus import run
 from config import PASSWORD, SERVICE, USERNAME, api
 
 if __name__ == "__main__":
@@ -33,13 +33,10 @@ if __name__ == "__main__":
 
     loop = get_event_loop()
 
-    # TODO: Convert this to be able to have multiple services
-    cactus = Cactus(SERVICE)
-
     try:
-        # TODO: Make this cactus.run(services) instead of only Beam
+        # TODO: Convert this to be able to have multiple services
         loop.run_until_complete(
-            cactus.run(api, USERNAME, PASSWORD))
+            run(api, SERVICE, USERNAME, PASSWORD))
         loop.run_forever()
     finally:
         loop.close()
