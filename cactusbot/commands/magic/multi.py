@@ -4,13 +4,13 @@ from . import Command
 from ...packets import MessagePacket
 
 _BASE_URL = "https://multistream.me/"
-_SERVICES = {"twitch": 't', "beam": 'b', "hitbox": 'h', "youtube": 'y'}
+_SERVICES = ['t', 'b', 'h', 'y']
 
 
 class MultiStream(Command):
     """Generate a multistream link."""
 
-    COMMAND = "multistream"
+    COMMAND = "multi"
 
     @Command.command(hidden=True)
     async def default(self, *channels):
@@ -24,10 +24,11 @@ class MultiStream(Command):
 
         for channel in channels:
             service, channel_name = channel.split(':')
+
             if service not in _SERVICES:
                 return "'{}' is not a valid service.".format(service)
 
             link += "{service}:{channel}/".format(
-                service=_SERVICES[service], channel=channel_name)
+                service=service, channel=channel_name)
 
         return MessagePacket(("link", link))
