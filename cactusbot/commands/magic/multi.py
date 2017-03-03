@@ -24,9 +24,10 @@ class MultiStream(Command):
 
         for channel in channels:
             service, channel_name = channel.split(':')
-            if not service in _SERVICES:
+            if service not in _SERVICES:
                 return "'{}' is not a valid service.".format(service)
 
-            link += "{service}:{channel}/".format(service=_SERVICES[service], channel=channel_name)
+            link += "{service}:{channel}/".format(
+                service=_SERVICES[service], channel=channel_name)
 
         return MessagePacket(("link", link))
