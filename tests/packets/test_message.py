@@ -9,12 +9,28 @@ def _split(text, *args, **kwargs):
     ]
 
 
+def test_sub():
+    """Test regex substitution."""
+
+    assert MessagePacket("%USER% is great!").sub(
+        "%USER%", "Stanley").text == "Stanley is great!"
+    assert MessagePacket("I would like 3 ", ("emoji", "😃"), "s.").sub(
+        r'\d+', "<number>").text == "I would like <number> 😃s."
+
+
 def test_split():
+    """Test splitting message packets."""
 
     assert _split("0 1 2 3") == ['0', '1', '2', '3']
-
     assert _split("0 1 2 3", "2") == ['0 1 ', ' 3']
-
     assert _split("0 1 2 3", maximum=2) == ['0', '1', '2 3']
-
     assert _split("0 1 2 3 ") == ['0', '1', '2', '3']
+
+
+def test_join():
+    """Test joining message packets."""
+
+    packet1 = MessagePacket("I like ")
+    packet2 = MessagePacket("kittens!")
+
+    assert MessagePacket.join(packet1, packet2).text == "I like kittens!"

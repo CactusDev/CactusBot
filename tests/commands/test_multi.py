@@ -1,3 +1,5 @@
+"""Test the multi command."""
+
 import pytest
 
 from cactusbot.api import CactusAPI
