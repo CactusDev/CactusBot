@@ -14,6 +14,7 @@
    !social<user/social.md>
    !config<user/config.md>
    !trust<user/trust.md>
+   !multi<user/multi.md>
 
 .. toctree::
    :maxdepth: 2
