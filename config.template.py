@@ -6,9 +6,7 @@ from cactusbot.handlers import (CommandHandler, EventHandler, LoggingHandler,
                                 ResponseHandler, SpamHandler)
 from cactusbot.services.beam.handler import BeamHandler
 
-USERNAME = "BotUsername"
-PASSWORD = "BotPassword"
-
+TOKEN = "OAuth_Token"
 CHANNEL = "ChannelName"
 
 API_TOKEN = "CactusAPI_Token"
@@ -28,10 +26,10 @@ CACHE_DATA = {
 
 handlers = Handlers(
     LoggingHandler(),
-    ResponseHandler(USERNAME),
+    ResponseHandler(),
     EventHandler(CACHE_DATA, api),
     SpamHandler(api),
     CommandHandler(CHANNEL, api)
 )
 
-SERVICE = BeamHandler(CHANNEL, handlers)
+SERVICE = BeamHandler(CHANNEL, TOKEN, handlers)
