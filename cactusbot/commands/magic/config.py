@@ -37,10 +37,12 @@ class Config(Command):
             """Follow subcommand."""
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_config(self.api, "announce", "follow", "announce", True)
+                await _update_config(
+                    self.api, "announce", "follow", "announce", True)
                 return "Follow announcements are enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_config(self.api, "announce", "follow", "announce", False)
+                await _update_config(
+                    self.api, "announce", "follow", "announce", False)
                 return "Follow announcements are disabled."
             else:
                 return "Invalid boolean value: '{value}'".format(value=value)
@@ -50,10 +52,12 @@ class Config(Command):
             """Subscribe subcommand."""
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_config(self.api, "announce", "subscribe", "announce", True)
+                await _update_config(
+                    self.api, "announce", "subscribe", "announce", True)
                 return "Subscribe announcements are enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_config(self.api, "announce", "subscribe", "announce", False)
+                await _update_config(
+                    self.api, "announce", "subscribe", "announce", False)
                 return "Subscribe announcements are disabled."
             else:
                 return "Invalid boolean value: '{value}'".format(value=value)
@@ -63,10 +67,12 @@ class Config(Command):
             """Host subcommand."""
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_config(self.api, "announce", "host", "announce", True)
+                await _update_config(
+                    self.api, "announce", "host", "announce", True)
                 return "Host announcements are enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_config(self.api, "announce", "host", "announce", False)
+                await _update_config(
+                    self.api, "announce", "host", "announce", False)
                 return "Host announcements are disabled."
             else:
                 return "Invalid boolean value: '{value}'".format(value=value)
@@ -76,10 +82,12 @@ class Config(Command):
             """Leave subcommand."""
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_config(self.api, "announce", "leave", "announce", True)
+                await _update_config(
+                    self.api, "announce", "leave", "announce", True)
                 return "Leave announcements are enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_config(self.api, "announce", "leave", "announce", False)
+                await _update_config(
+                    self.api, "announce", "leave", "announce", False)
                 return "Leave announcements are disabled."
 
         @Command.command()
@@ -87,10 +95,12 @@ class Config(Command):
             """Join subcommand."""
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_config(self.api, "announce", "join", "announce", True)
+                await _update_config(
+                    self.api, "announce", "join", "announce", True)
                 return "Join announcements are enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_config(self.api, "announce", "join", "announce", False)
+                await _update_config(
+                    self.api, "announce", "join", "announce", False)
                 return "Join announcements are disabled."
 
     @Command.command(role="moderator")
