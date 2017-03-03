@@ -39,7 +39,7 @@ if __name__ == "__main__":
     try:
         # TODO: Make this cactus.run(services) instead of only Beam
         loop.run_until_complete(
-            cactus.run(api, TOKEN))
+            cactus.run(api))
         loop.run_forever()
     finally:
         loop.close()

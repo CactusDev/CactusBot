@@ -13,7 +13,6 @@ class ResponseHandler(Handler):
 
     async def on_username_update(self, packet):
         """Set the username of the bot."""
-        print(packet.json)
         self.username = packet.json["username"]
 
     async def on_message(self, packet):

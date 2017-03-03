@@ -74,3 +74,4 @@ venv/
 # CactusBot private data
 /config.py
 data/
+caches/*.json

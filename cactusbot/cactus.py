@@ -40,7 +40,7 @@ class Cactus:
 
         self.service = service
 
-    async def run(self, api, token):
+    async def run(self, api):
         """Run bot."""
 
         self.logger.info(CACTUS_ART)

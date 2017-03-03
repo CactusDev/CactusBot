@@ -13,10 +13,6 @@ class Handlers(object):
 
         self.handlers = handlers
 
-    async def register_handler(self, handler):
-        """Registers a new handler in runtime"""
-        self.handlers += handler
-
     async def handle(self, event, packet):
         """Handle incoming data."""
 
