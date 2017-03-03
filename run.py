@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from asyncio import get_event_loop
 
 from cactusbot import Cactus
-from config import SERVICE, api, TOKEN
+from config import SERVICE, api
 
 if __name__ == "__main__":
 
@@ -38,8 +38,7 @@ if __name__ == "__main__":
 
     try:
         # TODO: Make this cactus.run(services) instead of only Beam
-        loop.run_until_complete(
-            cactus.run(api))
+        loop.run_until_complete(cactus.run(api))
         loop.run_forever()
     finally:
         loop.close()
