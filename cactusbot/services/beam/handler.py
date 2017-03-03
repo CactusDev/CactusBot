@@ -29,7 +29,9 @@ class BeamHandler:
         self.constellation = None
 
         self.chat_events = {
-            "ChatMessage": "message"
+            "ChatMessage": "message",
+            "UserJoin": "join",
+            "UserLeave": "leave"
         }
 
         self.constellation_events = {

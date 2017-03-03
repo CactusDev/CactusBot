@@ -95,6 +95,18 @@ class BeamParser:
         return EventPacket("host", packet["hoster"]["token"])
 
     @classmethod
+    def parse_join(cls, packet):
+        """Parse join packet."""
+
+        return EventPacket("join", packet["username"])
+
+    @classmethod
+    def parse_leave(cls, packet):
+        """Parse host packet."""
+
+        return EventPacket("leave", packet["username"])
+
+    @classmethod
     def synthesize(cls, packet):
         """Create a Beam packet from a :obj:`MessagePacket`."""
 
