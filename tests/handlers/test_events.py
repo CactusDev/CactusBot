@@ -25,6 +25,14 @@ class MockAPI:
                         "host": {
                             "announce": True,
                             "message": "Thanks for hosting, %USER%!"
+                        },
+                        "join": {
+                            "announce": True,
+                            "message": "Welcome to the channel, %USER%!"
+                        },
+                        "leave": {
+                            "announce": True,
+                            "message": "Thanks for watching, %USER%!"
                         }
                     }}}
                 }
@@ -71,3 +79,17 @@ async def test_on_host():
     assert (await event_handler.on_host(EventPacket(
         "host", "TestUser"
     ))).text == "Thanks for hosting, TestUser!"
+
+@pytest.mark.asyncio
+async def test_on_join():
+
+    assert (await event_handler.on_join(EventPacket(
+        "join", "TestUser"
+    ))).text == "Welcome to the channel, TestUser!"
+
+@pytest.mark.asyncio
+async def test_on_leave():
+
+    assert (await event_handler.on_leave(EventPacket(
+        "leave", "TestUser"
+    ))).text == "Thanks for watching, TestUser!"
