@@ -32,6 +32,14 @@ class EventHandler(Handler):
             "host": {
                 "announce": True,
                 "message": "Thanks for hosting, %USER%!"
+            },
+            "join": {
+                "announce": False,
+                "message": "Welcome to the channel, %USER%!"
+            },
+            "leave": {
+                "announce": False,
+                "message": "Thanks for watching, %USER%!"
             }
         }
 
@@ -45,7 +53,9 @@ class EventHandler(Handler):
         self.alert_messages = {
             "follow": messages["follow"],
             "subscribe": messages["sub"],
-            "host": messages["host"]
+            "host": messages["host"],
+            "join": messages["join"],
+            "leave": messages["leave"]
         }
 
     async def on_start(self, _):
@@ -98,12 +108,33 @@ class EventHandler(Handler):
                     "%USER%", packet.user
                 ))
 
+    async def on_join(self, packet):
+        """Handle join packets."""
+
+        if self.alert_messages["join"]["announce"]:
+            return MessagePacket(
+                self.alert_messages["join"]["message"].replace(
+                    "%USER%", packet.user
+                ))
+
+    async def on_leave(self, packet):
+        """Handle leave packets."""
+
+        if self.alert_messages["leave"]["announce"]:
+            return MessagePacket(
+                self.alert_messages["leave"]["message"].replace(
+                    "%USER%", packet.user
+                ))
+
     async def on_config(self, packet):
         """Handle config update events."""
 
+        values = packet.kwargs["values"]
         if packet.kwargs["key"] == "announce":
             self.alert_messages = {
-                "follow": packet.kwargs["values"]["follow"],
-                "subscribe": packet.kwargs["values"]["sub"],
-                "host": packet.kwargs["values"]["host"]
+                "follow": values["follow"],
+                "subscribe": values["sub"],
+                "host": values["host"],
+                "join": values["join"],
+                "leave": values["leave"]
             }
