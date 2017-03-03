@@ -7,7 +7,7 @@ _BASE_URL = "https://multistream.me/"
 _SERVICES = ['t', 'b', 'h', 'y']
 
 
-class MultiStream(Command):
+class Multi(Command):
     """Generate a multistream link."""
 
     COMMAND = "multi"

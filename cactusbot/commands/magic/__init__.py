@@ -11,11 +11,11 @@ from .repeat import Repeat
 from .social import Social
 from .trust import Trust
 from .uptime import Uptime
-from .multi import MultiStream
+from .multi import Multi
 
 COMMANDS = (Alias, Cactus, Meta, Config, Cube, Temmie,
-            Quote, Repeat, Social, Trust, Uptime, MultiStream)
+            Quote, Repeat, Social, Trust, Uptime, Multi)
 
 __all__ = ("Alias", "Command", "Cactus", "Meta", "Config", "Cube",
            "Temmie", "Quote", "Repeat", "Social", "Trust", "Uptime",
-           "MultiStream")
+           "Multi")
