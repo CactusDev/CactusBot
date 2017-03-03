@@ -14,6 +14,10 @@ class Alias(Command):
                   raw: "packet"):
         """Add a new command alias."""
 
+        print(alias)
+        print(command)
+        print(*_)
+        print(raw)
         _, _, _, _, *args = raw.split()
 
         if args:
@@ -55,4 +59,4 @@ class Alias(Command):
                 for command in commands
                 if command.get("type") == "aliases"
             )))
-        return "No commands added!"
+        return "No aliases added!"

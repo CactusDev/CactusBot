@@ -2,15 +2,12 @@
 
 import pytest
 
-from cactusbot.api import CactusAPI
 from cactusbot.commands.magic import Trust
 from cactusbot.packets import MessagePacket
 
-# trust = Trust(CactusAPI("test_token", "test_password"))
-
 
 class MockAPI:
-    """Fake api."""
+    """Fake API."""
 
     async def get_trust(self, user_id=None):
         """Get trusts."""
