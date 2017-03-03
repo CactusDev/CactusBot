@@ -31,4 +31,4 @@ class Multi(Command):
             link += "{service}:{channel}/".format(
                 service=service, channel=channel_name)
 
-        return MessagePacket(("link", link))
+        return MessagePacket(("url", link))
