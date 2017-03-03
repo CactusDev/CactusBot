@@ -4,7 +4,7 @@ import asyncio
 import logging
 from functools import partial
 
-from ...packets import BanPacket, MessagePacket
+from ...packets import BanPacket, MessagePacket, Packet
 from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
@@ -56,7 +56,7 @@ class BeamHandler:
         bot_channel = await self.api.get_bot_channel()
         bot_id = bot_channel["channel"]["userId"]
 
-        self.handle("username_update", bot_channel["channel"]["token"])
+        await self.handle("username_update", Packet(username=bot_channel["channel"]["token"]))
 
         if "authkey" not in chat:
             self.logger.error("Failed to authenticate with Beam!")
