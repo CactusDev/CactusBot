@@ -410,8 +410,13 @@ class MessagePacket(Packet):
 
         result.append(components)
 
-        return [self.copy(*filter(lambda c: c.text, message))
-                for message in result]
+        result = [
+            filter(lambda component: component.text, message)
+            for message in result
+            if any(component.text for component in message)
+        ]
+
+        return [self.copy(*message) for message in result]
 
     @classmethod
     def join(cls, *packets, separator=''):
@@ -439,6 +444,9 @@ Packet("c")).text
 Packet("c"), separator='-').text
         'a-b-c'
         """
+
+        if not packets:
+            return MessagePacket("")
 
         result = packets[0]
 
