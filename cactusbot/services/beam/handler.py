@@ -56,7 +56,8 @@ class BeamHandler:
         bot_channel = await self.api.get_bot_channel()
         bot_id = bot_channel["channel"]["userId"]
 
-        await self.handle("username_update", Packet(username=bot_channel["channel"]["token"]))
+        await self.handle("username_update",
+                          Packet(username=bot_channel["channel"]["token"]))
 
         if "authkey" not in chat:
             self.logger.error("Failed to authenticate with Beam!")

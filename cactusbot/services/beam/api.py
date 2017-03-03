@@ -19,7 +19,8 @@ class BeamAPI(API):
 
     async def get_bot_channel(self, **params):
         """Get the bot's user id."""
-        response = await self.get("/users/current", params=params, headers=self.headers)
+        response = await self.get("/users/current", params=params,
+                                  headers=self.headers)
         return await response.json()
 
     async def get_channel(self, channel, **params):
@@ -30,5 +31,6 @@ class BeamAPI(API):
 
     async def get_chat(self, chat):
         """Get required data for connecting to a chat server by channel ID."""
-        response = await self.get("/chats/{chat}".format(chat=chat), headers=self.headers)
+        response = await self.get("/chats/{chat}".format(chat=chat),
+                                  headers=self.headers)
         return await response.json()
