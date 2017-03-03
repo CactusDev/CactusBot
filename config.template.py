@@ -20,6 +20,9 @@ api = CactusAPI(API_TOKEN, API_PASSWORD, url=API_URL)
 #   Only matters if CACHE_FOLLOWS is enabled
 CACHE_DATA = {
     "CACHE_FOLLOWS": True,
+    "CACHE_HOSTS": True,
+    "CACHE_JOINS": True,
+    "CACHE_LEAVES": True,
     "CACHE_TIME": 1200
 }
 

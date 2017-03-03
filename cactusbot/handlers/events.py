@@ -13,9 +13,15 @@ class EventHandler(Handler):
         super().__init__()
 
         self.cache_follows = cache_data["CACHE_FOLLOWS"]
+        self.cache_hosts = cache_data["CACHE_HOSTS"]
+        self.cache_joins = cache_data["CACHE_JOINS"]
+        self.cache_leaves = cache_data["CACHE_LEAVES"]
         self.cache_time = cache_data["CACHE_TIME"]
+
         self.cached_follows = {}
         self.cached_hosts = {}
+        self.cached_joins = {}
+        self.cached_leaves = {}
 
         self.api = api
 
@@ -79,7 +85,6 @@ class EventHandler(Handler):
             if self.cache_follows:
                 if packet.user in self.cached_follows:
                     since_follow = time.time() - self.cached_follows[packet.user]
-                    print(since_follow)
                     if since_follow >= self.cache_time:
                         self.cached_follows[packet.user] = time.time()
                         return response
@@ -101,29 +106,74 @@ class EventHandler(Handler):
     async def on_host(self, packet):
         """Handle host packets."""
 
-        if self.alert_messages["host"]["announce"]:
-            return MessagePacket(
-                self.alert_messages["host"]["message"].replace(
-                    "%USER%", packet.user
-                ))
+        if not self.alert_messages["host"]["announce"]:
+            return
+
+        response = MessagePacket(
+            self.alert_messages["host"]["message"].replace(
+                "%USER%", packet.user
+            ))
+
+        if packet.success:
+            if self.cache_hosts:
+                if packet.user in self.cached_hosts:
+                    since_host = time.time() - self.cached_hosts[packet.user]
+                    if since_host >= self.cache_time:
+                        self.cached_hosts[packet.user] = time.time()
+                        return response
+                else:
+                    self.cached_hosts[packet.user] = time.time()
+                    return response
+            else:
+                return response
 
     async def on_join(self, packet):
         """Handle join packets."""
 
-        if self.alert_messages["join"]["announce"]:
-            return MessagePacket(
-                self.alert_messages["join"]["message"].replace(
-                    "%USER%", packet.user
-                ))
+        if not self.alert_messages["join"]["announce"]:
+            return
+
+        response = MessagePacket(
+            self.alert_messages["join"]["message"].replace(
+                "%USER%", packet.user
+            ))
+
+        if packet.success:
+            if self.cache_joins:
+                if packet.user in self.cached_joins:
+                    since_join = time.time() - self.cached_joins[packet.user]
+                    if since_join >= self.cache_time:
+                        self.cached_joins[packet.user] = time.time()
+                        return response
+                else:
+                    self.cached_joins[packet.user] = time.time()
+                    return response
+            else:
+                return response
 
     async def on_leave(self, packet):
         """Handle leave packets."""
 
-        if self.alert_messages["leave"]["announce"]:
-            return MessagePacket(
-                self.alert_messages["leave"]["message"].replace(
-                    "%USER%", packet.user
-                ))
+        if not self.alert_messages["leave"]["announce"]:
+            return
+
+        response = MessagePacket(
+            self.alert_messages["leave"]["message"].replace(
+                "%USER%", packet.user
+            ))
+
+        if packet.success:
+            if self.cache_leaves:
+                if packet.user in self.cached_leaves:
+                    since_leave = time.time() - self.cached_leaves[packet.user]
+                    if since_leave >= self.cache_time:
+                        self.cached_leaves[packet.user] = time.time()
+                        return response
+                else:
+                    self.cached_leaves[packet.user] = time.time()
+                    return response
+            else:
+                return response
 
     async def on_config(self, packet):
         """Handle config update events."""
