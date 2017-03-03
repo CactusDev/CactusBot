@@ -33,13 +33,10 @@ if __name__ == "__main__":
 
     loop = get_event_loop()
 
-    # TODO: Convert this to be able to have multiple services
-    cactus = Cactus(SERVICE)
-
     try:
-        # TODO: Make this cactus.run(services) instead of only Beam
-        loop.run_until_complete(
-            cactus.run(api))
+        # TODO: Convert this to be able to have multiple services
+        loop.run_until_complete
+            run(api, SERVICE, USERNAME, PASSWORD)
         loop.run_forever()
     finally:
         loop.close()

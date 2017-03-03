@@ -30,39 +30,30 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """.format(version=__version__)
 
 
-class Cactus:
-    """Run CactusBot safely."""
+async def run(api, service, *auth):
+    """Run bot."""
 
-    def __init__(self, service):
-        super().__init__()
+    logger = logging.getLogger(__name__)
+    logger.info(CACTUS_ART)
 
-        self.logger = logging.getLogger(__name__)
+    await api.login(*api.SCOPES)
 
-        self.service = service
+    sepal = Sepal(api.token, service)
 
-    async def run(self, api):
-        """Run bot."""
+    try:
+        await sepal.connect()
+        asyncio.ensure_future(sepal.read(sepal.handle))
+        await service.run(*auth)
 
-        self.logger.info(CACTUS_ART)
+    except KeyboardInterrupt:
+        logger.info("Removing thorns... done.")
 
-        await api.login(*api.SCOPES)
+    except Exception:
+        logger.critical("Oh no, I crashed!", exc_info=True)
 
-        sepal = Sepal(api.token, self.service)
+        logger.info("Restarting in 10 seconds...")
 
         try:
-            await sepal.connect()
-            asyncio.ensure_future(sepal.read(sepal.handle))
-            await self.service.run()
-
+            time.sleep(10)
         except KeyboardInterrupt:
-            self.logger.info("Removing thorns... done.")
-
-        except Exception:
-            self.logger.critical("Oh no, I crashed!", exc_info=True)
-
-            self.logger.info("Restarting in 10 seconds...")
-
-            try:
-                time.sleep(10)
-            except KeyboardInterrupt:
-                self.logger.info("CactusBot deactivated.")
+            logger.info("CactusBot deactivated.")
