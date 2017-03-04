@@ -1,12 +1,28 @@
 from cactusbot.packets import MessagePacket
 
 
-def _split(text, *args, **kwargs):
-    return [
-        component.text
-        for component in
-        MessagePacket(text).split(*args, **kwargs)
-    ]
+def test_copy():
+
+    initial = MessagePacket("Test message.", user="TestUser")
+
+    copy = initial.copy()
+    assert copy.text == "Test message."
+    assert copy.user == "TestUser"
+
+    assert initial.copy() is not initial
+
+    new_copy = initial.copy("New message!")
+    assert new_copy.text == "New message!"
+    assert new_copy.user == "TestUser"
+
+
+def test_replace():
+
+    assert MessagePacket("a b c").replace(a='x', b='y').text == "x y c"
+
+    assert MessagePacket("a b c").replace().text == "a b c"
+
+    assert MessagePacket("a b c").replace(b='').text == "a  c"
 
 
 def test_sub():
@@ -16,6 +32,14 @@ def test_sub():
         "%USER%", "Stanley").text == "Stanley is great!"
     assert MessagePacket("I would like 3 ", ("emoji", "😃"), "s.").sub(
         r'\d+', "<number>").text == "I would like <number> 😃s."
+
+
+def _split(text, *args, **kwargs):
+    return [
+        component.text
+        for component in
+        MessagePacket(text).split(*args, **kwargs)
+    ]
 
 
 def test_split():
@@ -32,12 +56,20 @@ def test_split():
 def test_join():
     """Test joining message packets."""
 
-    packet1 = MessagePacket(("text", "I like "), ("emoji", "😃"))
-    packet2 = MessagePacket(" kittens!")
+    assert MessagePacket.join(
+        MessagePacket(("text", "I like "), ("emoji", "😃")),
+        MessagePacket(" kittens!")
+    ).text == "I like 😃 kittens!"
 
-    assert MessagePacket.join(packet1, packet2).text == "I like 😃 kittens!"
+    assert MessagePacket.join(
+        MessagePacket("Testing"),
+        MessagePacket(" Stuff!")
+    ).text == "Testing Stuff!"
 
-    packet1 = MessagePacket("Testing")
-    packet2 = MessagePacket(" Stuff!")
+    assert MessagePacket.join() == ""
 
-    assert MessagePacket.join(packet1, packet2).text == "Testing Stuff!"
+    assert MessagePacket.join(
+        MessagePacket("Hello"),
+        MessagePacket("world!"),
+        separator="... "
+    ).text == "Hello... world!"
