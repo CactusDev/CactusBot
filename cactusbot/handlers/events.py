@@ -131,13 +131,14 @@ class EventHandler(Handler):
 
         if packet.success:
             if self.cache_data["cache_{}".format(event)]:
-                if packet.user in self.cached_events[event]:
-                    since_host = time.time() - self.cached_events[event][packet.user]
-                    if since_host >= self.cache_data["cache_time"]:
-                        self.cached_events[event][packet.user] = time.time()
+                user = packet.user
+                if user in self.cached_events[event]:
+                    since = time.time() - self.cached_events[event][user]
+                    if since >= self.cache_data["cache_time"]:
+                        self.cached_events[event][user] = time.time()
                         return response
                 else:
-                    self.cached_events[event][packet.user] = time.time()
+                    self.cached_events[event][user] = time.time()
                     return response
             else:
                 return response
