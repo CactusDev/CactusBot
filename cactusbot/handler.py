@@ -68,8 +68,6 @@ class Handlers(object):
         --------
         >>> async def handle():
         ...     await handlers.handle("message", MessagePacket("Message!"))
-        ...
-
         """
 
         result = []
@@ -97,35 +95,49 @@ class Handlers(object):
 
         Parameters
         ----------
-        packet : :obj:`Packet` immediately yielded,\
-            :obj:`str` converted into a text field in a `MessagePacket`,\
-            :obj:`tuple` / :obj:`list` iterated over, yields each item,\
-            :obj:`StopIteration` stops packets from being passed, or\
-            :obj:`None` an ignored packet
+        packet : :obj:`Packet`, :obj:`str`, :obj:`tuple`, :obj:`list`, :exc:`S\
+topIteration`, or :obj:`None`
             The packet to turn the handler response into
+             - :obj:`Packet` is immediately yielded.
+             - :obj:`str` is converted into a text field in a
+               :obj:`MessagePacket`.
+             - :obj:`tuple` or :obj:`list` is iterated over, passing each
+               item through :meth:`translate` again.
+             - :exc:`StopIteration` signifies that no future packets should be
+               yielded, stopping the chain.
+             - :obj:`None` is ignored, and is never yielded.
         handler : :obj:`Handler`
             The handler response to turn into a packet
 
         Examples
         --------
-        >>> class TestingHandler(Handler):
-        ...     async def on_message(self, packet):
-        ...         self.logger.info(packet)
-        ...
-        >>> handlers = Handlers(TestingHandler)
-        >>> packet = MessagePacket("Testing!")
-        >>> async def handle():
-        ...     await handlers.handle("message", MessagePacket("Message!"))
-        ...     handlers.translate(packet, TestingHandler)
-        ...
+        >>> handlers = Handlers()
+        >>> translated = handlers.translate("Hello!", Handler())
+        >>> [(item.__class__.__name__, item.text) for item in translated]
+        [('MessagePacket', 'Hello!')]
 
+        >>> handlers = Handlers()
+        >>> translated = handlers.translate(["Potato?", "Potato!"], Handler())
+        >>> [(item.__class__.__name__, item.text) for item in translated]
+        [('MessagePacket', 'Potato?'), ('MessagePacket', 'Potato!')]
+
+        >>> handlers = Handlers()
+        >>> translated = handlers.translate(
+        ...     ["Stop spamming.", StopIteration, "Nice message!"],
+        ...     Handler()
+        ... )
+        >>> [(item.__class__.__name__, item.text) for item in translated]
+        [('MessagePacket', 'Stop spamming.')]
         """
 
         if isinstance(packet, Packet):
             yield packet
         elif isinstance(packet, (tuple, list)):
             for component in packet:
-                yield from self.translate(component, handler)
+                for item in self.translate(component, handler):
+                    if item is StopIteration:
+                        return item
+                    yield item
         elif isinstance(packet, str):
             yield MessagePacket(packet)
         elif packet is StopIteration:
