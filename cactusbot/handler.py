@@ -14,19 +14,19 @@ class Handlers(object):
 
     Packet can be the following types:
 
-    ================= ===============
+    ================= ====================
     Event             Packet Type
-    ================= ===============
-    `message`         `MessagePacket`
-    `follow`          `EventPacket`
-    `subscribe`       `EventPacket`
-    `host`            `EventPacket`
-    `join`            `EventPacket`
-    `leave`           `EventPacket`
-    `repeat`          `MessagePacket`
-    `config`          `Packet`
-    `username_update` `Packet`
-    ================= ===============
+    ================= ====================
+    `message`         :obj:`MessagePacket`
+    `follow`          :obj:`EventPacket`
+    `subscribe`       :obj:`EventPacket`
+    `host`            :obj:`EventPacket`
+    `join`            :obj:`EventPacket`
+    `leave`           :obj:`EventPacket`
+    `repeat`          :obj:`MessagePacket`
+    `config`          :obj:`Packet`
+    `username_update` :obj:`Packet`
+    ================= ====================
 
     Other events will be of the packet type `Packet`.
 
