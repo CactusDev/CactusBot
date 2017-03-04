@@ -95,7 +95,7 @@ class Handlers(object):
         packet : :obj:`Packet` immediately yielded,\
                  :obj:`str` converted into a text field in a `MessagePacket`,\
                  :obj:`tuple` / :obj:`list` iterated over, yields each item,\
-                 :obj:`StopIteration` stops future packets from being passed or,\
+                 :obj:`StopIteration` stops packets from being passed, or\
                  :obj:`None` an ignored packet
             The packet to turn the handler response into
         handler : :obj:`Handler`
