@@ -32,7 +32,12 @@ def test_split():
 def test_join():
     """Test joining message packets."""
 
-    packet1 = MessagePacket("I like ")
-    packet2 = MessagePacket("kittens!")
+    packet1 = MessagePacket(("text", "I like "), ("emoji", "😃"))
+    packet2 = MessagePacket(" kittens!")
 
-    assert MessagePacket.join(packet1, packet2).text == "I like kittens!"
+    assert MessagePacket.join(packet1, packet2).text == "I like 😃 kittens!"
+
+    packet1 = MessagePacket("Testing")
+    packet2 = MessagePacket(" Stuff!")
+
+    assert MessagePacket.join(packet1, packet2).text == "Testing Stuff!"
