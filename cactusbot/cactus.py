@@ -6,7 +6,7 @@ import time
 
 from .sepal import Sepal
 
-__version__ = "v0.4-dev"
+__version__ = "v0.4"
 
 
 CACTUS_ART = r"""CactusBot initialized!
