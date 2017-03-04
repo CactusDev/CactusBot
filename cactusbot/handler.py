@@ -6,7 +6,28 @@ from .packets import MessagePacket, Packet
 
 
 class Handlers(object):
-    """Handlers."""
+    """Handles all the events
+
+    For a function to have the ability to be used as an event handler, it must
+    be prefixed with `on_`, and then followed by the event name.
+
+    Parameters
+    ----------
+    handlers : :obj:`Handler`
+        Tuple of handlers that contain events.
+
+    Examples
+    --------
+
+    >>> class TestingHandler(Handler):
+    ...     async def on_message(self, packet):
+    ...         self.logger.info(packet)
+    ...
+    >>> handlers = Handlers((TestingHandler))
+    >>> async def handle():
+    ...     await handlers.handle("message", MessagePacket("Message!"))
+
+    """
 
     def __init__(self, *handlers):
         self.logger = logging.getLogger(__name__)
@@ -14,7 +35,21 @@ class Handlers(object):
         self.handlers = handlers
 
     async def handle(self, event, packet):
-        """Handle incoming data."""
+        """Handle incoming data.
+
+        Parameters
+        ----------
+        event : :obj:`str`
+            The event that should be handled
+        packet : :obj:`Packet`
+            The packet to send to the handler function
+
+        Examples
+        --------
+        >>> async def handle():
+        ...     await handlers.handle("message", MessagePacket("Message!"))
+
+        """
 
         result = []
 
@@ -37,7 +72,29 @@ class Handlers(object):
         return result
 
     def translate(self, packet, handler):
-        """Translate handler responses to Packets."""
+        """Translate handler responses to Packets.
+
+        Parameters
+        ----------
+        packet : :obj:`Packet` or :obj:`str` or :obj:`tuple` or :obj:`list` or :obj:`StopIteration`
+            The packet to turn the handler response into
+        handler : :obj:`Handler`
+            The handler response to turn into a packet
+
+        Examples
+        --------
+        >>> class TestingHandler(Handler):
+        ...     async def on_message(self, packet):
+        ...         self.logger.info(packet)
+        ...
+        >>> handlers = Handlers((TestingHandler))
+        >>> packet = MessagePacket("Testing!")
+        >>> async def handle():
+        ...     await handlers.handle("message", MessagePacket("Message!"))
+        ...     handlers.translate(packet, TestingHandler)
+
+        """
+
         if isinstance(packet, Packet):
             yield packet
         elif isinstance(packet, (tuple, list)):
@@ -55,7 +112,15 @@ class Handlers(object):
 
 
 class Handler(object):
-    """Handler."""
+    """Parent class to all event handlers.
+
+    Examples
+    --------
+    >>> class TestingHandler:
+    ...     def on_message(self, packet):
+    ...         self.logger.info(packet)
+
+    """
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
