@@ -14,14 +14,19 @@ class Handlers(object):
 
     Packet can be the following types:
 
-    ========= ================
-    Event     Packet Type
-    ========= ================
-    `message` `MessagePacket`
-    `follow`  `EventPacket`
-    `sub`     `EventPacket`
-    `host`    `EventPacket`
-    ========= ================
+    ================= ===============
+    Event             Packet Type
+    ================= ===============
+    `message`         `MessagePacket`
+    `follow`          `EventPacket`
+    `subscribe`       `EventPacket`
+    `host`            `EventPacket`
+    `join`            `EventPacket`
+    `leave`           `EventPacket`
+    `repeat`          `EventPacket`
+    `config`          `EventPacket`
+    `username_update` `EventPacket`
+    ================= ===============
 
     Other events will be of the packet type `Packet`.
 
@@ -93,10 +98,10 @@ class Handlers(object):
         Parameters
         ----------
         packet : :obj:`Packet` immediately yielded,\
-                 :obj:`str` converted into a text field in a `MessagePacket`,\
-                 :obj:`tuple` / :obj:`list` iterated over, yields each item,\
-                 :obj:`StopIteration` stops packets from being passed, or\
-                 :obj:`None` an ignored packet
+            :obj:`str` converted into a text field in a `MessagePacket`,\
+            :obj:`tuple` / :obj:`list` iterated over, yields each item,\
+            :obj:`StopIteration` stops packets from being passed, or\
+            :obj:`None` an ignored packet
             The packet to turn the handler response into
         handler : :obj:`Handler`
             The handler response to turn into a packet
