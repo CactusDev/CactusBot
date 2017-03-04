@@ -19,11 +19,11 @@ api = CactusAPI(API_TOKEN, API_PASSWORD, url=API_URL)
 #   Leave at 0 for no repeat follow messages
 #   Only matters if CACHE_FOLLOWS is enabled
 CACHE_DATA = {
-    "CACHE_FOLLOWS": True,
-    "CACHE_HOSTS": True,
-    "CACHE_JOINS": True,
-    "CACHE_LEAVES": True,
-    "CACHE_TIME": 1200
+    "cache_follow": True,
+    "cache_host": True,
+    "cache_join": True,
+    "cache_leave": True,
+    "cache_time": 1200
 }
 
 
