@@ -6,10 +6,24 @@ from .packets import MessagePacket, Packet
 
 
 class Handlers(object):
-    """Handles all the events
+    """Evented controller for individual handlers.
 
-    For a function to have the ability to be used as an event handler, it must
+    For a method to have the ability to be used as an event handler, it must
     be prefixed with `on_`, and then followed by the event name.
+    This method gets a single argument of packet.
+
+    Packet can be the following types:
+
+    ========= ================
+    Type      Packet Type
+    ========= ================
+    `message`: `MessagePacket`
+    `follow`: `EventPacket`
+    `sub`: `EventPacket`
+    `host`: `EventPacket`
+    ==== =====================
+
+    Other types will be the packet type `Packet`
 
     Parameters
     ----------
@@ -78,8 +92,11 @@ class Handlers(object):
 
         Parameters
         ----------
-        packet : :obj:`Packet`, :obj:`str`, :obj:`tuple`, :obj:`list`,
-                 :obj:`StopIteration` or :obj:`None`
+        packet : :obj:`Packet` is immediately yielded,
+                 :obj:`str` is converted into a text field in a `MessagePacket`
+                 :obj:`tuple` or :obj:`list` is iterated over, yields each item,
+                 :obj:`StopIteration` stops future packets from being passed or
+                 :obj:`None` is an ignored packet
             The packet to turn the handler response into
         handler : :obj:`Handler`
             The handler response to turn into a packet
