@@ -1,4 +1,28 @@
 
+## Added
+ - Command enable / disable
+ - Command aliases with `!alias` ([documentation](http://cactusbot.readthedocs.io/en/stable/user/alias.html))
+ - Command modifiers ([documentation](http://cactusbot.readthedocs.io/en/stable/user/variables.html#modifiers))
+ - Better `!cactus` command: now with helpfulness!
+ - Absolutely no easter eggs anywhere...
+ - `!multi` command ([documentation](http://cactusbot.readthedocs.io/en/stable/user/multi.html))
+ - Custom `!social` storage ([documentation](http://cactusbot.readthedocs.io/en/stable/user/social.html))
+ - Better [documenation](http://cactusbot.readthedocs.io/en/stable/)!
+
+## Fixed
+ - Repeat system
+
+## Changed
+ - *Every single line of code*
+ - `!config` command ([documentation](http://cactusbot.readthedocs.io/en/stable/user/config.html))
+ - Made all variables `%UPPERCASE%`
+     - "targets" renamed to "variables"
+ - `!friend` command renamed to `!trust`
+
+## Removed
+ - v0.3 nonsense™
+ - `!test` command
+
 ## [0.3.6](https://github.com/CactusDev/CactusBot/releases/tag/v0.3.6)
 
 #### Released: October 1st, 2016
