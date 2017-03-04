@@ -40,8 +40,11 @@ class MockAPI:
         return Response()
 
 event_handler = EventHandler({
-    "CACHE_FOLLOWS": False,
-    "CACHE_FOLLOWS_TIME": 0
+    "cache_follow": True,
+    "cache_host": True,
+    "cache_join": True,
+    "cache_leave": True,
+    "cache_time": 1200
 }, MockAPI())
 
 
