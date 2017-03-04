@@ -14,14 +14,19 @@ class Handlers(object):
 
     Packet can be the following types:
 
-    ========= ================
-    Event     Packet Type
-    ========= ================
-    `message` `MessagePacket`
-    `follow`  `EventPacket`
-    `sub`     `EventPacket`
-    `host`    `EventPacket`
-    ========= ================
+    ================= ===============
+    Event             Packet Type
+    ================= ===============
+    `message`         `MessagePacket`
+    `follow`          `EventPacket`
+    `subscribe`       `EventPacket`
+    `host`            `EventPacket`
+    `join`            `EventPacket`
+    `leave`           `EventPacket`
+    `repeat`          `EventPacket`
+    `config`          `EventPacket`
+    `username_update` `EventPacket`
+    ================= ===============
 
     Other events will be of the packet type `Packet`.
 
