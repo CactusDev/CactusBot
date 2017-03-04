@@ -22,3 +22,4 @@
 
    Packets<developer/packets.rst>
    Commands<developer/commands.rst>
+   Handlers<developer/handlers.rst>
