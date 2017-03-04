@@ -17,10 +17,12 @@ class EventHandler(Handler):
 
         self.api = api
 
-        self.cached_follow = {}
-        self.cached_join = {}
-        self.cached_leave = {}
-        self.cached_host = {}
+        self.cached_events = {
+            "follow": {},
+            "join": {},
+            "leave": {},
+            "host": {}
+        }
 
         self.alert_messages = {
             "follow": {
@@ -129,17 +131,14 @@ class EventHandler(Handler):
 
         if packet.success:
             if self.cache_data["cache_{}".format(event)]:
-                if hasattr(self, "cached_{}".format(event)):
-                    cached = getattr(self, "cached_{}".format(event))
-
-                    if packet.user in cached:
-                        since_host = time.time() - cached[packet.user]
-                        if since_host >= self.cache_data["cache_time"]:
-                            cached[packet.user] = time.time()
-                            return response
-                    else:
-                        cached[packet.user] = time.time()
+                if packet.user in self.cached_events[event]:
+                    since_host = time.time() - self.cached_events[event][packet.user]
+                    if since_host >= self.cache_data["cache_time"]:
+                        self.cached_events[event][packet.user] = time.time()
                         return response
                 else:
+                    self.cached_events[event][packet.user] = time.time()
                     return response
+            else:
+                return response
         return None
