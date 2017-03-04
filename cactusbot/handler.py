@@ -23,9 +23,9 @@ class Handlers(object):
     `host`            `EventPacket`
     `join`            `EventPacket`
     `leave`           `EventPacket`
-    `repeat`          `EventPacket`
-    `config`          `EventPacket`
-    `username_update` `EventPacket`
+    `repeat`          `MessagePacket`
+    `config`          `Packet`
+    `username_update` `Packet`
     ================= ===============
 
     Other events will be of the packet type `Packet`.
