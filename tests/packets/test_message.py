@@ -66,7 +66,7 @@ def test_join():
         MessagePacket(" Stuff!")
     ).text == "Testing Stuff!"
 
-    assert MessagePacket.join() == ""
+    assert MessagePacket.join().text == ""
 
     assert MessagePacket.join(
         MessagePacket("Hello"),
