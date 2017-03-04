@@ -17,11 +17,11 @@ class Handlers(object):
     ========= ================
     Type      Packet Type
     ========= ================
-    `message`: `MessagePacket`
-    `follow`: `EventPacket`
-    `sub`: `EventPacket`
-    `host`: `EventPacket`
-    ==== =====================
+    `message` `MessagePacket`
+    `follow`  `EventPacket`
+    `sub`     `EventPacket`
+    `host`    `EventPacket`
+    ========= ================
 
     Other types will be the packet type `Packet`
 
