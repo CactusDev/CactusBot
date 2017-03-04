@@ -1,14 +1,22 @@
 language: python
 python:
-  - "3.4"
-  - "3.5"
+  - 3.5
 branches:
   only:
     - master
     - develop
     - /^release-v(\d+.){0,2}\d+$/
+before_install:
+    - pip install flake8
+    - pip install pytest pytest-asyncio --upgrade
 install:
-  - pip install flake8
+  - pip install -r requirements.txt
+env:
+  - PYTHONPATH=.
 before_script:
-  - "flake8 cactus.py beam.py messages.py models.py"
-script: nosetests
+  - cp config.template.py config.py
+script:
+  - nosetests
+  - flake8 run.py config.template.py cactusbot/
+  - pytest tests/
+  - pytest cactusbot/ --doctest-modules
