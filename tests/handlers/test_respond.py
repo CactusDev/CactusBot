@@ -13,8 +13,8 @@ response_handler = ResponseHandler()
 async def test_user_update():
     """Test the user update event."""
 
-    assert (await response_handler.on_username_update(Packet(username="TestUser"))
-           ) is None
+    await response_handler.on_username_update(Packet(username="TestUser"))
+    assert response_handler.username == "TestUser"
 
 @pytest.mark.asyncio
 async def test_on_message():
