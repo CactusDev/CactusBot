@@ -14,13 +14,16 @@ API_PASSWORD = "CactusAPI_Password"
 API_URL = "https://cactus.exoz.one/api/v1/"
 api = CactusAPI(API_TOKEN, API_PASSWORD, url=API_URL)
 
-# CACHE_FOLLOWS: Cache to remove chat spam (Default: False)
-# CACHE_FOLLOWS_TIME: How long in minutes before resending message
+# CACHE_FOLLOWS: Cache to remove chat spam (Default: True)
+# CACHE_TIME: How long in seconds before resending message
 #   Leave at 0 for no repeat follow messages
-#   Only matters if CACHE_FOLLOWS is enabled (Default: 0)
+#   Only matters if CACHE_FOLLOWS is enabled
 CACHE_DATA = {
-    "CACHE_FOLLOWS": True,
-    "CACHE_FOLLOWS_TIME": 0
+    "cache_follow": True,
+    "cache_host": True,
+    "cache_join": True,
+    "cache_leave": True,
+    "cache_time": 1200
 }
 
 
