@@ -22,9 +22,6 @@ class Trust(Command):
 
     COMMAND = "trust"
 
-    async def get_user_id(self, username):
-        return await aiohttp.get(self.BASE + username)
-
     @Command.command(hidden=True)
     async def default(self, username: check_user):
         """Toggle a trust."""

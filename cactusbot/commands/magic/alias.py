@@ -55,4 +55,4 @@ class Alias(Command):
                 for command in commands
                 if command.get("type") == "aliases"
             )))
-        return "No commands added!"
+        return "No aliases added!"
