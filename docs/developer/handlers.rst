@@ -11,5 +11,5 @@ Handler Controller
 ------------------
 
 .. autoclass:: cactusbot.handler.Handlers
-   :undoc-members:
+   :members:
 

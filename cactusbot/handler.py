@@ -26,6 +26,7 @@ class Handlers(object):
     >>> handlers = Handlers((TestingHandler))
     >>> async def handle():
     ...     await handlers.handle("message", MessagePacket("Message!"))
+    ...
 
     """
 
@@ -48,6 +49,7 @@ class Handlers(object):
         --------
         >>> async def handle():
         ...     await handlers.handle("message", MessagePacket("Message!"))
+        ...
 
         """
 
@@ -72,7 +74,7 @@ class Handlers(object):
         return result
 
     def translate(self, packet, handler):
-        """Translate handler responses to Packets.
+        """Translate :obj:`Handler` responses to :obj:`Packet`.
 
         Parameters
         ----------
@@ -93,6 +95,7 @@ class Handlers(object):
         >>> async def handle():
         ...     await handlers.handle("message", MessagePacket("Message!"))
         ...     handlers.translate(packet, TestingHandler)
+        ...
 
         """
 
@@ -120,6 +123,7 @@ class Handler(object):
     >>> class TestingHandler:
     ...     def on_message(self, packet):
     ...         self.logger.info(packet)
+    ...
 
     """
 
