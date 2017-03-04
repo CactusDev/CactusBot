@@ -78,8 +78,8 @@ class Handlers(object):
 
         Parameters
         ----------
-        packet : :obj:`Packet` or :obj:`str` or :obj:`tuple` or :obj:`list`
-                  or :obj:`StopIteration` or :obj:`None`
+        packet : :obj:`Packet`, :obj:`str`, :obj:`tuple`, :obj:`list`,
+                 :obj:`StopIteration` or :obj:`None`
             The packet to turn the handler response into
         handler : :obj:`Handler`
             The handler response to turn into a packet
