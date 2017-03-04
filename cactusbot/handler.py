@@ -23,7 +23,7 @@ class Handlers(object):
     ...     async def on_message(self, packet):
     ...         self.logger.info(packet)
     ...
-    >>> handlers = Handlers((TestingHandler))
+    >>> handlers = Handlers(TestingHandler)
     >>> async def handle():
     ...     await handlers.handle("message", MessagePacket("Message!"))
     ...
@@ -90,7 +90,7 @@ class Handlers(object):
         ...     async def on_message(self, packet):
         ...         self.logger.info(packet)
         ...
-        >>> handlers = Handlers((TestingHandler))
+        >>> handlers = Handlers(TestingHandler)
         >>> packet = MessagePacket("Testing!")
         >>> async def handle():
         ...     await handlers.handle("message", MessagePacket("Message!"))
