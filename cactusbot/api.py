@@ -88,12 +88,12 @@ class CactusAPI(API):
         return await self.get("/user/{token}/command".format(
             token=self.token))
 
-    async def add_command(self, name, response, *, user_level=0):
+    async def add_command(self, name, response, *, user_level=1):
         """Add a command."""
 
         data = {
             "response": response,
-            "userLevel": user_level  # TODO
+            "userLevel": user_level
         }
 
         return await self.patch(
@@ -132,10 +132,10 @@ class CactusAPI(API):
         return await self.delete("/user/{user}/alias/{alias}".format(
             user=self.token, alias=alias))
 
-    async def toggle_command(self, command, status):
-        """Toggle the availability of a command."""
+    async def toggle_command(self, command, state):
+        """Toggle the enabled state of a command"""
 
-        data = {"enabled": status}
+        data = {"enabled": state}
 
         return await self.patch("/user/{token}/command/{command}".format(
             token=self.token, command=command), data=json.dumps(data))

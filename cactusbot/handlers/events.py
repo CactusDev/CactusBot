@@ -1,8 +1,7 @@
 """Handle events"""
 
-import datetime
+import time
 
-from ..cached import CacheUtils
 from ..handler import Handler
 from ..packets import MessagePacket
 
@@ -13,12 +12,17 @@ class EventHandler(Handler):
     def __init__(self, cache_data, api):
         super().__init__()
 
-        self.cache = CacheUtils("caches/followers.json")
-        self.cache_follows = cache_data["CACHE_FOLLOWS"]
-        self.follow_time = datetime.timedelta(
-            minutes=cache_data["CACHE_FOLLOWS_TIME"])
+        self.cache_data = cache_data
+        self.cached_events = {}
 
         self.api = api
+
+        self.cached_events = {
+            "follow": {},
+            "join": {},
+            "leave": {},
+            "host": {}
+        }
 
         self.alert_messages = {
             "follow": {
@@ -71,24 +75,7 @@ class EventHandler(Handler):
         if not self.alert_messages["follow"]["announce"]:
             return
 
-        response = MessagePacket(
-            self.alert_messages["follow"]["message"].replace(
-                "%USER%", packet.user
-            ))
-
-        if packet.success:
-            if self.cache_follows:
-                now = datetime.datetime.utcnow()
-                if packet.user in self.cache:
-                    cache_time = self.cache[packet.user]
-                    if cache_time + self.follow_time <= now:
-                        self.cache[packet.user] = now.isoformat()
-                        return response
-                else:
-                    self.cache[packet.user] = now.isoformat()
-                    return response
-            else:
-                return response
+        return await self._cache(packet, "follow")
 
     async def on_subscribe(self, packet):
         """Handle subscription packets."""
@@ -102,29 +89,26 @@ class EventHandler(Handler):
     async def on_host(self, packet):
         """Handle host packets."""
 
-        if self.alert_messages["host"]["announce"]:
-            return MessagePacket(
-                self.alert_messages["host"]["message"].replace(
-                    "%USER%", packet.user
-                ))
+        if not self.alert_messages["host"]["announce"]:
+            return
+
+        return await self._cache(packet, "host")
 
     async def on_join(self, packet):
         """Handle join packets."""
 
-        if self.alert_messages["join"]["announce"]:
-            return MessagePacket(
-                self.alert_messages["join"]["message"].replace(
-                    "%USER%", packet.user
-                ))
+        if not self.alert_messages["join"]["announce"]:
+            return
+
+        return await self._cache(packet, "join")
 
     async def on_leave(self, packet):
         """Handle leave packets."""
 
-        if self.alert_messages["leave"]["announce"]:
-            return MessagePacket(
-                self.alert_messages["leave"]["message"].replace(
-                    "%USER%", packet.user
-                ))
+        if not self.alert_messages["leave"]["announce"]:
+            return
+
+        return await self._cache(packet, "leave")
 
     async def on_config(self, packet):
         """Handle config update events."""
@@ -138,3 +122,24 @@ class EventHandler(Handler):
                 "join": values["join"],
                 "leave": values["leave"]
             }
+
+    async def _cache(self, packet, event):
+        response = MessagePacket(
+            self.alert_messages[event]["message"].replace(
+                "%USER%", packet.user
+            ))
+
+        if packet.success:
+            if self.cache_data["cache_{}".format(event)]:
+                user = packet.user
+                if user in self.cached_events[event]:
+                    since = time.time() - self.cached_events[event][user]
+                    if since >= self.cache_data["cache_time"]:
+                        self.cached_events[event][user] = time.time()
+                        return response
+                else:
+                    self.cached_events[event][user] = time.time()
+                    return response
+            else:
+                return response
+        return None
