@@ -19,7 +19,7 @@ class CommandHandler(Handler):
         "lower": str.lower,
         "title": str.title,
         "reverse": lambda text: text[::-1],
-        "tag": lambda tag: tag[1:] if tag[0] == '@' and len(tag) > 1 else tag,
+        "tag": lambda tag: tag[1:] if len(tag) > 1 and tag[0] == '@' else tag,
         "shuffle": lambda text: ''.join(random.sample(text, len(text)))
     }
 
@@ -136,7 +136,7 @@ class CommandHandler(Handler):
                 result = args[argn] if argn < len(args) else default
 
             if modifiers is not None:
-                result = self._modify(result, *modifiers.split('|')[1:])
+                result = self.modify(result, *modifiers.split('|')[1:])
 
             return result
 
@@ -156,7 +156,7 @@ class CommandHandler(Handler):
                 result = ' '.join(args[1:])
 
             if modifiers is not None:
-                result = self._modify(result, *modifiers.split('|')[1:])
+                result = self.modify(result, *modifiers.split('|')[1:])
 
             return result
 
@@ -173,7 +173,7 @@ class CommandHandler(Handler):
 
         return _packet
 
-    def _modify(self, argument, *modifiers):
+    def modify(self, argument, *modifiers):
         """Apply modifiers to an argument."""
 
         for modifier in modifiers:

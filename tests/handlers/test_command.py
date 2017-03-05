@@ -117,3 +117,24 @@ def test_inject_channel():
         "Welcome to %CHANNEL%'s stream!",
         "welcome"
     )
+
+
+def test_modify():
+
+    assert command_handler.modify("Para", "upper") == "PARA"
+    assert command_handler.modify("hOI", "lower") == "hoi"
+    assert command_handler.modify("taco salad", "title") == "Taco Salad"
+
+    assert command_handler.modify("taco", "reverse") == "ocat"
+
+    assert command_handler.modify("@Innectic", "tag") == "Innectic"
+    assert command_handler.modify("Innectic", "tag") == "Innectic"
+    assert command_handler.modify("", "tag") == ""
+
+    import random
+    random.seed(8)
+
+    assert command_handler.modify("potato", "shuffle") == "otapto"
+    assert command_handler.modify("", "shuffle") == ""
+
+    assert command_handler.modify("Jello", "reverse", "title") == "Ollej"
