@@ -1,6 +1,7 @@
 """Handle commands."""
 
 import random
+import re
 
 from ..commands import COMMANDS
 from ..commands.command import ROLES
@@ -12,7 +13,7 @@ class CommandHandler(Handler):
     """Command handler."""
 
     ARGN_EXPR = r'%ARG(\d+)(?:=([^|]+))?(?:((?:\|\w+)+))?%'
-    ARGS_EXPR = r'%ARGS(?:=([^|]+))?(?:((?:\|\w+)+))?%'
+    ARGS_EXPR = r'%ARGS(?:=([^|]+))?((?:\|\w+)+)?%'
     MODIFIERS = {
         "upper": str.upper,
         "lower": str.lower,
@@ -159,7 +160,7 @@ class CommandHandler(Handler):
 
             return result
 
-        if "%ARGS%" in _packet and len(args) < 2:
+        if len(args) < 2 and re.search(self.ARGS_EXPR, _packet.text):
             return MessagePacket("Not enough arguments!")
 
         _packet.sub(self.ARGS_EXPR, sub_args)
