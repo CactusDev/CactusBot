@@ -8,7 +8,7 @@ cp config.template.py config.py
 ```
 
 Next, open `config.py` with your favorite text editor, and set 
-`USERNAME` and `PASSWORD` to the bot's credentials, and set `CHANNEL` to your channel's name.
+`TOKEN` to the bot's token, which can be obtained from [Beam's Documentation](https://dev.beam.pro/tutorials/chatbot.html) and set `CHANNEL` to your channel's name.
 
 # Usage
 
