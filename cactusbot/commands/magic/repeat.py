@@ -20,8 +20,7 @@ class Repeat(Command):
         elif response.status == 409:
             return "Repeat already exists!"
         else:
-            return (await response.json()).get("errors",
-                                               "Unknown error occured")
+            return "An error occured."
 
     @Command.command(role="moderator")
     async def remove(self, repeat: "?command"):
