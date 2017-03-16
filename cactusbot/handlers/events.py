@@ -124,10 +124,13 @@ class EventHandler(Handler):
             }
 
     async def _cache(self, packet, event):
-        response = MessagePacket(
-            self.alert_messages[event]["message"].replace(
-                "%USER%", packet.user
-            ))
+        if hasattr(packet, "user"):
+            response = MessagePacket(
+                self.alert_messages[event]["message"].replace(
+                    "%USER%", packet.user
+                ))
+        else:
+            return None
 
         if packet.success:
             if self.cache_data["cache_{}".format(event)]:
