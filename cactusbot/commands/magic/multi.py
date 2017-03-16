@@ -23,7 +23,13 @@ class Multi(Command):
         link = _BASE_URL
 
         for channel in channels:
-            service, channel_name = channel.split(':')
+            split = channel.split(':')
+            if len(split) < 2:
+                return "'{}' must be in <service>:<username> " \
+                       "form!".format(channel)
+            else:
+                service = split[0]
+                channel_name = split[1]
 
             if service not in _SERVICES:
                 return "'{}' is not a valid service.".format(service)
