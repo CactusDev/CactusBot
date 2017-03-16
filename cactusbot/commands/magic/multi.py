@@ -25,7 +25,8 @@ class Multi(Command):
         for channel in channels:
             split = channel.split(':')
             if len(split) < 2:
-                return "'{}' must be in <service>:<username> form!".format(channel)
+                return "'{}' must be in <service>:<username> " \
+                       "form!".format(channel)
             else:
                 service = split[0]
                 channel_name = split[1]
