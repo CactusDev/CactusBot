@@ -24,7 +24,9 @@ class Sepal(WebSocket):
 
         packet = {
             "type": packet_type,
-            "channel": self.channel
+            "data": {
+                "channel": self.channel
+            }
         }
 
         packet.update(kwargs)
@@ -33,7 +35,7 @@ class Sepal(WebSocket):
     async def initialize(self):
         """Send a subscribe packet."""
 
-        await self.send("subscribe")
+        await self.send("join")
 
     async def parse(self, packet):
         """Parse a Sepal packet."""

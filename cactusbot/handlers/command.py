@@ -183,4 +183,5 @@ class CommandHandler(Handler):
         return argument
 
     async def on_repeat(self, packet):
+        """Repeat event."""
         return packet
