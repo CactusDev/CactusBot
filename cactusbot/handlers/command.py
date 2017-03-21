@@ -91,7 +91,7 @@ class CommandHandler(Handler):
         json = await response.json()
         is_alias = False
 
-        if json["data"].get("type") == "aliases":
+        if json["data"].get("type") == "alias":
 
             is_alias = True
 
