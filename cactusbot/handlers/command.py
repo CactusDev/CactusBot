@@ -99,12 +99,13 @@ class CommandHandler(Handler):
                     *json["data"]["attributes"]["arguments"]
                 ).text.split()), *args[1:])
 
+        is_alias = True if json["data"]["type"] == "alias" else False
         json = json["data"]["attributes"]
 
         if not json.get("enabled", True):
             return MessagePacket("Command is disabled.", target=_packet.user)
 
-        if _packet.role < json["response"]["role"]:
+        if not is_alias and _packet.role < json["response"]["role"]:
             return MessagePacket(
                 "Role level '{role}' or higher required.".format(
                     role=ROLES[max(k for k in ROLES.keys()
