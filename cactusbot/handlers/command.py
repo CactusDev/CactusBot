@@ -89,8 +89,11 @@ class CommandHandler(Handler):
             return
 
         json = await response.json()
+        is_alias = False
 
         if json["data"].get("type") == "aliases":
+
+            is_alias = True
 
             command = json["data"]["attributes"]["commandName"]
 
@@ -99,7 +102,6 @@ class CommandHandler(Handler):
                     *json["data"]["attributes"]["arguments"]
                 ).text.split()), *args[1:])
 
-        is_alias = True if json["data"]["type"] == "alias" else False
         json = json["data"]["attributes"]
 
         if not json.get("enabled", True):
@@ -113,7 +115,8 @@ class CommandHandler(Handler):
                 target=_packet.user if _packet.target else None
             )
 
-        json["response"]["target"] = _packet.user if _packet.target else None
+        if _packet.target:
+            json["response"]["target"] = _packet.user
 
         await self.api.update_command_count(command, "+1")
         if "count" not in data:
