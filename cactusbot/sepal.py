@@ -80,8 +80,8 @@ class SepalParser:
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""
 
-        if "response" in packet["data"]:
-            return MessagePacket.from_json(packet["data"]["response"])
+        if "message" in packet["data"]:
+            return MessagePacket.from_json(packet["data"])
 
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
