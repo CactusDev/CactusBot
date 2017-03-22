@@ -48,11 +48,12 @@ class Alias(Command):
 
         if response.status == 200:
             commands = (await response.json())["data"]
-            return "Aliases: {}.".format(', '.join(sorted(
+            aliases = [cmd for cmd in commands if cmd.get("type") == "alias"]
+            response = "Aliases: {}".format(', '.join(sorted(
                 "{} ({})".format(
                     command["attributes"]["name"],
                     command["attributes"]["commandName"])
-                for command in commands
-                if command.get("type") == "alias"
+                for command in aliases
             )))
+            return response if len(aliases) > 0 else "No aliases added!"
         return "No aliases added!"
