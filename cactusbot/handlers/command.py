@@ -101,13 +101,20 @@ class CommandHandler(Handler):
                 args = (args[0], *tuple(MessagePacket(
                     *json["data"]["attributes"]["arguments"]
                 ).text.split()), *args[1:])
+        cmd = await self.api.get_command(name=command)
+        if cmd.status != 200:
+            return MessagePacket("Command does not exist for that alias",
+                                 target=_packet.user)
+        cmd_response = await cmd.json()
+        cmd_response = cmd_response["data"]["attributes"]["response"]
+        json["data"]["attributes"]["response"] = cmd_response
 
         json = json["data"]["attributes"]
 
         if not json.get("enabled", True):
             return MessagePacket("Command is disabled.", target=_packet.user)
 
-        if not is_alias and _packet.role < json["response"]["role"]:
+        if _packet.role < json["response"]["role"]:
             return MessagePacket(
                 "Role level '{role}' or higher required.".format(
                     role=ROLES[max(k for k in ROLES.keys()
@@ -119,7 +126,7 @@ class CommandHandler(Handler):
             json["response"]["target"] = _packet.user
 
         await self.api.update_command_count(command, "+1")
-        if "count" not in data:
+        if not is_alias and "count" not in data:
             data["count"] = str(json["count"] + 1)
 
         return self._inject(MessagePacket.from_json(json["response"]),
