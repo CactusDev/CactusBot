@@ -12,18 +12,18 @@ class Quote(Command):
     COMMAND = "quote"
 
     @Command.command(hidden=True)
-    async def default(self, quote_id: r'[1-9]\d*'=None):
+    async def default(self, quote: r'[1-9]\d*'=None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
 
-        if quote_id is None:
+        if quote is None:
             response = await self.api.get_quote()
             if response.status == 404:
                 return "No quotes have been added!"
             return (await response.json())["data"][0]["attributes"]["quote"]
         else:
-            response = await self.api.get_quote(quote_id)
+            response = await self.api.get_quote(quote)
             if response.status == 404:
-                return "Quote {} does not exist!".format(quote_id)
+                return "Quote {} does not exist!".format(quote)
             return (await response.json())["data"]["attributes"]["quote"]
 
     @Command.command(role="moderator")
