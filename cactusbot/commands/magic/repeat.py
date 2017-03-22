@@ -21,8 +21,10 @@ class Repeat(Command):
             return "Repeat !{command} updated with interval {period}".format(
                 command=command, period=period
             )
-        elif response.status == 409:
-            return "Repeat already exists!"
+        elif response.status == 400:
+            json = await response.json()
+            if len(json["errors"].get("period", [])) > 0:
+                return json["errors"].get("period")[0]
         else:
             return "An error occured."
 
