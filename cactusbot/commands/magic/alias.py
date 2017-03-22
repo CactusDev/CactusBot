@@ -53,6 +53,6 @@ class Alias(Command):
                     command["attributes"]["name"],
                     command["attributes"]["commandName"])
                 for command in commands
-                if command.get("type") == "aliases"
+                if command.get("type") == "alias"
             )))
         return "No aliases added!"
