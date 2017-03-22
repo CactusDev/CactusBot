@@ -56,6 +56,11 @@ class Social(Command):
             return "Added social service {}.".format(service)
         elif response.status == 200:
             return "Updated social service {}".format(service)
+        elif response.status == 400:
+            json = await response.json()
+            if len(json["errors"].get("quote", {}).get("url", [])) > 0:
+                # TODO: Add detection/hard-coded errors
+                return json["errors"]["quote"]["url"][0]
 
     @Command.command()
     async def remove(self, service):
