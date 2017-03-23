@@ -30,7 +30,7 @@ Made by: 2Cubed, Innectic, and ParadigmShift3d
 """.format(version=__version__)
 
 
-async def run(api, service, *auth):
+async def run(api, service, url, *auth):
     """Run bot."""
 
     logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ async def run(api, service, *auth):
 
     await api.login(*api.SCOPES)
 
-    sepal = Sepal(api.token, service)
+    sepal = Sepal(api.token, service, url)
 
     try:
         await sepal.connect()

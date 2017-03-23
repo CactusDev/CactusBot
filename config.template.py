@@ -12,6 +12,7 @@ CHANNEL = "ChannelName"
 API_TOKEN = "CactusAPI_Token"
 API_PASSWORD = "CactusAPI_Password"
 API_URL = "https://cactus.exoz.one/api/v1/"
+SEPAL_URL = "wss://cactus.exoz.one/sepal"
 api = CactusAPI(API_TOKEN, API_PASSWORD, url=API_URL)
 
 # CACHE_FOLLOWS: Cache to remove chat spam (Default: True)
