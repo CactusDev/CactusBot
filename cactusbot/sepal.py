@@ -10,8 +10,10 @@ from .services.websocket import WebSocket
 class Sepal(WebSocket):
     """Interact with Sepal."""
 
-    def __init__(self, channel, service=None):
-        super().__init__("wss://cactus.exoz.one/sepal")
+    URL = "wss://cactus.exoz.one/sepal"
+
+    def __init__(self, channel, url=URL, service=None):
+        super().__init__(self.URL)
 
         self.logger = logging.getLogger(__name__)
 

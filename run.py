@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from asyncio import get_event_loop
 
 from cactusbot.cactus import run
-from config import SERVICE, api
+from config import SERVICE, SEPAL_URL, api
 
 if __name__ == "__main__":
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     try:
         # TODO: Convert this to be able to have multiple services
-        loop.run_until_complete(run(api, SERVICE))
+        loop.run_until_complete(run(api, SERVICE, SEPAL_URL))
         loop.run_forever()
     finally:
         loop.close()
