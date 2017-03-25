@@ -197,12 +197,14 @@ class MockAPI:
 
 alias = Alias(MockAPI())
 
+
 @pytest.mark.asyncio
 async def test_create_alias():
     """Create an alias."""
     assert (await alias("add", "test", "testing", packet=MessagePacket(
         "!alias add test testing", role=5))
-           ) == "Alias !test for command !testing updated."
+    ) == "Alias !test for command !testing updated."
+
 
 @pytest.mark.asyncio
 async def test_remove_alias():
@@ -210,8 +212,11 @@ async def test_remove_alias():
     assert (await alias("remove", "test", packet=MessagePacket(
         "!alias remove test", role=5))) == "Alias !test removed."
 
+
 @pytest.mark.asyncio
 async def test_list_alias():
-    """Lis aliases."""
+    """List aliases."""
+    await alias("add", "test", "testing", packet=MessagePacket(
+        "!alias add test testing", role=5))
     assert (await alias("list", packet=MessagePacket(
         "!alias list", role=5))) == "Aliases: test (testing)."
