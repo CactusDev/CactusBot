@@ -1,4 +1,5 @@
-"""Alias command."""
+elif response.status == 400:
+    return "Command already exists with the requested alias name""""Alias command."""
 
 from . import Command
 from ...packets import MessagePacket
@@ -30,6 +31,10 @@ class Alias(Command):
             return "Alias !{} for command !{} updated.".format(alias, command)
         elif response.status == 404:
             return "Command !{} does not exist.".format(command)
+        elif response.status == 400:
+            json = await response.json()
+            if len(json.get("errors", [])) > 0:
+                return json["errors"][0]
 
     @Command.command(role="moderator")
     async def remove(self, alias: "?command"):
