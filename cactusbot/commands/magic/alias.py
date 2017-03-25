@@ -59,5 +59,6 @@ class Alias(Command):
                     command["attributes"]["commandName"])
                 for command in aliases
             )))
-            return response if len(aliases) > 0 else "No aliases added!"
+            if len(aliases) > 0:
+                return response
         return "No aliases added!"
