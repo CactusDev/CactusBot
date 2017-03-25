@@ -10,8 +10,10 @@ from .services.websocket import WebSocket
 class Sepal(WebSocket):
     """Interact with Sepal."""
 
-    def __init__(self, channel, service=None):
-        super().__init__("wss://cactus.exoz.one/sepal")
+    URL = "wss://cactus.exoz.one/sepal"
+
+    def __init__(self, channel, url=URL, service=None):
+        super().__init__(self.URL)
 
         self.logger = logging.getLogger(__name__)
 
@@ -80,8 +82,8 @@ class SepalParser:
     async def parse_repeat(self, packet):
         """Parse the incoming repeat packets."""
 
-        if "response" in packet["data"]:
-            return MessagePacket.from_json(packet["data"]["response"])
+        if "message" in packet["data"]:
+            return MessagePacket.from_json(packet["data"])
 
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
