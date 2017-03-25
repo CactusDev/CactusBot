@@ -1,5 +1,4 @@
-elif response.status == 400:
-    return "Command already exists with the requested alias name""""Alias command."""
+"""Alias command."""
 
 from . import Command
 from ...packets import MessagePacket
