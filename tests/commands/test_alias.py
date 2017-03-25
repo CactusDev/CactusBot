@@ -210,7 +210,7 @@ async def test_create_alias():
 async def test_list_alias():
     """List aliases."""
     assert (await alias("list", packet=MessagePacket(
-        "!alias list", role=5))) == "Aliases: test (testing)."
+        "!alias list", role=5))) == "Aliases: test (testing)"
 
 
 @pytest.mark.asyncio
