@@ -59,7 +59,8 @@ class Social(Command):
         elif response.status == 400:
             json = await response.json()
             if len(json["errors"].get("quote", {}).get("url", [])) > 0:
-                # TODO: Add detection/hard-coded errors
+                # NOTE: Add detection/hard-coded errors if more errors are
+                #       added in the future
                 return json["errors"]["quote"]["url"][0]
 
     @Command.command()
