@@ -51,7 +51,7 @@ class MockAPI:
                             "token": "Stanley"
                         },
                         "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                        "type": "aliases"
+                        "type": "alias"
                     }
                 }
         return Response()
@@ -97,7 +97,7 @@ class MockAPI:
                             "token": "Stanley"
                         },
                         "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                        "type": "aliases"
+                        "type": "alias"
                     },
                     "meta": {
                         "edited": True
@@ -188,7 +188,7 @@ class MockAPI:
                                 "token": "Stanley"
                             },
                             "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                            "type": "aliases"
+                            "type": "alias"
                         }
                     ]
                 }
