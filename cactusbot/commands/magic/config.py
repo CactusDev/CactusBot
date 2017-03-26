@@ -36,6 +36,13 @@ async def _get_event_data(api, event):
     return event
 
 
+async def _get_spam_data(api, section):
+    """Get data about a section of spam config."""
+
+    data = (await (await api.get_config()).json())["data"]
+    spam_section = data["attributes"]["spam"][section]
+    return spam_section
+
 class Config(Command):
     """Config Command."""
 
@@ -46,10 +53,8 @@ class Config(Command):
         """Follow subcommand."""
 
         @Command.command(role="moderator", name="follow")
-        async def default(self, *value: False):
+        async def default(self, value=""):
             """Get status, and message of the follow event, or toggle."""
-
-            value = ' '.join(value)
 
             if not value:
                 data = await _get_event_data(self.api, "follow")
@@ -82,21 +87,19 @@ class Config(Command):
         """Subcommand subcommand."""
 
         @Command.command(role="moderator", name="subscribe")
-        async def default(self, *value: False):
+        async def default(self, value=""):
             """Get status, and message of the subscribe event, or toggle."""
 
-            value = ' '.join(value)
-
             if not value:
-                data = await _get_event_data(self.api, "subscribe")
+                data = await _get_event_data(self.api, "sub")
                 return "{dis}abled, message: `{message}`".format(
                     dis='En' if data["announce"] else 'Dis', message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config(self.api, "announce", "subscribe", "announce", True)
+                await _update_deep_config(self.api, "announce", "sub", "announce", True)
                 return "Subscribe announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_deep_config(self.api, "announce", "subscribe", "announce", False)
+                await _update_deep_config(self.api, "announce", "sub", "announce", False)
                 return "Subscribe announcements are now disabled."
             else:
                 return "Invalid boolean value: `{}`!".format(value)
@@ -107,11 +110,11 @@ class Config(Command):
 
             if not message:
                 data = (await (await self.api.get_config()).json())["data"]
-                message = data["attributes"]["announce"]["subscribe"]["message"]
+                message = data["attributes"]["announce"]["sub"]["message"]
                 return "Current response: `{}`".format(message)
 
             await _update_deep_config(
-                self.api, "announce", "subscribe", "message", ' '.join(message))
+                self.api, "announce", "sub", "message", ' '.join(message))
             return "Set new subscribe message response."
 
     @Command.command(role="moderator")
@@ -119,10 +122,8 @@ class Config(Command):
         """Host subcommand."""
 
         @Command.command(role="moderator", name="host")
-        async def default(self, *value: False):
+        async def default(self, value=""):
             """Get status, and message of the host event, or toggle."""
-
-            value = ' '.join(value)
 
             if not value:
                 data = await _get_event_data(self.api, "host")
@@ -155,10 +156,8 @@ class Config(Command):
         """Leave subcommand."""
 
         @Command.command(role="moderator", name="leave")
-        async def default(self, *value: False):
+        async def default(self, value=""):
             """Get status, and message of the leave event, or toggle."""
-
-            value = ' '.join(value)
 
             if not value:
                 data = await _get_event_data(self.api, "leave")
@@ -191,10 +190,8 @@ class Config(Command):
         """Join subcommand."""
 
         @Command.command(role="moderator", name="join")
-        async def default(self, *value: False):
+        async def default(self, value=""):
             """Get status, and message of the join event, or toggle."""
-
-            value = ' '.join(value)
 
             if not value:
                 data = await _get_event_data(self.api, "join")
@@ -231,13 +228,12 @@ class Config(Command):
             """Urls subcommand."""
 
             @Command.command(name="urls")
-            async def default(self, *value: False):
-                """Amount subcommand."""
+            async def default(self, value=""):
+                """Urls subcommand."""
 
                 if not value:
-                    return ""
-
-                values = ' '.join(value)
+                    urls = await _get_spam_data(self.api, "allowUrls")
+                    return "URLs are {dis}abled.".format(dis='en' if urls else 'dis')
 
                 if value in VALID_TOGGLE_ON_STATES:
                     await _update_config(
@@ -250,22 +246,36 @@ class Config(Command):
                 else:
                     return "Invalid boolean value: '{value}'.".format(value=value)
 
-        # @Command.command()
-        # async def amount(self, value: r"\d+"):
-        #     """Emoji subcommand."""
+        @Command.command()
+        class Emoji(Command):
+            """Emoji subcommand."""
 
-        #     await _update_config(
-        #         self.api, "spam", "maxEmoji", int(value))
+            @Command.command(name="emoji")
+            async def default(self, value=""):
+                """Emoji subcommand."""
 
-        #     return "Maximum number of emoji is now {value}.".format(
-        #         value=value)
+                if not value:
+                    emoji = await _get_spam_data(self.api, "maxEmoji")
+                    return "Maximum amount of emojis allowed is {}".format(emoji)
 
-        # @Command.command()
-        # async def amount(self, value: r"\d+"):
-        #     """Caps subcommand."""
+                response = await _update_config(self.api, "spam", "maxEmoji", value)
+                if response.status == 200:
+                    return "Max emojis updated to {}".format(value)
+                return "An error occurred."
 
-        #     await _update_config(
-        #         self.api, "spam", "maxCapsScore", int(value))
+        @Command.command()
+        class Caps(Command):
+            """Caps subcommand."""
 
-        #     return "Maximum capitals score is now {value}.".format(
-        #         value=value)
+            @Command.command(name="caps")
+            async def default(self, value=""):
+                """Caps subcommand."""
+
+                if not value:
+                    caps = await _get_spam_data(self.api, "maxCapsScore")
+                    return "Max caps score is {}".format(caps)
+
+                response = await _update_config(self.api, "spam", "maxCapsScore", value)
+                if response.status == 200:
+                    return "Max caps score is now {}".format(value)
+                return "An error occurred."
