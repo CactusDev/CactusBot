@@ -128,6 +128,11 @@ class CommandHandler(Handler):
         await self.api.update_command_count(command, "+1")
         if not is_alias and "count" not in data:
             data["count"] = str(json["count"] + 1)
+        elif is_alias:
+            command_data = (await (await self.api.get_command(
+                name=command)).json())["data"]["attributes"]
+
+            data["count"] = str(command_data["count"])
 
         return self._inject(MessagePacket.from_json(json["response"]),
                             *args, **data)
