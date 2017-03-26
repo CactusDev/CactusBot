@@ -132,8 +132,8 @@ class CommandHandler(Handler):
             response = await self.api.get_command(
                 name=command)
             if response.status == 200:
-                data = (await (response.json()))["data"]["attributes"]
-                data["count"] = str(data["count"])
+                command_data = (await (response.json()))["data"]["attributes"]
+                data["count"] = str(command_data["count"])
             else:
                 return MessagePacket("An error has occured.")
 
