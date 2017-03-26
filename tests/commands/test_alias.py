@@ -51,7 +51,7 @@ class MockAPI:
                             "token": "Stanley"
                         },
                         "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                        "type": "aliases"
+                        "type": "alias"
                     }
                 }
         return Response()
@@ -97,7 +97,7 @@ class MockAPI:
                             "token": "Stanley"
                         },
                         "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                        "type": "aliases"
+                        "type": "alias"
                     },
                     "meta": {
                         "edited": True
@@ -188,7 +188,7 @@ class MockAPI:
                                 "token": "Stanley"
                             },
                             "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                            "type": "aliases"
+                            "type": "alias"
                         }
                     ]
                 }
@@ -197,21 +197,24 @@ class MockAPI:
 
 alias = Alias(MockAPI())
 
+
 @pytest.mark.asyncio
 async def test_create_alias():
     """Create an alias."""
     assert (await alias("add", "test", "testing", packet=MessagePacket(
         "!alias add test testing", role=5))
-           ) == "Alias !test for command !testing updated."
+    ) == "Alias !test for command !testing updated."
+
+
+@pytest.mark.asyncio
+async def test_list_alias():
+    """List aliases."""
+    assert (await alias("list", packet=MessagePacket(
+        "!alias list", role=5))) == "Aliases: test (testing)"
+
 
 @pytest.mark.asyncio
 async def test_remove_alias():
     """Remove an alias."""
     assert (await alias("remove", "test", packet=MessagePacket(
         "!alias remove test", role=5))) == "Alias !test removed."
-
-@pytest.mark.asyncio
-async def test_list_alias():
-    """Lis aliases."""
-    assert (await alias("list", packet=MessagePacket(
-        "!alias list", role=5))) == "Aliases: test (testing)."
