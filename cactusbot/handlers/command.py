@@ -133,7 +133,7 @@ class CommandHandler(Handler):
                 name=command)
             if response.status == 200:
                 command_data = (await (response.json()))["data"]["attributes"]
-                command_data["count"] = str(command_data["count"])
+                data["count"] = str(command_data["count"])
             else:
                 return MessagePacket("An error has occured.")
 
