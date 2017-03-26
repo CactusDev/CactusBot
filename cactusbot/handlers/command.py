@@ -89,8 +89,11 @@ class CommandHandler(Handler):
             return
 
         json = await response.json()
+        is_alias = False
 
-        if json["data"].get("type") == "aliases":
+        if json["data"].get("type") == "alias":
+
+            is_alias = True
 
             command = json["data"]["attributes"]["commandName"]
 
@@ -98,6 +101,13 @@ class CommandHandler(Handler):
                 args = (args[0], *tuple(MessagePacket(
                     *json["data"]["attributes"]["arguments"]
                 ).text.split()), *args[1:])
+        cmd = await self.api.get_command(name=command)
+        if cmd.status != 200:
+            return MessagePacket("Command does not exist for that alias",
+                                 target=_packet.user)
+        cmd_response = await cmd.json()
+        cmd_response = cmd_response["data"]["attributes"]["response"]
+        json["data"]["attributes"]["response"] = cmd_response
 
         json = json["data"]["attributes"]
 
@@ -112,11 +122,20 @@ class CommandHandler(Handler):
                 target=_packet.user if _packet.target else None
             )
 
-        json["response"]["target"] = _packet.user if _packet.target else None
+        if _packet.target:
+            json["response"]["target"] = _packet.user
 
         await self.api.update_command_count(command, "+1")
-        if "count" not in data:
+        if not is_alias and "count" not in data:
             data["count"] = str(json["count"] + 1)
+        elif is_alias:
+            response = await self.api.get_command(
+                name=command)
+            if response.status == 200:
+                command_data = (await (response.json()))["data"]["attributes"]
+                data["count"] = str(command_data["count"])
+            else:
+                return MessagePacket("An error has occured.")
 
         return self._inject(MessagePacket.from_json(json["response"]),
                             *args, **data)
@@ -165,8 +184,15 @@ class CommandHandler(Handler):
 
         _packet.sub(self.ARGS_EXPR, sub_args)
 
+        username = ""
+
+        if "token" in data:
+            username = data["token"]
+        else:
+            username = data.get("username")
+
         _packet.replace(**{
-            "%USER%": data.get("username"),
+            "%USER%": username,
             "%COUNT%": data.get("count"),
             "%CHANNEL%": data.get("channel")
         })

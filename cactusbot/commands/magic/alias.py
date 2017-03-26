@@ -30,6 +30,10 @@ class Alias(Command):
             return "Alias !{} for command !{} updated.".format(alias, command)
         elif response.status == 404:
             return "Command !{} does not exist.".format(command)
+        elif response.status == 400:
+            json = await response.json()
+            if len(json.get("errors", [])) > 0:
+                return json["errors"][0]
 
     @Command.command(role="moderator")
     async def remove(self, alias: "?command"):
@@ -48,11 +52,13 @@ class Alias(Command):
 
         if response.status == 200:
             commands = (await response.json())["data"]
-            return "Aliases: {}.".format(', '.join(sorted(
+            aliases = [cmd for cmd in commands if cmd.get("type") == "alias"]
+            response = "Aliases: {}".format(', '.join(sorted(
                 "{} ({})".format(
                     command["attributes"]["name"],
                     command["attributes"]["commandName"])
-                for command in commands
-                if command.get("type") == "aliases"
+                for command in aliases
             )))
+            if len(aliases) > 0:
+                return response
         return "No aliases added!"
