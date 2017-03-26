@@ -189,7 +189,7 @@ class CommandHandler(Handler):
         if "token" in data:
             username = data["token"]
         else:
-            username = data["username"]
+            username = data.get("username")
 
         _packet.replace(**{
             "%USER%": username,
