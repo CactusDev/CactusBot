@@ -64,8 +64,8 @@ class Config(Command):
                     message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config
-                (self.api, "announce", "follow", "announce", True)
+                await _update_deep_config(
+                    self.api, "announce", "follow", "announce", True)
                 return "Follow announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
                 await _update_deep_config(
