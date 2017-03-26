@@ -43,6 +43,7 @@ async def _get_spam_data(api, section):
     spam_section = data["attributes"]["spam"][section]
     return spam_section
 
+
 class Config(Command):
     """Config Command."""
 
