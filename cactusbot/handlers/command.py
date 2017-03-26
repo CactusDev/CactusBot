@@ -181,8 +181,15 @@ class CommandHandler(Handler):
 
         _packet.sub(self.ARGS_EXPR, sub_args)
 
+        username = ""
+
+        if "token" in data:
+            username = data["token"]
+        else:
+            username = data["username"]
+
         _packet.replace(**{
-            "%USER%": data.get("username"),
+            "%USER%": username,
             "%COUNT%": data.get("count"),
             "%CHANNEL%": data.get("channel")
         })
