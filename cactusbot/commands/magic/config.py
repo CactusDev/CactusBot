@@ -59,13 +59,16 @@ class Config(Command):
             if not value:
                 data = await _get_event_data(self.api, "follow")
                 return "{dis}abled, message: `{message}`".format(
-                    dis='En' if data["announce"] else 'Dis', message=data["message"])
+                    dis='En' if data["announce"] else 'Dis',
+                    message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config(self.api, "announce", "follow", "announce", True)
+                await _update_deep_config
+                (self.api, "announce", "follow", "announce", True)
                 return "Follow announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_deep_config(self.api, "announce", "follow", "announce", False)
+                await _update_deep_config(
+                    self.api, "announce", "follow", "announce", False)
                 return "Follow announcements are now disabled."
             else:
                 return "Invalid boolean value: `{}`!".format(value)
@@ -79,7 +82,8 @@ class Config(Command):
                 message = data["attributes"]["announce"]["follow"]["message"]
                 return "Current response: `{}`".format(message)
 
-            await _update_deep_config(self.api, "announce", "follow", "message", ' '.join(message))
+            await _update_deep_config(
+                self.api, "announce", "follow", "message", ' '.join(message))
             return "Set new follow message response."
 
     @Command.command(role="moderator")
@@ -93,13 +97,16 @@ class Config(Command):
             if not value:
                 data = await _get_event_data(self.api, "sub")
                 return "{dis}abled, message: `{message}`".format(
-                    dis='En' if data["announce"] else 'Dis', message=data["message"])
+                    dis='En' if data["announce"] else 'Dis',
+                    message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config(self.api, "announce", "sub", "announce", True)
+                await _update_deep_config(
+                    self.api, "announce", "sub", "announce", True)
                 return "Subscribe announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_deep_config(self.api, "announce", "sub", "announce", False)
+                await _update_deep_config(
+                    self.api, "announce", "sub", "announce", False)
                 return "Subscribe announcements are now disabled."
             else:
                 return "Invalid boolean value: `{}`!".format(value)
@@ -128,13 +135,16 @@ class Config(Command):
             if not value:
                 data = await _get_event_data(self.api, "host")
                 return "{dis}abled, message: `{message}`".format(
-                    dis='En' if data["announce"] else 'Dis', message=data["message"])
+                    dis='En' if data["announce"] else 'Dis',
+                    message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config(self.api, "announce", "host", "announce", True)
+                await _update_deep_config(
+                    self.api, "announce", "host", "announce", True)
                 return "Host announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_deep_config(self.api, "announce", "host", "announce", False)
+                await _update_deep_config(
+                    self.api, "announce", "host", "announce", False)
                 return "Host announcements are now disabled."
             else:
                 return "Invalid boolean value: `{}`!".format(value)
@@ -148,7 +158,8 @@ class Config(Command):
                 message = data["attributes"]["announce"]["host"]["message"]
                 return "Current response: `{}`".format(message)
 
-            await _update_deep_config(self.api, "announce", "host", "message", ' '.join(message))
+            await _update_deep_config(
+                self.api, "announce", "host", "message", ' '.join(message))
             return "Set new host message response."
 
     @Command.command(role="moderator")
@@ -162,13 +173,16 @@ class Config(Command):
             if not value:
                 data = await _get_event_data(self.api, "leave")
                 return "{dis}abled, message: `{message}`".format(
-                    dis='En' if data["announce"] else 'Dis', message=data["message"])
+                    dis='En' if data["announce"] else 'Dis',
+                    message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config(self.api, "announce", "leave", "announce", True)
+                await _update_deep_config(
+                    self.api, "announce", "leave", "announce", True)
                 return "Leave announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_deep_config(self.api, "announce", "leave", "announce", False)
+                await _update_deep_config(
+                    self.api, "announce", "leave", "announce", False)
                 return "Leave announcements are now disabled."
             else:
                 return "Invalid boolean value: `{}`!".format(value)
@@ -182,7 +196,8 @@ class Config(Command):
                 message = data["attributes"]["announce"]["leave"]["message"]
                 return "Current response: `{}`".format(message)
 
-            await _update_deep_config(self.api, "announce", "leave", "message", ' '.join(message))
+            await _update_deep_config(
+                self.api, "announce", "leave", "message", ' '.join(message))
             return "Set new leave message response."
 
     @Command.command(role="moderator")
@@ -196,13 +211,16 @@ class Config(Command):
             if not value:
                 data = await _get_event_data(self.api, "join")
                 return "{dis}abled, message: `{message}`".format(
-                    dis='En' if data["announce"] else 'Dis', message=data["message"])
+                    dis='En' if data["announce"] else 'Dis',
+                    message=data["message"])
 
             if value in VALID_TOGGLE_ON_STATES:
-                await _update_deep_config(self.api, "announce", "join", "announce", True)
+                await _update_deep_config(
+                    self.api, "announce", "join", "announce", True)
                 return "Join announcements are now enabled."
             elif value in VALID_TOGGLE_OFF_STATES:
-                await _update_deep_config(self.api, "announce", "join", "announce", False)
+                await _update_deep_config(
+                    self.api, "announce", "join", "announce", False)
                 return "Join announcements are now disabled."
             else:
                 return "Invalid boolean value: `{}`!".format(value)
@@ -216,7 +234,8 @@ class Config(Command):
                 message = data["attributes"]["announce"]["join"]["message"]
                 return "Current response: `{}`".format(message)
 
-            await _update_deep_config(self.api, "announce", "join", "message", ' '.join(message))
+            await _update_deep_config(
+                self.api, "announce", "join", "message", ' '.join(message))
             return "Set new join message response."
 
     @Command.command(role="moderator")
@@ -233,7 +252,8 @@ class Config(Command):
 
                 if not value:
                     urls = await _get_spam_data(self.api, "allowUrls")
-                    return "URLs are {dis}abled.".format(dis='en' if urls else 'dis')
+                    return "URLs are {dis}abled.".format(
+                        dis='en' if urls else 'dis')
 
                 if value in VALID_TOGGLE_ON_STATES:
                     await _update_config(
@@ -244,7 +264,8 @@ class Config(Command):
                         self.api, "spam", "allowUrls", False)
                     return "URLs are now disallowed."
                 else:
-                    return "Invalid boolean value: '{value}'.".format(value=value)
+                    return "Invalid boolean value: '{value}'.".format(
+                        value=value)
 
         @Command.command()
         class Emoji(Command):
@@ -256,9 +277,11 @@ class Config(Command):
 
                 if not value:
                     emoji = await _get_spam_data(self.api, "maxEmoji")
-                    return "Maximum amount of emojis allowed is {}".format(emoji)
+                    return "Maximum amount of emojis allowed is {}".format(
+                        emoji)
 
-                response = await _update_config(self.api, "spam", "maxEmoji", value)
+                response = await _update_config(
+                    self.api, "spam", "maxEmoji", value)
                 if response.status == 200:
                     return "Max emojis updated to {}".format(value)
                 return "An error occurred."
@@ -275,7 +298,8 @@ class Config(Command):
                     caps = await _get_spam_data(self.api, "maxCapsScore")
                     return "Max caps score is {}".format(caps)
 
-                response = await _update_config(self.api, "spam", "maxCapsScore", value)
+                response = await _update_config(
+                    self.api, "spam", "maxCapsScore", value)
                 if response.status == 200:
                     return "Max caps score is now {}".format(value)
                 return "An error occurred."
