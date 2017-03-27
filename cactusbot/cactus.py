@@ -38,7 +38,7 @@ async def run(api, service, url, *auth):
 
     await api.login(*api.SCOPES)
 
-    sepal = Sepal(api.token, service, url)
+    sepal = Sepal(api.token, url, service)
 
     try:
         await sepal.connect()
