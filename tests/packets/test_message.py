@@ -1,7 +1,11 @@
+from hypothesis import strategies as st
+from hypothesis import given
+
 from cactusbot.packets import MessagePacket
 
 
 def test_copy():
+    """Test packet copying."""
 
     initial = MessagePacket("Test message.", user="TestUser")
 
@@ -17,6 +21,7 @@ def test_copy():
 
 
 def test_replace():
+    """Test packet string replacement."""
 
     assert MessagePacket("a b c").replace(a='x', b='y').text == "x y c"
 
@@ -36,8 +41,7 @@ def test_sub():
 
 def _split(text, *args, **kwargs):
     return [
-        component.text
-        for component in
+        component.text for component in
         MessagePacket(text).split(*args, **kwargs)
     ]
 
@@ -48,9 +52,15 @@ def test_split():
     assert _split("0 1 2 3") == ['0', '1', '2', '3']
     assert _split("0 1 2 3", "2") == ['0 1 ', ' 3']
     assert _split("0 1 2 3", maximum=2) == ['0', '1', '2 3']
-    assert _split("0 1 2 3 ") == ['0', '1', '2', '3']
-    assert _split(" 0 1 2 3") == ['0', '1', '2', '3']
-    assert _split(" 0 1 2 3 ") == ['0', '1', '2', '3']
+    assert _split("0 1 2 3 ") == ['0', '1', '2', '3', '']
+    assert _split(" 0 1 2 3") == ['', '0', '1', '2', '3']
+    assert _split(" 0 1 2 3 ") == ['', '0', '1', '2', '3', '']
+
+
+@given(st.text(), st.characters(), st.integers(0, 5))
+def test_split_property(text, char, maximum):
+    """Test packet splitting using property-based testing."""
+    assert _split(text, char, maximum) == text.split(char, maximum)
 
 
 def test_join():
@@ -73,3 +83,12 @@ def test_join():
         MessagePacket("world!"),
         separator="... "
     ).text == "Hello... world!"
+
+
+@given(st.lists(st.text()), st.characters())
+def test_join_property(packets, separator):
+    """Test packet joining using property-based testing."""
+
+    assert MessagePacket.join(
+        *map(MessagePacket, packets), separator=separator
+    ).text == separator.join(packets)
