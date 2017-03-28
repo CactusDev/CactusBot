@@ -160,11 +160,15 @@ class Command:
         if self.default is not None:
             try:
                 return await self._run_safe(self.default, *args, **meta)
-            except ArgsError:
-                pass
+            except ArgsError as err:
+                error = err
 
         if args:
             return "Invalid argument: '{0}'.".format(args[0])
+
+        if self.default is not None:
+            return "Not enough arguments. {0}".format(
+                ' '.join(map(self._display, error.args)))
 
         return "Not enough arguments. <{0}>".format(
             '|'.join(self.commands(hidden=False).keys()))

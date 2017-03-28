@@ -207,7 +207,7 @@ class Potato(Command):
         """Potato battery."""
 
         @Command.command()
-        async def default(self, strength: '[1-9]\d*'=1):
+        async def default(self, strength: r'[1-9]\d*'=1):
             """Potato battery."""
             if strength == 1:
                 return "Potato power!"
