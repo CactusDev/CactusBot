@@ -124,7 +124,10 @@ class BeamHandler:
                         method="timeout"
                     )
                 else:
-                    await self.api.update_roles(response.user, ["Banned"], [])
+                    user_id = (await self.api.get_channel(
+                        response.user, fields="userId"
+                    ))["userId"]
+                    await self.api.update_roles(user_id, ["Banned"], [])
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""

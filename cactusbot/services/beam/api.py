@@ -23,6 +23,17 @@ class BeamAPI(API):
         self.token = token
         self.headers["Authorization"] = "Bearer {}".format(token)
 
+    async def request(self, method, endpoint, **kwargs):
+        """Send HTTP request to an endpoint."""
+
+        if "headers" in kwargs:
+            headers = self.headers.copy()
+            headers.update(kwargs["headers"])
+            kwargs["headers"] = headers
+        else:
+            kwargs["headers"] = self.headers
+        return await super().request(method, endpoint, **kwargs)
+
     async def get_bot_channel(self, **params):
         """Get the bot's user id."""
         response = await self.get("/users/current", params=params,
@@ -43,8 +54,6 @@ class BeamAPI(API):
 
     async def update_roles(self, user, add, remove):
         """Update a user's roles."""
-
-        # TODO: Confirm that this works.
 
         response = await self.patch("/channels/{channel}/users/{user}".format(
             channel=self.channel, user=user
