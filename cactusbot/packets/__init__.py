@@ -1,3 +1,5 @@
+"""CactusBot packets."""
+
 from .ban import BanPacket
 from .event import EventPacket
 from .message import MessagePacket

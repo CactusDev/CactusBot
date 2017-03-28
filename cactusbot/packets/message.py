@@ -143,6 +143,9 @@ class MessagePacket(Packet):
 
     def _condense(self):
 
+        if not self.message:
+            return self
+
         message = [self.message[0]]
 
         for component in self.message[1:]:

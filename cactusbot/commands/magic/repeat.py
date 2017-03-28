@@ -12,7 +12,7 @@ class Repeat(Command):
     async def add(self, period: r"[1-9]\d*", command: "?command"):
         """Add a repeat."""
 
-        response = await self.api.add_repeat(command, int(period))
+        response = await self.api.repeat.add(command, int(period))
 
         if response.status == 201:
             return "Repeat !{command} added on interval {period}.".format(
@@ -32,7 +32,7 @@ class Repeat(Command):
     async def remove(self, repeat: "?command"):
         """Remove a repeat"""
 
-        response = await self.api.remove_repeat(repeat)
+        response = await self.api.repeat.remove(repeat)
 
         if response.status == 200:
             return "Repeat removed."
@@ -43,7 +43,7 @@ class Repeat(Command):
     async def list_repeats(self):
         """List all repeats."""
 
-        response = await self.api.get_repeats()
+        response = await self.api.repeat.get()
         data = (await response.json())["data"]
 
         if not data:

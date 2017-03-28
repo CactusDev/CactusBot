@@ -6,38 +6,40 @@ from cactusbot.packets import EventPacket
 
 class MockAPI:
 
-    async def get_config(self):
+    class Config:
+        async def get(self):
 
-        class Response:
+            class Response:
 
-            async def json(self):
+                async def json(self):
 
-                return {
-                    "data": {"attributes": {"announce": {
-                        "follow": {
-                            "announce": True,
-                            "message": "Thanks for following, %USER%!"
-                        },
-                        "sub": {
-                            "announce": True,
-                            "message": "Thanks for subscribing, %USER%!"
-                        },
-                        "host": {
-                            "announce": True,
-                            "message": "Thanks for hosting, %USER%!"
-                        },
-                        "join": {
-                            "announce": True,
-                            "message": "Welcome to the channel, %USER%!"
-                        },
-                        "leave": {
-                            "announce": True,
-                            "message": "Thanks for watching, %USER%!"
-                        }
-                    }}}
-                }
+                    return {
+                        "data": {"attributes": {"announce": {
+                            "follow": {
+                                "announce": True,
+                                "message": "Thanks for following, %USER%!"
+                            },
+                            "sub": {
+                                "announce": True,
+                                "message": "Thanks for subscribing, %USER%!"
+                            },
+                            "host": {
+                                "announce": True,
+                                "message": "Thanks for hosting, %USER%!"
+                            },
+                            "join": {
+                                "announce": True,
+                                "message": "Welcome to the channel, %USER%!"
+                            },
+                            "leave": {
+                                "announce": True,
+                                "message": "Thanks for watching, %USER%!"
+                            }
+                        }}}
+                    }
 
-        return Response()
+            return Response()
+    config = Config()
 
 event_handler = EventHandler({
     "cache_follow": True,

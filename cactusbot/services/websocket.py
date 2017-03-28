@@ -1,16 +1,18 @@
 """Interact with WebSockets safely."""
 
+import asyncio
+import itertools
+import json
 import logging
 
-import asyncio
+import aiohttp
 
-import itertools
+_AIOHTTP_ERRORS = tuple(
+    getattr(aiohttp.errors, error) for error in aiohttp.errors.__all__
+)
 
-from aiohttp import ClientSession
-from aiohttp.errors import DisconnectedError, HttpProcessingError, ClientError
 
-
-class WebSocket(ClientSession):
+class WebSocket(aiohttp.ClientSession):
     """Interact with WebSockets safely."""
 
     def __init__(self, *endpoints):
@@ -39,7 +41,7 @@ class WebSocket(ClientSession):
         while True:
             try:
                 self.websocket = await self.ws_connect(self._endpoint)
-            except (DisconnectedError, HttpProcessingError, ClientError):
+            except _AIOHTTP_ERRORS:  # pylint: disable=E0712
                 backoff = min(base**next(_backoff_count), maximum)
                 self.logger.debug("Retrying in %s seconds...", backoff)
                 await asyncio.sleep(backoff)
@@ -81,6 +83,31 @@ class WebSocket(ClientSession):
     async def parse(self, packet):
         """Parse a packet from the WebSocket."""
         return packet
+
+    @staticmethod
+    def _parse_json(success_function=None):
+        """Return a function to parse a JSON packet."""
+
+        if success_function is None:
+            async def _success_function(self, packet):
+                if packet.get("error") is not None:
+                    self.logger.error(packet)
+                else:
+                    self.logger.debug(packet)
+                return packet
+            success_function = _success_function
+
+        async def parse_json(self, packet):
+            """Parse a JSON packet."""
+            try:
+                packet = json.loads(packet)
+            except (TypeError, ValueError):
+                self.logger.exception("Invalid JSON: %s.", packet)
+                return None
+            else:
+                return await success_function(self, packet)
+
+        return parse_json
 
     @property
     def _endpoint(self):

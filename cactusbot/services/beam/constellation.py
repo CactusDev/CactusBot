@@ -59,17 +59,4 @@ class BeamConstellation(WebSocket):
         self.logger.info(
             "Successfully subscribed to Constellation interfaces.")
 
-    async def parse(self, packet):
-        """Parse a chat packet."""
-
-        try:
-            packet = json.loads(packet)
-        except (TypeError, ValueError):
-            self.logger.exception("Invalid JSON: %s.", packet)
-            return None
-        else:
-            if packet.get("error") is not None:
-                self.logger.error(packet)
-            else:
-                self.logger.debug(packet)
-            return packet
+    parse = WebSocket._parse_json()

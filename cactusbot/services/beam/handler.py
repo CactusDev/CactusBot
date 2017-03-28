@@ -10,6 +10,19 @@ from .chat import BeamChat
 from .constellation import BeamConstellation
 from .parser import BeamParser
 
+CHAT_EVENTS = {
+    "ChatMessage": "message",
+    "UserJoin": "join",
+    "UserLeave": "leave"
+}
+
+CONSTELLATION_EVENTS = {
+    "channel:followed": "follow",
+    "channel:subscribed": "subscribe",
+    "channel:resubscribed": "resubscribe",
+    "channel:hosted": "host"
+}
+
 
 class BeamHandler:
     """Handle data from Beam services."""
@@ -18,37 +31,21 @@ class BeamHandler:
 
         self.logger = logging.getLogger(__name__)
 
-        self.api = BeamAPI()
-        self.api.authorize(token)
+        self.api = BeamAPI(channel, token)
 
         self.parser = BeamParser()
         self.handlers = handlers  # HACK, potentially
 
-        self._channel = channel
-        self.channel = ""
+        self.channel = channel
 
         self.chat = None
         self.constellation = None
 
-        self.chat_events = {
-            "ChatMessage": "message",
-            "UserJoin": "join",
-            "UserLeave": "leave"
-        }
-
-        self.constellation_events = {
-            "channel:followed": "follow",
-            "channel:subscribed": "subscribe",
-            "channel:resubscribed": "resubscribe",
-            "channel:hosted": "host"
-        }
-
     async def run(self):
         """Connect to Beam chat and handle incoming packets."""
 
-        channel = await self.api.get_channel(self._channel)
-        self.channel = str(channel["id"])
-        self.api.channel = self.channel  # HACK
+        channel = await self.api.get_channel(self.channel)
+        self.api.channel = str(channel["id"])
 
         user_id = channel["userId"]
         chat = await self.api.get_chat(channel["id"])
@@ -83,8 +80,8 @@ class BeamHandler:
 
         event = packet.get("event")
 
-        if event in self.chat_events:
-            event = self.chat_events[event]
+        if event in CHAT_EVENTS:
+            event = CHAT_EVENTS[event]
 
             # HACK?
             if hasattr(self.parser, "parse_" + event):
@@ -102,8 +99,8 @@ class BeamHandler:
         scope, _, event = packet["data"]["channel"].split(":")
         event = scope + ':' + event
 
-        if event in self.constellation_events:
-            event = self.constellation_events[event]
+        if event in CONSTELLATION_EVENTS:
+            event = CONSTELLATION_EVENTS[event]
 
             # HACK
             if hasattr(self.parser, "parse_" + event):
@@ -127,7 +124,10 @@ class BeamHandler:
                         method="timeout"
                     )
                 else:
-                    pass  # TODO: full ban
+                    user_id = (await self.api.get_channel(
+                        response.user, fields="userId"
+                    ))["userId"]
+                    await self.api.update_roles(user_id, ["Banned"], [])
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""

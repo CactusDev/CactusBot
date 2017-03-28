@@ -16,6 +16,8 @@ class EventPacket(Packet):
         Whether or not the event was positive or successful.
     """
 
+    # pylint: disable=R0903
+
     def __init__(self, event_type, user, success=True, streak=1):
         super().__init__()
 

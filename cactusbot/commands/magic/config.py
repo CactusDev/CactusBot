@@ -9,7 +9,7 @@ VALID_TOGGLE_OFF_STATES = ("off", "disallow", "disable", "false")
 async def _update_deep_config(api, scope, field, section, value):
     """Update a deep section of the config."""
 
-    return await api.update_config({
+    return await api.config.update({
         scope: {
             field: {
                 section: value
@@ -21,7 +21,7 @@ async def _update_deep_config(api, scope, field, section, value):
 async def _update_config(api, scope, field, value):
     """Update a config value."""
 
-    return await api.update_config({
+    return await api.config.update({
         scope: {
             field: value
         }
@@ -31,7 +31,7 @@ async def _update_config(api, scope, field, value):
 async def _get_event_data(api, event):
     """Get data about an event."""
 
-    data = (await (await api.get_config()).json())["data"]
+    data = (await (await api.config.get()).json())["data"]
     event = data["attributes"]["announce"][event]
     return event
 
@@ -39,7 +39,7 @@ async def _get_event_data(api, event):
 async def _get_spam_data(api, section):
     """Get data about a section of spam config."""
 
-    data = (await (await api.get_config()).json())["data"]
+    data = (await (await api.config.get()).json())["data"]
     spam_section = data["attributes"]["spam"][section]
     return spam_section
 
@@ -79,7 +79,7 @@ class Config(Command):
             """Set the follow message."""
 
             if not message:
-                data = (await (await self.api.get_config()).json())["data"]
+                data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["follow"]["message"]
                 return "Current response: `{}`".format(message)
 
@@ -117,7 +117,7 @@ class Config(Command):
             """Set the subscribe message."""
 
             if not message:
-                data = (await (await self.api.get_config()).json())["data"]
+                data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["sub"]["message"]
                 return "Current response: `{}`".format(message)
 
@@ -155,7 +155,7 @@ class Config(Command):
             """Set the host message."""
 
             if not message:
-                data = (await (await self.api.get_config()).json())["data"]
+                data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["host"]["message"]
                 return "Current response: `{}`".format(message)
 
@@ -193,7 +193,7 @@ class Config(Command):
             """Set the leave message."""
 
             if not message:
-                data = (await (await self.api.get_config()).json())["data"]
+                data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["leave"]["message"]
                 return "Current response: `{}`".format(message)
 
@@ -231,7 +231,7 @@ class Config(Command):
             """Set the join message."""
 
             if not message:
-                data = (await (await self.api.get_config()).json())["data"]
+                data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["join"]["message"]
                 return "Current response: `{}`".format(message)
 

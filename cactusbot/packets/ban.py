@@ -16,6 +16,8 @@ class BanPacket(Packet):
         If set to ``0``, the ban lasts for an unlimited amount of time.
     """
 
+    # pylint: disable=R0903
+
     def __init__(self, user, duration=0):
         super().__init__()
 

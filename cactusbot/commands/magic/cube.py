@@ -51,6 +51,7 @@ class Cube(Command):
 
     @staticmethod
     def join(iterable, delimeter):
+        """Join an iterable."""
         iterable = iter(iterable)
         yield next(iterable)
         for item in iterable:

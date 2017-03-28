@@ -34,9 +34,9 @@ class API(ClientSession):
                 raise ClientHttpProcessingError("Response was not JSON!")
             else:
                 self.logger.debug(
-                    "{method} {endpoint} {data}:\n{code} {text}".format(
-                        method=method, endpoint=endpoint, data=kwargs,
-                        code=response.status, text=text))
+                    "%s %s %s:\n%s %s",
+                    method, endpoint, kwargs, response.status, text
+                )
                 return response
 
     async def get(self, endpoint, **kwargs):

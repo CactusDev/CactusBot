@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import time
 
 from .sepal import Sepal
 
@@ -38,7 +37,7 @@ async def run(api, service, url, *auth):
 
     await api.login(*api.SCOPES)
 
-    sepal = Sepal(api.token, url, service)
+    sepal = Sepal(api.token, service, url)
 
     try:
         await sepal.connect()
@@ -48,12 +47,5 @@ async def run(api, service, url, *auth):
     except KeyboardInterrupt:
         logger.info("Removing thorns... done.")
 
-    except Exception:
+    except Exception:  # pylint: disable=W0703
         logger.critical("Oh no, I crashed!", exc_info=True)
-
-        logger.info("Restarting in 10 seconds...")
-
-        try:
-            time.sleep(10)
-        except KeyboardInterrupt:
-            logger.info("CactusBot deactivated.")

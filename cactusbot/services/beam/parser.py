@@ -9,7 +9,6 @@ from ...packets import EventPacket, MessagePacket
 class BeamParser:
     """Parse Beam packets."""
 
-    # TODO: update with accurate values
     ROLES = {
         "Owner": 5,
         "Staff": 4,  # Not necessarily bot staff.

@@ -16,6 +16,8 @@ class Packet:
         Packet attributes.
     """
 
+    # pylint: disable=R0903
+
     def __init__(self, packet_type=None, **kwargs):
         self.type = packet_type or type(self).__name__
         self.kwargs = kwargs

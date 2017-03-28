@@ -5,7 +5,7 @@ import logging
 from .packets import MessagePacket, Packet
 
 
-class Handlers(object):
+class Handlers:
     """Evented controller for individual handlers.
 
     For a method to have the ability to be used as an event handler, it must
@@ -76,16 +76,16 @@ class Handlers(object):
             if hasattr(handler, "on_" + event):
                 try:
                     response = await getattr(handler, "on_" + event)(packet)
-                except Exception:
+                except Exception:  # pylint: disable=W0703
                     self.logger.warning(
                         "Exception in handler %s:", type(handler).__name__,
                         exc_info=1)
                 else:
-                    for packet in self.translate(response, handler):
-                        if packet is StopIteration:
+                    for translated in self.translate(response, handler):
+                        if translated is StopIteration:
                             return result
-                        result.append(packet)
-                        # TODO: In Python 3.6, with asynchronous generators:
+                        result.append(translated)
+                        # In Python 3.6, with asynchronous generators:
                         # yield packet
 
         return result
@@ -149,7 +149,7 @@ topIteration`, or :obj:`None`
                                 type(handler).__name__, type(packet).__name__)
 
 
-class Handler(object):
+class Handler:
     """Parent class to all event handlers.
 
     Examples
@@ -160,6 +160,8 @@ class Handler(object):
     ...
 
     """
+
+    # pylint: disable=R0903
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)

@@ -19,7 +19,7 @@ class Social(Command):
         response = []
         if services:
             for service in services:
-                social = await self.api.get_social(service)
+                social = await self.api.social.get(service)
                 if social.status == 200:
                     data = await social.json()
                     response.append(
@@ -33,7 +33,7 @@ class Social(Command):
 
             return MessagePacket(*response[:-1])
         else:
-            social = await self.api.get_social()
+            social = await self.api.social.get()
             if social.status == 200:
                 data = await social.json()
 
@@ -51,7 +51,7 @@ class Social(Command):
     async def add(self, service, url):
         """Add a social service."""
 
-        response = await self.api.add_social(service, url)
+        response = await self.api.social.add(service, url)
         if response.status == 201:
             return "Added social service {}.".format(service)
         elif response.status == 200:
@@ -67,7 +67,7 @@ class Social(Command):
     async def remove(self, service):
         """Remove a social service."""
 
-        response = await self.api.remove_social(service)
+        response = await self.api.social.remove(service)
         if response.status == 200:
             return "Removed social service {}.".format(service)
         elif response.status == 404:

@@ -24,7 +24,7 @@ class Meta(Command):
 
         raw.role = user_level  # HACK
         raw.target = None
-        response = await self.api.add_command(
+        response = await self.api.command.add(
             name, raw.split(maximum=3)[-1].json, user_level=user_level)
         data = await response.json()
 
@@ -35,7 +35,7 @@ class Meta(Command):
     @Command.command(role="moderator")
     async def remove(self, name: "?command"):
         """Remove a command."""
-        response = await self.api.remove_command(name)
+        response = await self.api.command.remove(name)
         if response.status == 200:
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
@@ -43,7 +43,7 @@ class Meta(Command):
     @Command.command("list", role="moderator")
     async def list_commands(self):
         """List all custom commands."""
-        response = await self.api.get_command()
+        response = await self.api.command.get()
 
         if response.status == 200:
             commands = (await response.json())["data"]
@@ -59,7 +59,7 @@ class Meta(Command):
     async def enable(self, command: "?command"):
         """Enable a command."""
 
-        response = await self.api.toggle_command(command, True)
+        response = await self.api.command.toggle(command, True)
         if response.status == 200:
             return "Command !{} has been enabled.".format(command)
 
@@ -67,7 +67,7 @@ class Meta(Command):
     async def disable(self, command: "?command"):
         """Disable a command."""
 
-        response = await self.api.toggle_command(command, False)
+        response = await self.api.command.toggle(command, False)
         if response.status == 200:
             return "Command !{} has been disabled.".format(command)
 
@@ -77,7 +77,7 @@ class Meta(Command):
         """Update the count of a command."""
 
         if action is None:
-            response = await self.api.get_command(command)
+            response = await self.api.command.get(command)
             data = await response.json()
             if response.status == 404:
                 return "Command !{} does not exist.".format(command)
@@ -88,6 +88,6 @@ class Meta(Command):
         operator, value = action
         action_string = (operator or '=') + value
 
-        response = await self.api.update_command_count(command, action_string)
+        response = await self.api.command.update_count(command, action_string)
         if response.status == 200:
             return "Count updated."

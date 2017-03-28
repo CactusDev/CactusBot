@@ -16,12 +16,13 @@ class Quote(Command):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
 
         if quote is None:
-            response = await self.api.get_quote()
-            if response.status == 404:
+            response = await self.api.quote.get()
+            data = (await response.json())["data"]
+            if not data:
                 return "No quotes have been added!"
-            return (await response.json())["data"][0]["attributes"]["quote"]
+            return data[0]["attributes"]["quote"]
         else:
-            response = await self.api.get_quote(quote)
+            response = await self.api.quote.get(quote)
             if response.status == 404:
                 return "Quote {} does not exist!".format(quote)
             return (await response.json())["data"]["attributes"]["quote"]
@@ -29,7 +30,7 @@ class Quote(Command):
     @Command.command(role="moderator")
     async def add(self, *quote):
         """Add a quote."""
-        response = await self.api.add_quote(' '.join(quote))
+        response = await self.api.quote.add(' '.join(quote))
         data = await response.json()
         return "Added quote #{}.".format(
             data["data"]["attributes"]["quoteId"])
@@ -58,7 +59,7 @@ class Quote(Command):
                 "http://api.forismatic.com/api/1.0/",
                 params=dict(method="getQuote", lang="en", format="json")
             )).json()
-        except Exception:
+        except Exception:  # pylint: disable=W0703
             return MessagePacket(
                 "Unable to get an inspirational quote. Have a ",
                 ("emoji", "🐹"),
