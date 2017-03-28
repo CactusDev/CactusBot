@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 """Magic command internals (and magic)."""
 
 import inspect

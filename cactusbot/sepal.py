@@ -12,8 +12,8 @@ class Sepal(WebSocket):
 
     URL = "wss://cactus.exoz.one/sepal"
 
-    def __init__(self, channel, url=URL, service=None):
-        super().__init__(self.URL)
+    def __init__(self, channel, service, url=URL):
+        super().__init__(url)
 
         self.logger = logging.getLogger(__name__)
 
@@ -39,17 +39,10 @@ class Sepal(WebSocket):
 
         await self.send("join")
 
-    async def parse(self, packet):
-        """Parse a Sepal packet."""
-
-        try:
-            packet = json.loads(packet)
-        except (TypeError, ValueError):
-            self.logger.exception("Invalid JSON: %s.", packet)
-            return None
-        else:
-            self.logger.debug(packet)
-            return packet
+    async def _success_function(self, packet):
+        self.logger.debug(packet)
+        return packet
+    parse = WebSocket._parse_json(_success_function)
 
     async def handle(self, packet):
         """Convert a JSON packet to a CactusBot packet."""
