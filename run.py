@@ -6,8 +6,17 @@ import logging
 from argparse import ArgumentParser
 from asyncio import get_event_loop
 
-from cactusbot.cactus import run
+from cactusbot.cactus import CactusBot
 from config import SERVICE, SEPAL_URL, api
+
+
+async def run():
+    """Run bot instance."""
+    async with CactusBot(api, SERVICE, SEPAL_URL) as bot:
+        try:
+            await bot.run()
+        except KeyboardInterrupt:
+            print("Removing spines.")
 
 if __name__ == "__main__":
 
@@ -34,8 +43,7 @@ if __name__ == "__main__":
     loop = get_event_loop()
 
     try:
-        # TODO: Convert this to be able to have multiple services
-        loop.run_until_complete(run(api, SERVICE, SEPAL_URL))
+        loop.run_until_complete(run())
         loop.run_forever()
     finally:
         loop.close()

@@ -1,5 +1,5 @@
 """CactusBot."""
 
-from .cactus import run, __version__
+from .cactus import CactusBot, __version__
 
-__all__ = ["__version__", "run"]
+__all__ = ["__version__", "CactusBot"]

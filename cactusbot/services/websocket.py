@@ -1,16 +1,17 @@
 """Interact with WebSockets safely."""
 
+import asyncio
+import itertools
 import logging
 
-import asyncio
+import aiohttp
 
-import itertools
+_AIOHTTP_ERRORS = tuple(
+    getattr(aiohttp.errors, error) for error in aiohttp.errors.__all__
+)
 
-from aiohttp import ClientSession
-from aiohttp.errors import DisconnectedError, HttpProcessingError, ClientError
 
-
-class WebSocket(ClientSession):
+class WebSocket(aiohttp.ClientSession):
     """Interact with WebSockets safely."""
 
     def __init__(self, *endpoints):
@@ -39,7 +40,7 @@ class WebSocket(ClientSession):
         while True:
             try:
                 self.websocket = await self.ws_connect(self._endpoint)
-            except (DisconnectedError, HttpProcessingError, ClientError):
+            except _AIOHTTP_ERRORS:
                 backoff = min(base**next(_backoff_count), maximum)
                 self.logger.debug("Retrying in %s seconds...", backoff)
                 await asyncio.sleep(backoff)

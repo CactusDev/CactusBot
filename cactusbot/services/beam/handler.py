@@ -43,6 +43,14 @@ class BeamHandler:
             "channel:hosted": "host"
         }
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args, **kwargs):
+        await self.api.__aexit__(*args, **kwargs)
+        await self.constellation.__aexit__(*args, **kwargs)
+        await self.chat.__aexit__(*args, **kwargs)
+
     async def run(self):
         """Connect to Beam chat and handle incoming packets."""
 
@@ -62,17 +70,19 @@ class BeamHandler:
         if "authkey" not in chat:
             self.logger.error("Failed to authenticate with Beam!")
 
+        self.constellation = BeamConstellation(channel["id"], user_id)
+        await self.constellation.connect()
+
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
         await self.chat.connect(
             bot_id, partial(self.api.get_chat, channel["id"]))
-        asyncio.ensure_future(self.chat.read(self.handle_chat))
 
-        self.constellation = BeamConstellation(channel["id"], user_id)
-        await self.constellation.connect()
+        await self.handle("start", None)
+
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))
 
-        await self.handle("start", None)
+        await self.chat.read(self.handle_chat)
 
     async def handle_chat(self, packet):
         """Handle chat packets."""

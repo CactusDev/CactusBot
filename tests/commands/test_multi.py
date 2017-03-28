@@ -4,7 +4,6 @@ import pytest
 
 from cactusbot.api import CactusAPI
 from cactusbot.commands.magic import Multi
-from cactusbot.packets import MessagePacket
 
 multi = Multi(CactusAPI("test_token", "test_password"))
 
@@ -18,3 +17,5 @@ async def test_multi():
     assert (await multi("fake:test")) == (
         "'fake' is not a valid service."
     )
+
+multi.api.close()

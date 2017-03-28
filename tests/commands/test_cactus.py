@@ -57,3 +57,5 @@ async def test_help():
 @pytest.mark.asyncio
 async def test_version():
     assert (await cactus("version")) == "CactusBot {version}".format(version=__version__)
+
+cactus.api.close()

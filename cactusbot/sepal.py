@@ -12,8 +12,8 @@ class Sepal(WebSocket):
 
     URL = "wss://cactus.exoz.one/sepal"
 
-    def __init__(self, channel, url=URL, service=None):
-        super().__init__(self.URL)
+    def __init__(self, channel, service, url=URL):
+        super().__init__(url)
 
         self.logger = logging.getLogger(__name__)
 

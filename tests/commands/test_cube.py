@@ -50,6 +50,8 @@ async def test_cube():
         "lots³ · of³ · taco³ · salad³ · 😃³"
     )
 
+cube.api.close()
+
 temmie = Temmie(CactusAPI("test_token", "test_password"))
 
 
@@ -62,3 +64,5 @@ async def test_temmie():
 
     assert not (await temmie("hoi")).action
     assert (await temmie("flakes")).action
+
+temmie.api.close()

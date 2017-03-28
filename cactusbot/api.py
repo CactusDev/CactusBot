@@ -26,7 +26,7 @@ class CactusAPI(API):
         self.token = token
         self.auth_token = auth_token
         self.password = password
-        self.URL = url
+        self.url = url
 
     async def request(self, method, endpoint, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
@@ -54,6 +54,7 @@ class CactusAPI(API):
         return response
 
     async def get(self, endpoint, **kwargs):
+        """Perform a GET request without requesting a JSON response."""
         return await self.request("GET", endpoint, is_json=False, **kwargs)
 
     async def login(self, *scopes, password=None):
