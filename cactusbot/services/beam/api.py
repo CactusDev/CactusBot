@@ -43,6 +43,9 @@ class BeamAPI(API):
 
     async def update_roles(self, user, add, remove):
         """Update a user's roles."""
+
+        # TODO: Confirm that this works.
+
         response = await self.patch("/channels/{channel}/users/{user}".format(
             channel=self.channel, user=user
         ), data=json.dumps({"add": add, "remove": remove}))
