@@ -50,7 +50,7 @@ class EventHandler(Handler):
     async def load_messages(self):
         """Load alert messages."""
 
-        data = await (await self.api.get_config()).json()
+        data = await (await self.api.config.get()).json()
 
         messages = data["data"]["attributes"]["announce"]
 

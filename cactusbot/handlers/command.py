@@ -80,10 +80,11 @@ class CommandHandler(Handler):
                 return MessagePacket("Command not found.", target=packet.user)
 
     async def custom_response(self, _packet, command, *args, **data):
+        """Custom command response to a packet."""
 
         args = (command, *args)
 
-        response = await self.api.get_command(command)
+        response = await self.api.command.get(command)
 
         if response.status != 200:
             return
@@ -101,7 +102,7 @@ class CommandHandler(Handler):
                 args = (args[0], *tuple(MessagePacket(
                     *json["data"]["attributes"]["arguments"]
                 ).text.split()), *args[1:])
-        cmd = await self.api.get_command(name=command)
+        cmd = await self.api.command.get(name=command)
         if cmd.status != 200:
             return MessagePacket("Command does not exist for that alias",
                                  target=_packet.user)
@@ -125,11 +126,11 @@ class CommandHandler(Handler):
         if _packet.target:
             json["response"]["target"] = _packet.user
 
-        await self.api.update_command_count(command, "+1")
+        await self.api.command.update_count(command, "+1")
         if not is_alias and "count" not in data:
             data["count"] = str(json["count"] + 1)
         elif is_alias:
-            response = await self.api.get_command(
+            response = await self.api.command.get(
                 name=command)
             if response.status == 200:
                 command_data = (await (response.json()))["data"]["attributes"]

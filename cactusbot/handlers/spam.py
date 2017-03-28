@@ -9,6 +9,7 @@ BASE_URL = "https://beam.pro/api/v1/channels/{username}"
 
 
 async def get_user_id(username):
+    """Retrieve Beam user ID from username."""
     async with aiohttp.get(BASE_URL.format(username=username)) as response:
         if response.status == 404:
             return 0
@@ -35,8 +36,10 @@ class SpamHandler(Handler):
         if packet.role >= 4:
             return
 
+        return BanPacket(packet.user)  # FIXME
+
         user_id = await get_user_id(packet.user)
-        if (await self.api.get_trust(user_id)).status == 200:
+        if (await self.api.trust.get(user_id)).status == 200:
             return
 
         exceeds_caps = self.check_caps(''.join(
