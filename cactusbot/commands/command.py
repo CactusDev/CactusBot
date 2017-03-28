@@ -172,6 +172,8 @@ class Command:
     @staticmethod
     def _display(arg):
 
+        # pylint: disable=W0212
+
         if arg._kind is arg.VAR_POSITIONAL:
 
             if arg.annotation is False:
@@ -184,7 +186,7 @@ class Command:
 
         else:
             syntax = "[{}]"
-            
+
         return syntax.format(arg.name)
 
     @classmethod
