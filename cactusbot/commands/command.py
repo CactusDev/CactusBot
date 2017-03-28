@@ -121,6 +121,8 @@ class Command:
 
     async def __call__(self, *args, **meta):
 
+        # pylint: disable=R0911
+
         commands = self.commands()
         assert self.default is None or callable(self.default)
 
@@ -128,16 +130,14 @@ class Command:
 
             command, *arguments = args
 
-            to_run = [(commands[command], arguments)]
+            to_run = [commands[command]]
             if getattr(commands[command], "default", None) is not None:
-                to_run.append((commands[command].default, arguments))
-            if self.default is not None:
-                to_run.append((self.default, args))
+                to_run.append(commands[command].default)
 
-            for index, (running, _args) in enumerate(to_run):
+            for index, running in enumerate(to_run):
 
                 try:
-                    return await self._run_safe(running, *_args, **meta)
+                    return await self._run_safe(running, *arguments, **meta)
 
                 except ArgsError as error:
 
@@ -150,18 +150,42 @@ class Command:
                     has_default = hasattr(running, "default")
                     has_commands = hasattr(running, "commands")
                     if not (has_default or has_commands):
-                        return "Not enough arguments. <{0}>".format(
-                            '> <'.join(arg.name for arg in error.args[1]))
+                        return "Not enough arguments. {0}".format(
+                            ' '.join(map(self._display, error.args)))
 
             return "Not enough arguments. <{0}>".format('|'.join(
                 commands[command].commands(hidden=False).keys()
             ))
+
+        if self.default is not None:
+            try:
+                return await self._run_safe(self.default, *args, **meta)
+            except ArgsError:
+                pass
 
         if args:
             return "Invalid argument: '{0}'.".format(args[0])
 
         return "Not enough arguments. <{0}>".format(
             '|'.join(self.commands(hidden=False).keys()))
+
+    @staticmethod
+    def _display(arg):
+
+        if arg._kind is arg.VAR_POSITIONAL:
+
+            if arg.annotation is False:
+                syntax = "[{}...]"
+            else:
+                syntax = "<{}...>"
+
+        elif arg.default is inspect._empty:
+            syntax = "<{}>"
+
+        else:
+            syntax = "[{}]"
+            
+        return syntax.format(arg.name)
 
     @classmethod
     def command(cls, name=None, **meta):

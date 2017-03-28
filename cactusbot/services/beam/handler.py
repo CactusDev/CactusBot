@@ -31,7 +31,7 @@ class BeamHandler:
 
         self.logger = logging.getLogger(__name__)
 
-        self.api = BeamAPI(token)
+        self.api = BeamAPI(channel, token)
 
         self.parser = BeamParser()
         self.handlers = handlers  # HACK, potentially
@@ -124,7 +124,7 @@ class BeamHandler:
                         method="timeout"
                     )
                 else:
-                    pass  # TODO: full ban
+                    await self.api.update_roles(response.user, ["Banned"], [])
 
     async def send(self, *args, **kwargs):
         """Send a packet to Beam."""
