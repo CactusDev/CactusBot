@@ -40,7 +40,9 @@ class Cactus(Command):
 
     @Command.command()
     async def github(self, project=None):
-        """Github response."""
+        """GitHub response."""
+
+        # pylint: disable=R0911
 
         if project is None or project.lower() in ("bot", "cactusbot"):
             return MessagePacket(

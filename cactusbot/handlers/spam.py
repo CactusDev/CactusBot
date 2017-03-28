@@ -36,8 +36,6 @@ class SpamHandler(Handler):
         if packet.role >= 4:
             return
 
-        return BanPacket(packet.user)  # FIXME
-
         user_id = await get_user_id(packet.user)
         if (await self.api.trust.get(user_id)).status == 200:
             return
