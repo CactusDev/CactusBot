@@ -153,9 +153,17 @@ class Command:
                         return "Not enough arguments. {0}".format(
                             ' '.join(map(self._display, error.args)))
 
-            return "Not enough arguments. <{0}>".format('|'.join(
-                commands[command].commands(hidden=False).keys()
-            ))
+            keys = commands[command].commands(hidden=False).keys()
+
+            if keys and list(keys) != ["default"]:
+                return "Not enough arguments. <{0}>".format('|'.join(keys))
+
+            param_args = self._check_safe(
+                commands[command].default, *arguments, error=False)
+
+            return "Not enough arguments. {0}".format(' '.join(map(
+                self._display, param_args
+            )))
 
         if self.default is not None:
             try:
@@ -288,7 +296,7 @@ class Command:
         return await function(*args, **kwargs)
 
     @staticmethod
-    def _check_safe(function, *args):
+    def _check_safe(function, *args, error=True):
 
         params = inspect.signature(function).parameters.values()
 
@@ -304,13 +312,13 @@ class Command:
             len(args) if star_arg else len(pos_args)
         )
 
-        if not arg_range[0] <= len(args) <= arg_range[1]:
+        if star_arg is not None:
+            pos_args += (star_arg,)
 
-            if star_arg is not None:
-                pos_args += (star_arg,)
-
+        if error and not arg_range[0] <= len(args) <= arg_range[1]:
             raise ArgsError(len(args) > arg_range[0], pos_args)
-        return True
+
+        return pos_args
 
     @staticmethod
     async def _clean_args(function, *args):

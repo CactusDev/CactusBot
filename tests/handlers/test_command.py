@@ -213,6 +213,17 @@ class Potato(Command):
                 return "Potato power!"
             return "Potato power x {}!".format(strength)
 
+    @Command.command(hidden=True)
+    class Wizard(Command):
+        """Potato wizard."""
+
+        @Command.command()
+        async def default(self, *things):
+            """Potato wizard."""
+            return MessagePacket(
+                "waves wand at {} things...".format(len(things)), action=True
+            )
+
     @Command.command()
     class Salad(Command):
         """Potato salad."""
@@ -274,6 +285,11 @@ async def test_args():
     assert await potato(
         "check", "way", "too", "many", "things"
     ) == "Too many things™!"
+
+    assert await potato("wizard") == "Not enough arguments. <things...>"
+    assert (await potato(
+        "wizard", "taco", "salad"
+    )).text == "waves wand at 2 things..."
 
     assert await potato(
         "salad", "make"
