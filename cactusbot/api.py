@@ -26,7 +26,20 @@ class CactusAPI(API):
         self.token = token
         self.auth_token = auth_token
         self.password = password
-        self.URL = url
+        self.url = url
+
+        self.buckets = {
+            "command": Command(self),
+            "alias": Alias(self),
+            "quote": Quote(self),
+            "config": Config(self),
+            "repeat": Repeat(self),
+            "social": Social(self),
+            "trust": Trust(self)
+        }
+
+    def __getattr__(self, attr):
+        return self.buckets.get(attr)
 
     async def request(self, method, endpoint, is_json=True, **kwargs):
         """Send HTTP request to endpoint."""
@@ -54,6 +67,7 @@ class CactusAPI(API):
         return response
 
     async def get(self, endpoint, **kwargs):
+        """Perform a GET request without requesting a JSON response."""
         return await self.request("GET", endpoint, is_json=False, **kwargs)
 
     async def login(self, *scopes, password=None):
@@ -78,17 +92,30 @@ class CactusAPI(API):
 
         return response
 
-    async def get_command(self, name=None):
+
+class CactusAPIBucket:
+    """CactusAPI bucket."""
+
+    # pylint: disable=R0903
+
+    def __init__(self, api):
+        self.api = api
+
+
+class Command(CactusAPIBucket):
+    """CactusAPI /command bucket."""
+
+    async def get(self, name=None):
         """Get a command."""
 
         if name is not None:
-            return await self.get(
+            return await self.api.get(
                 "/user/{token}/command/{command}".format(
-                    token=self.token, command=name))
-        return await self.get("/user/{token}/command".format(
-            token=self.token))
+                    token=self.api.token, command=name))
+        return await self.api.get("/user/{token}/command".format(
+            token=self.api.token))
 
-    async def add_command(self, name, response, *, user_level=1):
+    async def add(self, name, response, *, user_level=1):
         """Add a command."""
 
         data = {
@@ -96,24 +123,45 @@ class CactusAPI(API):
             "userLevel": user_level
         }
 
-        return await self.patch(
+        return await self.api.patch(
             "/user/{token}/command/{command}".format(
-                token=self.token, command=name),
+                token=self.api.token, command=name),
             data=json.dumps(data)
         )
 
-    async def remove_command(self, name):
+    async def remove(self, name):
         """Remove a command."""
 
-        return await self.delete("/user/{token}/command/{command}".format(
-            token=self.token, command=name))
+        return await self.api.delete("/user/{token}/command/{command}".format(
+            token=self.api.token, command=name))
 
-    async def get_command_alias(self, command):
+    async def toggle(self, command, state):
+        """Toggle the enabled state of a command"""
+
+        data = {"enabled": state}
+
+        return await self.api.patch("/user/{token}/command/{command}".format(
+            token=self.api.token, command=command), data=json.dumps(data))
+
+    async def update_count(self, command, action):
+        """Set the count of a command."""
+
+        data = {"count": action}
+
+        return await(
+            self.api.patch("/user/{token}/command/{command}/count".format(
+                token=self.api.token, command=command), data=json.dumps(data)))
+
+
+class Alias(CactusAPIBucket):
+    """CactusAPI /alias bucket."""
+
+    async def get(self, command):
         """Get a command alias."""
-        return await self.get("/user/{token}/alias/{command}".format(
-            token=self.token, command=command))
+        return await self.api.get("/user/{token}/alias/{command}".format(
+            token=self.api.token, command=command))
 
-    async def add_alias(self, command, alias, args=None):
+    async def add(self, command, alias, args=None):
         """Create a command alias."""
 
         data = {
@@ -123,85 +171,85 @@ class CactusAPI(API):
         if args is not None:
             data["arguments"] = args
 
-        return await self.patch("/user/{user}/alias/{alias}".format(
-            user=self.token, alias=alias), data=json.dumps(data))
+        return await self.api.patch("/user/{user}/alias/{alias}".format(
+            user=self.api.token, alias=alias), data=json.dumps(data))
 
-    async def remove_alias(self, alias):
+    async def remove(self, alias):
         """Remove a command alias."""
 
-        return await self.delete("/user/{user}/alias/{alias}".format(
-            user=self.token, alias=alias))
+        return await self.api.delete("/user/{user}/alias/{alias}".format(
+            user=self.api.token, alias=alias))
 
-    async def toggle_command(self, command, state):
-        """Toggle the enabled state of a command"""
 
-        data = {"enabled": state}
+class Quote(CactusAPIBucket):
+    """CactusAPI /quote bucket."""
 
-        return await self.patch("/user/{token}/command/{command}".format(
-            token=self.token, command=command), data=json.dumps(data))
-
-    async def update_command_count(self, command, action):
-        """Set the count of a command."""
-
-        data = {"count": action}
-
-        return await(
-            self.patch("/user/{token}/command/{command}/count".format(
-                token=self.token, command=command), data=json.dumps(data)))
-
-    async def get_quote(self, quote_id=None):
+    async def get(self, quote_id=None):
         """Get a quote."""
 
         if quote_id is not None:
-            return await self.get("/user/{token}/quote/{id}".format(
-                token=self.token, id=quote_id))
-        return await self.get("/user/{token}/quote".format(
-            token=self.token), params={"random": True})
+            return await self.api.get("/user/{token}/quote/{id}".format(
+                token=self.api.token, id=quote_id))
+        return await self.api.get("/user/{token}/quote".format(
+            token=self.api.token), params={"random": True})
 
-    async def add_quote(self, quote):
+    async def add(self, quote):
         """Add a quote."""
 
         data = {"quote": quote}
 
-        return await self.post(
-            "/user/{token}/quote".format(token=self.token),
+        return await self.api.post(
+            "/user/{token}/quote".format(token=self.api.token),
             data=json.dumps(data)
         )
 
-    async def edit_quote(self, quote_id, quote):
+    async def edit(self, quote_id, quote):
         """Edit a quote."""
 
         data = {"quote": quote}
 
-        return await self.patch(
+        return await self.api.patch(
             "/user/{token}/quote/{quote_id}".format(
-                token=self.token, quote_id=quote_id),
+                token=self.api.token, quote_id=quote_id),
             data=json.dumps(data)
         )
 
-    async def remove_quote(self, quote_id):
+    async def remove(self, quote_id):
         """Remove a quote."""
 
-        return await self.delete("/user/{token}/quote/{id}".format(
-            token=self.token, id=quote_id))
+        return await self.api.delete("/user/{token}/quote/{id}".format(
+            token=self.api.token, id=quote_id))
 
-    async def get_config(self, *keys):
+
+class Config(CactusAPIBucket):
+    """CactusAPI /config bucket."""
+
+    async def get(self, *keys):
         """Get the token config."""
 
         if keys:
-            return await self.get("/user/{token}/config".format(
-                token=self.token), data=json.dumps({"keys": keys}))
+            return await self.api.get("/user/{token}/config".format(
+                token=self.api.token), data=json.dumps({"keys": keys}))
 
-        return await self.get("/user/{token}/config".format(
-            token=self.token))
+        return await self.api.get("/user/{token}/config".format(
+            token=self.api.token))
 
-    async def update_config(self, value):
+    async def update(self, value):
         """Update config attributes."""
 
-        return await self.patch("/user/{user}/config".format(
-            user=self.token), data=json.dumps(value))
+        return await self.api.patch("/user/{user}/config".format(
+            user=self.api.token), data=json.dumps(value))
 
-    async def add_repeat(self, command, period):
+
+class Repeat(CactusAPIBucket):
+    """CactusAPI /repeat bucket."""
+
+    async def get(self):
+        """Get all repeats."""
+        return await self.api.get("/user/{user}/repeat".format(
+            user=self.api.token))
+
+    async def add(self, command, period):
         """Add a repeat."""
 
         data = {
@@ -209,62 +257,66 @@ class CactusAPI(API):
             "period": period
         }
 
-        return await self.patch("/user/{user}/repeat/{command}".format(
-            user=self.token, command=command), data=json.dumps(data))
+        return await self.api.patch("/user/{user}/repeat/{command}".format(
+            user=self.api.token, command=command), data=json.dumps(data))
 
-    async def remove_repeat(self, repeat):
+    async def remove(self, repeat):
         """Remove a repeat."""
 
-        return await self.delete("/user/{user}/repeat/{repeat}".format(
-            user=self.token, repeat=repeat))
+        return await self.api.delete("/user/{user}/repeat/{repeat}".format(
+            user=self.api.token, repeat=repeat))
 
-    async def get_repeats(self):
-        """Get all repeats."""
 
-        return await self.get("/user/{user}/repeat".format(user=self.token))
+class Social(CactusAPIBucket):
+    """CactusAPI /social bucket."""
 
-    async def add_social(self, service, url):
+    async def get(self, service=None):
+        """Get social service."""
+
+        if service is None:
+            return await self.api.get("/user/{user}/social".format(
+                user=self.api.token))
+        return await self.api.get("/user/{user}/social/{service}".format(
+            user=self.api.token, service=service))
+
+    async def add(self, service, url):
         """Add a social service."""
 
         data = {"url": url}
 
-        return await self.patch("/user/{user}/social/{service}".format(
-            user=self.token, service=service), data=json.dumps(data))
+        return await self.api.patch("/user/{user}/social/{service}".format(
+            user=self.api.token, service=service), data=json.dumps(data))
 
-    async def remove_social(self, service):
+    async def remove(self, service):
         """Remove a social service."""
 
-        return await self.delete("/user/{user}/social/{service}".format(
-            user=self.token, service=service))
+        return await self.api.delete("/user/{user}/social/{service}".format(
+            user=self.api.token, service=service))
 
-    async def get_social(self, service=None):
-        """Get social service."""
 
-        if service is None:
-            return await self.get("/user/{user}/social".format(
-                user=self.token))
-        return await self.get("/user/{user}/social/{service}".format(
-            user=self.token, service=service))
+class Trust(CactusAPIBucket):
+    """CactusAPI /trust bucket."""
 
-    async def get_trust(self, user_id=None):
+    async def get(self, user_id=None):
         """Get trusted users."""
 
         if user_id is None:
-            return await self.get("/user/{user}/trust".format(user=self.token))
+            return await self.api.get("/user/{user}/trust".format(
+                user=self.api.token))
 
-        return await self.get("/user/{user}/trust/{user_id}".format(
-            user=self.token, user_id=user_id))
+        return await self.api.get("/user/{user}/trust/{user_id}".format(
+            user=self.api.token, user_id=user_id))
 
-    async def add_trust(self, user_id, username):
+    async def add(self, user_id, username):
         """Trust new user."""
 
         data = {"userName": username}
 
-        return await self.patch("/user/{user}/trust/{user_id}".format(
-            user=self.token, user_id=user_id), data=json.dumps(data))
+        return await self.api.patch("/user/{user}/trust/{user_id}".format(
+            user=self.api.token, user_id=user_id), data=json.dumps(data))
 
-    async def remove_trust(self, user_id):
+    async def remove(self, user_id):
         """Remove user trust."""
 
-        return await self.delete("/user/{user}/trust/{user_id}".format(
-            user=self.token, user_id=user_id))
+        return await self.api.delete("/user/{user}/trust/{user_id}".format(
+            user=self.api.token, user_id=user_id))

@@ -9,6 +9,7 @@ BASE_URL = "https://beam.pro/api/v1/channels/{username}"
 
 
 async def check_user(username):
+    """Check if a Beam username exists."""
     if username.startswith('@'):
         username = username[1:]
     async with aiohttp.get(BASE_URL.format(username=username)) as response:
@@ -28,12 +29,12 @@ class Trust(Command):
 
         user, user_id = username
 
-        is_trusted = (await self.api.get_trust(user_id)).status == 200
+        is_trusted = (await self.api.trust.get(user_id)).status == 200
 
         if is_trusted:
-            await self.api.remove_trust(user_id)
+            await self.api.trust.remove(user_id)
         else:
-            await self.api.add_trust(user_id, user)
+            await self.api.trust.add(user_id, user)
 
         return MessagePacket(
             ("tag", user), " is {modifier} trusted.".format(
@@ -45,7 +46,7 @@ class Trust(Command):
 
         user, user_id = username
 
-        response = await self.api.add_trust(user_id, user)
+        response = await self.api.trust.add(user_id, user)
 
         if response.status in (201, 200):
             return MessagePacket("User ", ("tag", user), " has been trusted.")
@@ -56,7 +57,7 @@ class Trust(Command):
 
         user, user_id = username
 
-        response = await self.api.remove_trust(user_id)
+        response = await self.api.trust.remove(user_id)
 
         if response.status == 200:
             return MessagePacket("Removed trust for user ", ("tag", user), '.')
@@ -67,7 +68,7 @@ class Trust(Command):
     async def list_trusts(self):
         """Get the trused users in a channel."""
 
-        data = await (await self.api.get_trust()).json()
+        data = await (await self.api.trust.get()).json()
 
         if not data["data"]:
             return "No trusted users."
