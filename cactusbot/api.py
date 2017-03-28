@@ -191,7 +191,7 @@ class Quote(CactusAPIBucket):
             return await self.api.get("/user/{token}/quote/{id}".format(
                 token=self.api.token, id=quote_id))
         return await self.api.get("/user/{token}/quote".format(
-            token=self.api.token), params={"random": True})
+            token=self.api.token), params={"random": "true"})
 
     async def add(self, quote):
         """Add a quote."""

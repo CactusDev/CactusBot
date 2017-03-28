@@ -17,9 +17,10 @@ class Quote(Command):
 
         if quote is None:
             response = await self.api.quote.get()
-            if response.status == 404:
+            data = (await response.json())["data"]
+            if not data:
                 return "No quotes have been added!"
-            return (await response.json())["data"][0]["attributes"]["quote"]
+            return data[0]["attributes"]["quote"]
         else:
             response = await self.api.quote.get(quote)
             if response.status == 404:

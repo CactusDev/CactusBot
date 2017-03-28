@@ -1,5 +1,3 @@
-# pylint: skip-file
-
 """Magic command internals (and magic)."""
 
 import inspect
@@ -16,6 +14,26 @@ ROLES = {
 REGEXES = {
     "command": r"!?([\w-]{1,32})"
 }
+
+
+class ArgsError(Exception):
+    """Error raised when an unexpected number of arguments was received.
+
+    Parameters
+    ----------
+    direction : :obj:`bool`
+        Whether there were too many (:obj:`True`) or too few (:obj:`False`)
+        arguments passed.
+    args : :obj:`tuple` of :obj:`inspect.Parameter` s
+        :obj:`tuple` of the method's positional or keyword arguments.
+    """
+
+    def __init__(self, direction, args):
+
+        super().__init__()
+
+        self.direction = direction
+        self.args = args
 
 
 class Command:
@@ -106,65 +124,41 @@ class Command:
         commands = self.commands()
         assert self.default is None or callable(self.default)
 
-        if args:
+        if args and args[0] in commands:
 
             command, *arguments = args
 
-            if command in commands:
+            to_run = [(commands[command], arguments)]
+            if getattr(commands[command], "default", None) is not None:
+                to_run.append((commands[command].default, arguments))
+            if self.default is not None:
+                to_run.append((self.default, args))
 
-                role = commands[command].COMMAND_META.get("role", 1)
-
-                if isinstance(role, str):
-                    role = list(ROLES.keys())[list(map(
-                        str.lower, ROLES.values())).index(role.lower())]
-                if "packet" in meta and meta["packet"].role < role:
-                    return "Role level '{role}' or higher required.".format(
-                        role=ROLES[max(k for k in ROLES.keys() if k <= role)])
+            for index, (running, _args) in enumerate(to_run):
 
                 try:
+                    return await self._run_safe(running, *_args, **meta)
 
-                    return await self._run_safe(
-                        commands[command], *arguments, **meta)
+                except ArgsError as error:
 
-                except IndexError as error:
+                    if index > 0:
+                        continue
 
-                    if error.args[0] == 0:
-
-                        has_default = hasattr(commands[command], "default")
-                        has_commands = hasattr(commands[command], "commands")
-                        if not (has_default or has_commands):
-                            return "Not enough arguments. <{0}>".format(
-                                '> <'.join(arg.name for arg in error.args[1]))
-
-                        response = "Not enough arguments. <{0}>".format(
-                            '|'.join(
-                                commands[command].commands(hidden=False).keys()
-                            ))
-
-                        if commands[command].default is not None:
-
-                            try:
-                                return await self._run_safe(
-                                    commands[command].default,
-                                    *arguments, **meta)
-
-                            except IndexError:
-                                return response
-
-                        return response
-
-                    else:
+                    if error.direction:
                         return "Too many arguments."
 
-        if self.default is not None:
-            try:
-                return await self._run_safe(self.default, *args, **meta)
-            except IndexError:
-                pass
+                    has_default = hasattr(running, "default")
+                    has_commands = hasattr(running, "commands")
+                    if not (has_default or has_commands):
+                        return "Not enough arguments. <{0}>".format(
+                            '> <'.join(arg.name for arg in error.args[1]))
+
+            return "Not enough arguments. <{0}>".format('|'.join(
+                commands[command].commands(hidden=False).keys()
+            ))
 
         if args:
-            command, *_ = args
-            return "Invalid argument: '{0}'.".format(command)
+            return "Invalid argument: '{0}'.".format(args[0])
 
         return "Not enough arguments. <{0}>".format(
             '|'.join(self.commands(hidden=False).keys()))
@@ -226,11 +220,11 @@ class Command:
             function.COMMAND_META = meta
 
             if inspect.isclass(function):
-                COMMAND = getattr(function, "COMMAND", None)
+                command = getattr(function, "COMMAND", None)
                 function = function(Command.api)
                 function.__name__ = function.__class__.__name__
-                if COMMAND is not None:
-                    function.COMMAND = COMMAND
+                if command is not None:
+                    function.COMMAND = command
 
             if name is not None:
                 assert ' ' not in name, "Command name may not contain spaces"
@@ -245,6 +239,15 @@ class Command:
         return decorator
 
     async def _run_safe(self, function, *args, **meta):
+
+        role = function.COMMAND_META.get("role", 1)
+
+        if isinstance(role, str):
+            role = list(ROLES.keys())[list(map(
+                str.lower, ROLES.values())).index(role.lower())]
+        if "packet" in meta and meta["packet"].role < role:
+            return "Role level '{r}' or higher required.".format(
+                r=ROLES[max(k for k in ROLES.keys() if k <= role)])
 
         self._check_safe(function, *args)
 
@@ -276,7 +279,7 @@ class Command:
             if star_arg is not None:
                 pos_args += (star_arg,)
 
-            raise IndexError(len(args) > arg_range[0], pos_args)
+            raise ArgsError(len(args) > arg_range[0], pos_args)
         return True
 
     @staticmethod
@@ -310,7 +313,7 @@ class Command:
                 elif callable(arg.annotation):
                     try:
                         args[index] = await arg.annotation(args[index])
-                    except Exception:
+                    except Exception:  # pylint: disable=W0703
                         return error_response
                 else:
                     raise TypeError("Invalid annotation: {0}".format(
@@ -356,9 +359,11 @@ class Command:
         dict_keys(['simple'])
         """
 
-        disallowed = ["commands", "__class__"]
+        disallowed = ["commands", "api", "__class__"]
+
         return {
-            method.COMMAND: method for attr in dir(self)
+            method.COMMAND: method
+            for attr in dir(self)
             if attr not in disallowed
             for method in (getattr(self, attr),)
             if hasattr(method, "COMMAND") and
