@@ -7,7 +7,7 @@ branches:
     - develop
     - /^release-v(\d+.){0,2}\d+$/
 before_install:
-    - pip install flake8
+    - pip install flake8 pylint
     - pip install pytest pytest-asyncio --upgrade
 install:
   - pip install -r requirements.txt
@@ -18,5 +18,6 @@ before_script:
 script:
   - nosetests
   - flake8 run.py config.template.py cactusbot/
+  - pylint cactusbot/
   - pytest tests/
   - pytest cactusbot/ --doctest-modules
