@@ -9,12 +9,15 @@ async def get_user_id(_):
 
 class MockAPI:
 
-    async def get_trust(self, _):
+    class Trust:
 
-        class Response:
-            status = 404
+        async def get(self, _):
 
-        return Response()
+            class Response:
+                status = 404
+
+            return Response()
+    trust = Trust()
 
 spam_handler = SpamHandler(MockAPI())
 

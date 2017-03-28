@@ -9,91 +9,94 @@ from cactusbot.packets import MessagePacket
 class MockAPI:
     """Fake API."""
 
-    async def get_trust(self, user_id=None):
-        """Get trusts."""
+    class Trust:
 
-        class Response:
-            """Fake API response object."""
-            @property
-            def status(self):
-                """Response status."""
-                return 200
+        async def get(self, user_id=None):
+            """Get trusts."""
 
-            async def json(self):
-                """JSON version of the response."""
+            class Response:
+                """Fake API response object."""
+                @property
+                def status(self):
+                    """Response status."""
+                    return 200
 
-                if user_id:
-                    return {
-                        "data": {
-                            {
-                                "attributes": {
-                                    "token": "TestChannel",
-                                    "userId": "95845",
-                                    "userName": "Stanley"
+                async def json(self):
+                    """JSON version of the response."""
+
+                    if user_id:
+                        return {
+                            "data": {
+                                {
+                                    "attributes": {
+                                        "token": "TestChannel",
+                                        "userId": "95845",
+                                        "userName": "Stanley"
+                                    }
                                 }
                             }
                         }
-                    }
-                else:
-                    return {
-                        "data": [
-                            {
-                                "attributes": {
-                                    "token": "TestChannel",
-                                    "userId": "95845",
-                                    "userName": "Stanley"
+                    else:
+                        return {
+                            "data": [
+                                {
+                                    "attributes": {
+                                        "token": "TestChannel",
+                                        "userId": "95845",
+                                        "userName": "Stanley"
+                                    }
                                 }
-                            }
-                        ]
-                    }
-        return Response()
+                            ]
+                        }
+            return Response()
 
-    async def add_trust(self, user_id, username):
-        """Add a new trust."""
-        class Response:
-            """Fake API response object."""
-            @property
-            def status(self):
-                """Response status."""
-                return 200
+        async def add(self, user_id, username):
+            """Add a new trust."""
+            class Response:
+                """Fake API response object."""
+                @property
+                def status(self):
+                    """Response status."""
+                    return 200
 
-            async def json(self):
-                """JSON response."""
-                return {
-                    "attributes": {
+                async def json(self):
+                    """JSON response."""
+                    return {
                         "attributes": {
-                            "token": "TestChannel",
-                            "userId": "95845",
-                            "userName": "Stanley"
+                            "attributes": {
+                                "token": "TestChannel",
+                                "userId": "95845",
+                                "userName": "Stanley"
+                            },
+                            "id": "7875b898-fbb3-426f-aca3-7375d97326b0",
+                            "type": "trust"
                         },
-                        "id": "7875b898-fbb3-426f-aca3-7375d97326b0",
-                        "type": "trust"
-                    },
-                    "meta": {
-                        "created": True
+                        "meta": {
+                            "created": True
+                        }
                     }
-                }
-        return Response()
+            return Response()
 
-    async def remove_trust(self, user_id):
-        """Remove a trust."""
-        class Response:
-            """Fake API response."""
-            @property
-            def status(self):
-                """Response status."""
-                return 200
+        async def remove(self, user_id):
+            """Remove a trust."""
+            class Response:
+                """Fake API response."""
+                @property
+                def status(self):
+                    """Response status."""
+                    return 200
 
-            async def json(self):
-                """JSON response."""
-                return {
-                    "meta": {
-                        "deleted": [
-                            "7875b898-fbb3-426f-aca3-7375d97326b0"
-                        ]
+                async def json(self):
+                    """JSON response."""
+                    return {
+                        "meta": {
+                            "deleted": [
+                                "7875b898-fbb3-426f-aca3-7375d97326b0"
+                            ]
+                        }
                     }
-                }
-        return Response()
+            return Response()
+    trust = Trust()
 
 trust = Trust(MockAPI())
 
