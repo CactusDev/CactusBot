@@ -68,8 +68,8 @@ async def test_parse_config():
     packet = await parser.parse_config(CONFIG_PACKET)
 
     assert len(packet) is 4
-    assert packet.json[0]["values"]["follow"]["announce"] is True
-    assert packet.json[0]["values"]["follow"]["message"] == "Thanks for following, %USER%"
+    assert packet[0].json["values"]["follow"]["announce"] is True
+    assert packet[0].json["values"]["follow"]["message"] == "Thanks for following, %USER%"
 
 
 @pytest.mark.asyncio
