@@ -68,10 +68,10 @@ class SpamHandler(Handler):
     async def on_config(self, packet):
         """Handle config update events."""
 
-        if packet.kwargs["key"] == "spam":
-            self.config["max_emoji"] = packet.kwargs["values"]["maxEmoji"]
-            self.config["max_score"] = packet.kwargs["values"]["maxCapsScore"]
-            self.config["allow_urls"] = packet.kwargs["values"]["allowUrls"]
+        if packet.type == "spam":
+            self.config["max_emoji"] = packet.kwargs["maxEmoji"]
+            self.config["max_score"] = packet.kwargs["maxCapsScore"]
+            self.config["allow_urls"] = packet.kwargs["allowUrls"]
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""
