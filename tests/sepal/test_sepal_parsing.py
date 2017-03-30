@@ -1,7 +1,5 @@
-
-from cactusbot.sepal import SepalParser
-
 import pytest
+from cactusbot.sepal import SepalParser
 
 REPEAT_PACKET = {
     "type": "event",
@@ -31,15 +29,15 @@ CONFIG_PACKET = {
         "announce": {
             "follow": {
                 "announce": True,
-                "message": "Thanks for following, %USER%"
+                "message": "Thanks for following, %USER%!"
             },
             "host": {
                 "announce": False,
-                "message": "Thanks for hosting, %USER%"
+                "message": "Thanks for hosting, %USER%!"
             },
             "join": {
                 "announce": False,
-                "message": "Hello %USER%!"
+                "message": "Hello, %USER%!"
             },
             "leave": {
                 "announce": False,
@@ -47,7 +45,7 @@ CONFIG_PACKET = {
             },
             "sub": {
                 "announce": True,
-                "message": "Thanks for subbing, %USER%"
+                "message": "Thanks for subbing, %USER%!"
             }
         },
         "spam": {
@@ -61,15 +59,6 @@ CONFIG_PACKET = {
 }
 
 parser = SepalParser()
-
-
-@pytest.mark.asyncio
-async def test_parse_config():
-    packet = await parser.parse_config(CONFIG_PACKET)
-
-    assert len(packet) is 4
-    assert packet[0].json["values"]["follow"]["announce"] is True
-    assert packet[0].json["values"]["follow"]["message"] == "Thanks for following, %USER%"
 
 
 @pytest.mark.asyncio
@@ -94,3 +83,16 @@ async def test_parse_repeat():
     assert packet.json["target"] is None
 
     assert packet.text == "Hello! :D"
+
+
+@pytest.mark.asyncio
+async def test_parse_config():
+
+    packets = await parser.parse_config(CONFIG_PACKET)
+
+    assert len(packets) == 3
+    announce, spam, urls = packets
+
+    assert announce.json == CONFIG_PACKET["data"]["announce"]
+    assert spam.json == CONFIG_PACKET["data"]["spam"]
+    assert urls.json == {"urls": CONFIG_PACKET["data"]["whitelistedUrls"]}
