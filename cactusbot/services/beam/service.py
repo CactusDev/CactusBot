@@ -7,25 +7,25 @@ from ...service import Service
 from .api import BeamAPI
 from .chat import BeamChat
 from .constellation import BeamConstellation
-from .parser import BeamParser
+from .parse import (parse_follow, parse_host, parse_join, parse_leave,
+                    parse_message, parse_resubscribe, parse_subscribe,
+                    synthesize)
 
 
 class BeamService(Service):
     """Handle data from Beam services."""
 
-    PARSER = BeamParser
-
     CHAT_EVENTS = {
-        "ChatMessage": ("message", PARSER.parse_message),
-        "UserJoin": ("join", PARSER.parse_join),
-        "UserLeave": ("leave", PARSER.parse_leave)
+        "ChatMessage": ("message", parse_message),
+        "UserJoin": ("join", parse_join),
+        "UserLeave": ("leave", parse_leave)
     }
 
     CONSTELLATION_EVENTS = {
-        "channel:followed": ("follow", PARSER.parse_follow),
-        "channel:subscribed": ("subscribe", PARSER.parse_subscribe),
-        "channel:resubscribed": ("resubscribe", PARSER.parse_resubscribe),
-        "channel:hosted": ("host", PARSER.parse_host)
+        "channel:followed": ("follow", parse_follow),
+        "channel:subscribed": ("subscribe", parse_subscribe),
+        "channel:resubscribed": ("resubscribe", parse_resubscribe),
+        "channel:hosted": ("host", parse_host)
     }
 
     def __init__(self, channel, token, handlers):
@@ -33,8 +33,6 @@ class BeamService(Service):
         super().__init__(handlers)
 
         self.api = BeamAPI(channel, token)
-
-        self.parser = BeamParser()
 
         self.channel = channel
 
@@ -52,6 +50,8 @@ class BeamService(Service):
 
         self.chat = BeamChat(channel["id"], *chat["endpoints"])
         self.constellation = BeamConstellation(channel["id"], user_id)
+
+        return self
 
     async def run(self):
         """Connect to Beam chat and handle incoming packets."""
@@ -110,7 +110,7 @@ class BeamService(Service):
         """Respond to a handled packet."""
 
         if isinstance(response, MessagePacket):
-            args, kwargs = self.parser.synthesize(response)
+            args, kwargs = synthesize(response)
             await self.send(*args, **kwargs)
 
         elif isinstance(response, BanPacket):
