@@ -2,7 +2,7 @@
 
 from .api import BeamAPI
 from .chat import BeamChat
-from .handler import BeamHandler
+from .service import BeamService
 from .constellation import BeamConstellation
 
-__all__ = ["BeamHandler", "BeamAPI", "BeamChat", "BeamConstellation"]
+__all__ = ["BeamService", "BeamAPI", "BeamChat", "BeamConstellation"]

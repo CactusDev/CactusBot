@@ -73,17 +73,33 @@ class Handlers:
         result = []
 
         for handler in self.handlers:
+
             if hasattr(handler, "on_" + event):
+
                 try:
                     response = await getattr(handler, "on_" + event)(packet)
+
                 except Exception:  # pylint: disable=W0703
                     self.logger.warning(
-                        "Exception in handler %s:", type(handler).__name__,
-                        exc_info=1)
+                        "Exception in handler %s:",
+                        type(handler).__name__,
+                        exc_info=1
+                    )
+
                 else:
+
                     for translated in self.translate(response, handler):
+
                         if translated is StopIteration:
                             return result
+
+                        if not isinstance(translated, Packet):
+                            self.logger.warning(
+                                "Handler %s did not return a Packet: %s",
+                                type(handler).__name__,
+                                translated
+                            )
+
                         result.append(translated)
                         # In Python 3.6, with asynchronous generators:
                         # yield packet

@@ -37,15 +37,14 @@ async def run(api, service, url, *auth):
 
     await api.login(*api.SCOPES)
 
-    sepal = Sepal(api.token, service, url)
+    async with service:
 
-    try:
-        await sepal.connect()
-        asyncio.ensure_future(sepal.read(sepal.handle))
-        await service.run(*auth)
+        sepal = Sepal(api.token, service, url)
 
-    except KeyboardInterrupt:
-        logger.info("Removing thorns... done.")
+        try:
+            await sepal.connect()
+            asyncio.ensure_future(sepal.read(sepal.handle))
+            await service.run(*auth)
 
-    except Exception:  # pylint: disable=W0703
-        logger.critical("Oh no, I crashed!", exc_info=True)
+        except KeyboardInterrupt:
+            logger.info("Removing thorns... done.")

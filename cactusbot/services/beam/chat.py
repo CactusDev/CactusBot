@@ -45,7 +45,7 @@ class BeamChat(WebSocket):
         """Send an authentication packet."""
         if auth:
             user_id, get_chat = auth
-            authkey = (await get_chat())["authkey"]
+            authkey = (await get_chat(self.channel))["authkey"]
             await self.send(self.channel, user_id, authkey, method="auth")
         else:
             await self.send(self.channel, method="auth")
