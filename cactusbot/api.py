@@ -18,6 +18,7 @@ class CactusAPI(API):
         "repeat:create", "repeat:manage",
         "social:create", "social:manage",
         "trust:create", "trust:manage",
+        "points:manage"
     }
 
     def __init__(self, token, password, url=URL, auth_token="", **kwargs):
@@ -35,7 +36,8 @@ class CactusAPI(API):
             "config": Config(self),
             "repeat": Repeat(self),
             "social": Social(self),
-            "trust": Trust(self)
+            "trust": Trust(self),
+            "points": Points(self),
         }
 
     def __getattr__(self, attr):
@@ -292,6 +294,13 @@ class Social(CactusAPIBucket):
 
         return await self.api.delete("/user/{user}/social/{service}".format(
             user=self.api.token, service=service))
+
+
+class Points(CactusAPIBucket):
+    """Cactus API /points bucket"""
+
+    async def get(self):
+        pass
 
 
 class Trust(CactusAPIBucket):

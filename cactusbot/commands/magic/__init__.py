@@ -12,10 +12,11 @@ from .social import Social
 from .trust import Trust
 from .uptime import Uptime
 from .multi import Multi
+from .points import Points
 
 COMMANDS = (Alias, Cactus, Meta, Config, Cube, Temmie,
-            Quote, Repeat, Social, Trust, Uptime, Multi)
+            Quote, Repeat, Social, Trust, Uptime, Multi, Points)
 
 __all__ = ("Alias", "Command", "Cactus", "Meta", "Config", "Cube",
            "Temmie", "Quote", "Repeat", "Social", "Trust", "Uptime",
-           "Multi")
+           "Multi", "Points")
