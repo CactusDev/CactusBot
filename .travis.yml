@@ -12,7 +12,7 @@ branches:
 before_install:
     - pip install flake8 pylint
     - pip install pytest pytest-asyncio --upgrade
-    - pip install coveralls
+    - pip install coveralls pytest-cov
 
 install:
   - pip install -r requirements.txt
@@ -24,11 +24,11 @@ before_script:
   - cp config.template.py config.py
 
 script:
-  - nosetests --with-coverage --cover-package=cactusbot
+  - nosetests
   - flake8 run.py config.template.py cactusbot/
   - pylint cactusbot/
-  - pytest tests/
-  - pytest cactusbot/ --doctest-modules
+  - pytest --cov=cactusbot tests/
+  - pytest --cov=cactusbot cactusbot/ --doctest-modules
 
 after_success:
   - coveralls
