@@ -1,23 +1,34 @@
 language: python
+
 python:
   - 3.5
+
 branches:
   only:
     - master
     - develop
     - /^release-v(\d+.){0,2}\d+$/
+
 before_install:
     - pip install flake8 pylint
     - pip install pytest pytest-asyncio --upgrade
+    - pip install coveralls
+
 install:
   - pip install -r requirements.txt
+
 env:
   - PYTHONPATH=.
+
 before_script:
   - cp config.template.py config.py
+
 script:
-  - nosetests
+  - nosetests --with-coverage --cover-package=cactusbot
   - flake8 run.py config.template.py cactusbot/
   - pylint cactusbot/
   - pytest tests/
   - pytest cactusbot/ --doctest-modules
+
+after_success:
+  - coveralls
