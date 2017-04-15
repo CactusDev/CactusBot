@@ -23,8 +23,8 @@ class Repeat(Command):
             )
         elif response.status == 400:
             json = await response.json()
-            if len(json["errors"].get("period", [])) > 0:
-                return json["errors"].get("period")[0]
+            if json["errors"].get("period", []):
+                return json["errors"]["period"][0]
         else:
             return "An error occured."
 

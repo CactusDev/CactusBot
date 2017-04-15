@@ -67,12 +67,13 @@ class Config(Command):
                 await _update_deep_config(
                     self.api, "announce", "follow", "announce", True)
                 return "Follow announcements are now enabled."
-            elif value in VALID_TOGGLE_OFF_STATES:
+
+            if value in VALID_TOGGLE_OFF_STATES:
                 await _update_deep_config(
                     self.api, "announce", "follow", "announce", False)
                 return "Follow announcements are now disabled."
-            else:
-                return "Invalid boolean value: `{}`!".format(value)
+
+            return "Invalid boolean value: `{}`!".format(value)
 
         @Command.command(role="moderator")
         async def message(self, *message: False):
@@ -105,12 +106,13 @@ class Config(Command):
                 await _update_deep_config(
                     self.api, "announce", "sub", "announce", True)
                 return "Subscribe announcements are now enabled."
-            elif value in VALID_TOGGLE_OFF_STATES:
+
+            if value in VALID_TOGGLE_OFF_STATES:
                 await _update_deep_config(
                     self.api, "announce", "sub", "announce", False)
                 return "Subscribe announcements are now disabled."
-            else:
-                return "Invalid boolean value: `{}`!".format(value)
+
+            return "Invalid boolean value: `{}`!".format(value)
 
         @Command.command(role="moderator")
         async def message(self, *message: False):
@@ -143,12 +145,13 @@ class Config(Command):
                 await _update_deep_config(
                     self.api, "announce", "host", "announce", True)
                 return "Host announcements are now enabled."
-            elif value in VALID_TOGGLE_OFF_STATES:
+
+            if value in VALID_TOGGLE_OFF_STATES:
                 await _update_deep_config(
                     self.api, "announce", "host", "announce", False)
                 return "Host announcements are now disabled."
-            else:
-                return "Invalid boolean value: `{}`!".format(value)
+
+            return "Invalid boolean value: `{}`!".format(value)
 
         @Command.command(role="moderator")
         async def message(self, *message: False):
@@ -181,12 +184,13 @@ class Config(Command):
                 await _update_deep_config(
                     self.api, "announce", "leave", "announce", True)
                 return "Leave announcements are now enabled."
-            elif value in VALID_TOGGLE_OFF_STATES:
+
+            if value in VALID_TOGGLE_OFF_STATES:
                 await _update_deep_config(
                     self.api, "announce", "leave", "announce", False)
                 return "Leave announcements are now disabled."
-            else:
-                return "Invalid boolean value: `{}`!".format(value)
+
+            return "Invalid boolean value: `{}`!".format(value)
 
         @Command.command(role="moderator")
         async def message(self, *message: False):
@@ -219,12 +223,13 @@ class Config(Command):
                 await _update_deep_config(
                     self.api, "announce", "join", "announce", True)
                 return "Join announcements are now enabled."
-            elif value in VALID_TOGGLE_OFF_STATES:
+
+            if value in VALID_TOGGLE_OFF_STATES:
                 await _update_deep_config(
                     self.api, "announce", "join", "announce", False)
                 return "Join announcements are now disabled."
-            else:
-                return "Invalid boolean value: `{}`!".format(value)
+
+            return "Invalid boolean value: `{}`!".format(value)
 
         @Command.command(role="moderator")
         async def message(self, *message: False):
@@ -260,13 +265,13 @@ class Config(Command):
                     await _update_config(
                         self.api, "spam", "allowUrls", True)
                     return "URLs are now allowed."
-                elif value in VALID_TOGGLE_OFF_STATES:
+
+                if value in VALID_TOGGLE_OFF_STATES:
                     await _update_config(
                         self.api, "spam", "allowUrls", False)
                     return "URLs are now disallowed."
-                else:
-                    return "Invalid boolean value: '{value}'.".format(
-                        value=value)
+
+                return "Invalid boolean value: '{value}'.".format(value=value)
 
         @Command.command()
         class Emoji(Command):

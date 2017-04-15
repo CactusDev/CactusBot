@@ -32,9 +32,9 @@ class Sepal(WebSocket):
         }
 
         packet.update(kwargs)
-        await super().send(json.dumps(packet))
+        await super()._send(json.dumps(packet))
 
-    async def initialize(self):
+    async def initialize(self, *_):
         """Send a subscribe packet."""
 
         await self.send("join")
@@ -63,8 +63,8 @@ class Sepal(WebSocket):
             return
 
         if isinstance(data, (list, tuple)):
-            for packet in data:
-                await self.service.handle(event, packet)
+            for _packet in data:
+                await self.service.handle(event, _packet)
         else:
             await self.service.handle(event, data)
 

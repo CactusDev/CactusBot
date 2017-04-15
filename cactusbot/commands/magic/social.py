@@ -32,20 +32,18 @@ class Social(Command):
                         service)
 
             return MessagePacket(*response[:-1])
-        else:
-            social = await self.api.social.get()
-            if social.status == 200:
-                data = await social.json()
 
-                for service in data["data"]:
-                    response.append(
-                        service["attributes"]["service"].title() + ': ')
-                    response.append(("url", service["attributes"]["url"]))
-                    response.append(', ')
-                return MessagePacket(*response[:-1])
-            else:
-                return "'{}' not found on the streamer's profile!".format(
-                    service)
+        social = await self.api.social.get()
+        if social.status == 200:
+            data = await social.json()
+
+            for service in data["data"]:
+                response.append(
+                    service["attributes"]["service"].title() + ': ')
+                response.append(("url", service["attributes"]["url"]))
+                response.append(', ')
+            return MessagePacket(*response[:-1])
+        return "'{}' not found on the streamer's profile!".format(service)
 
     @Command.command()
     async def add(self, service, url):
@@ -58,7 +56,7 @@ class Social(Command):
             return "Updated social service {}".format(service)
         elif response.status == 400:
             json = await response.json()
-            if len(json["errors"].get("quote", {}).get("url", [])) > 0:
+            if json["errors"].get("quote", {}).get("url", []):
                 # NOTE: Add detection/hard-coded errors if more errors are
                 #       added in the future
                 return json["errors"]["quote"]["url"][0]

@@ -1,5 +1,9 @@
 # CactusBot
 
+[![Build Status](https://travis-ci.org/CactusDev/CactusBot.svg?branch=master)](https://travis-ci.org/CactusDev/CactusBot)
+
+[![Coverage Status](https://coveralls.io/repos/github/CactusBot/CactusBot/badge.svg?branch=master)](https://coveralls.io/github/CactusBot/CactusBot?branch=master)
+
 CactusBot is a next-generation chat bot for live streams.
 Harnessing the power of open-source, and an extraordinary community to shape its path
 

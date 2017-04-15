@@ -20,7 +20,7 @@ class WebSocket(aiohttp.ClientSession):
 
         self.logger = logging.getLogger(__name__)
 
-        assert len(endpoints), "An endpoint is required to connect."
+        assert endpoints, "An endpoint is required to connect."
 
         self.websocket = None
 
@@ -50,7 +50,7 @@ class WebSocket(aiohttp.ClientSession):
                 self.logger.info("Connection established.")
                 return self.websocket
 
-    async def send(self, packet):
+    async def _send(self, packet):
         """Send a packet to the WebSocket."""
         assert self.websocket is not None, "Must connect to send."
         self.logger.debug(packet)
@@ -76,7 +76,7 @@ class WebSocket(aiohttp.ClientSession):
                 self.logger.warning("Connection lost. Reconnecting.")
                 await self.connect(*self._init_args, **self._init_kwargs)
 
-    async def initialize(self):
+    async def initialize(self, *_):
         """Run initialization procedure."""
         pass
 

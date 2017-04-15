@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 from aiohttp import ClientHttpProcessingError, ClientSession
 
 
-class API(ClientSession):
+class API:
     """Interact with a REST API."""
 
     URL = None
@@ -17,6 +17,8 @@ class API(ClientSession):
 
         self.logger = logging.getLogger(__name__)
 
+        self.session = ClientSession()
+
     def _build(self, endpoint):
         return urljoin(self.URL, endpoint.lstrip('/'))
 
@@ -25,7 +27,7 @@ class API(ClientSession):
 
         url = self._build(endpoint)
 
-        async with super().request(method, url, **kwargs) as response:
+        async with self.session.request(method, url, **kwargs) as response:
             try:
                 text = await response.text()
             except json.decoder.JSONDecodeError:
@@ -40,22 +42,29 @@ class API(ClientSession):
                 return response
 
     async def get(self, endpoint, **kwargs):
-        return await self.request("GET", endpoint, **kwargs)
+        """HTTP GET request."""
+        return await self.session.request("GET", endpoint, **kwargs)
 
     async def options(self, endpoint, **kwargs):
-        return await self.request("OPTIONS", endpoint, **kwargs)
+        """HTTP OPTIONS request."""
+        return await self.session.request("OPTIONS", endpoint, **kwargs)
 
     async def head(self, endpoint, **kwargs):
-        return await self.request("HEAD", endpoint, **kwargs)
+        """HTTP HEAD request."""
+        return await self.session.request("HEAD", endpoint, **kwargs)
 
     async def post(self, endpoint, **kwargs):
-        return await self.request("POST", endpoint, **kwargs)
+        """HTTP POST request."""
+        return await self.session.request("POST", endpoint, **kwargs)
 
     async def put(self, endpoint, **kwargs):
-        return await self.request("PUT", endpoint, **kwargs)
+        """HTTP PUT request."""
+        return await self.session.request("PUT", endpoint, **kwargs)
 
     async def patch(self, endpoint, **kwargs):
-        return await self.request("PATCH", endpoint, **kwargs)
+        """HTTP PATCH request."""
+        return await self.session.request("PATCH", endpoint, **kwargs)
 
     async def delete(self, endpoint, **kwargs):
-        return await self.request("DELETE", endpoint, **kwargs)
+        """HTTP DELETE request."""
+        return await self.session.request("DELETE", endpoint, **kwargs)

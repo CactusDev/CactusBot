@@ -37,9 +37,9 @@ class BeamChat(WebSocket):
             for message in packet.copy()["arguments"]:
                 for index in range(0, len(message), max_length):
                     packet["arguments"] = (message[index:index + max_length],)
-                    await super().send(json.dumps(packet))
+                    await super()._send(json.dumps(packet))
         else:
-            await super().send(json.dumps(packet))
+            await super()._send(json.dumps(packet))
 
     async def initialize(self, *auth):
         """Send an authentication packet."""

@@ -52,18 +52,20 @@ class SpamHandler(Handler):
                                   target=packet.user),
                     BanPacket(packet.user, 1),
                     StopIteration)
-        elif exceeds_emoji:
+
+        if exceeds_emoji:
             return (MessagePacket("Please do not spam emoji.",
                                   target=packet.user),
                     BanPacket(packet.user, 1),
                     StopIteration)
-        elif contains_urls:
+
+        if contains_urls:
             return (MessagePacket("Please do not post URLs.",
                                   target=packet.user),
                     BanPacket(packet.user, 5),
                     StopIteration)
-        else:
-            return None
+
+        return None
 
     async def on_config(self, packet):
         """Handle config update events."""

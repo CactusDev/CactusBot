@@ -32,7 +32,7 @@ class Alias(Command):
             return "Command !{} does not exist.".format(command)
         elif response.status == 400:
             json = await response.json()
-            if len(json.get("errors", [])) > 0:
+            if json.get("errors", []):
                 return json["errors"][0]
 
     @Command.command(role="moderator")
@@ -59,6 +59,6 @@ class Alias(Command):
                     command["attributes"]["commandName"])
                 for command in aliases
             )))
-            if len(aliases) > 0:
+            if aliases:
                 return response
         return "No aliases added!"
