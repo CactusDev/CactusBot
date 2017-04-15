@@ -28,7 +28,7 @@ script:
   - flake8 run.py config.template.py cactusbot/
   - pylint cactusbot/
   - pytest --cov=cactusbot tests/
-  - pytest --cov=cactusbot cactusbot/ --doctest-modules
+  - pytest cactusbot/ --doctest-modules
 
 after_success:
   - coveralls
