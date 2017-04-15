@@ -258,8 +258,8 @@ class Config(Command):
 
                 if not value:
                     urls = await _get_spam_data(self.api, "allowUrls")
-                    return "URLs are {dis}abled.".format(
-                        dis='en' if urls else 'dis')
+                    return "URLs are {dis}allowed.".format(
+                        dis='' if urls else 'dis')
 
                 if value in VALID_TOGGLE_ON_STATES:
                     await _update_config(
@@ -283,13 +283,13 @@ class Config(Command):
 
                 if not value:
                     emoji = await _get_spam_data(self.api, "maxEmoji")
-                    return "Maximum amount of emojis allowed is {}".format(
+                    return "Maximum amount of emoji allowed is {}.".format(
                         emoji)
 
                 response = await _update_config(
                     self.api, "spam", "maxEmoji", value)
                 if response.status == 200:
-                    return "Max emojis updated to {}".format(value)
+                    return "Max emoji updated to {}.".format(value)
                 return "An error occurred."
 
         @Command.command()
@@ -302,10 +302,10 @@ class Config(Command):
 
                 if not value:
                     caps = await _get_spam_data(self.api, "maxCapsScore")
-                    return "Max caps score is {}".format(caps)
+                    return "Max caps score is {}.".format(caps)
 
                 response = await _update_config(
                     self.api, "spam", "maxCapsScore", value)
                 if response.status == 200:
-                    return "Max caps score is now {}".format(value)
+                    return "Max caps score is now {}.".format(value)
                 return "An error occurred."

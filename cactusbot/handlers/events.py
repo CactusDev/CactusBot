@@ -113,14 +113,13 @@ class EventHandler(Handler):
     async def on_config(self, packet):
         """Handle config update events."""
 
-        values = packet.kwargs["values"]
-        if packet.kwargs["key"] == "announce":
+        if packet.type == "announce":
             self.alert_messages = {
-                "follow": values["follow"],
-                "subscribe": values["sub"],
-                "host": values["host"],
-                "join": values["join"],
-                "leave": values["leave"]
+                "follow": packet.kwargs["follow"],
+                "subscribe": packet.kwargs["sub"],
+                "host": packet.kwargs["host"],
+                "join": packet.kwargs["join"],
+                "leave": packet.kwargs["leave"]
             }
 
     async def _cache(self, packet, event):

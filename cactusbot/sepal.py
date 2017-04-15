@@ -81,5 +81,8 @@ class SepalParser:
     async def parse_config(self, packet):
         """Parse the incoming config packets."""
 
-        return [Packet("config", key=key, values=values)
-                for key, values in packet["data"].items()]
+        return [
+            Packet("announce", **packet["data"]["announce"]),
+            Packet("spam", **packet["data"]["spam"]),
+            Packet("whitelistedUrls", urls=packet["data"]["whitelistedUrls"])
+        ]
