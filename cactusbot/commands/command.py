@@ -284,6 +284,7 @@ class Command:
             role = list(ROLES.keys())[list(map(
                 str.lower, ROLES.values())).index(role.lower())]
         if "packet" in meta and meta["packet"].role < role:
+            # pylint: disable=C0201
             return "Role level '{r}' or higher required.".format(
                 r=ROLES[max(k for k in ROLES.keys() if k <= role)])
 
@@ -399,7 +400,7 @@ class Command:
 
         disallowed = ["commands", "api", "__class__"]
 
-        return {
+        return {  # pylint: disable=E1101
             method.COMMAND: method
             for attr in dir(self)
             if attr not in disallowed

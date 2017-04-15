@@ -98,7 +98,7 @@ class MessagePacket(Packet):
         elif isinstance(key, slice):
 
             if key.stop is not None or key.step is not None:
-                raise NotImplementedError  # TODO
+                raise NotImplementedError
 
             count = key.start or 0
             message = self.message.copy()

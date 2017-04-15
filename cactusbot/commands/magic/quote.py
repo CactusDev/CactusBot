@@ -12,7 +12,7 @@ class Quote(Command):
     COMMAND = "quote"
 
     @Command.command(hidden=True)
-    async def default(self, quote: r'[1-9]\d*'=None):
+    async def default(self, quote: r'[1-9]\d*' = None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
 
         if quote is None:

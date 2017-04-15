@@ -116,10 +116,14 @@ class CommandHandler(Handler):
             return MessagePacket("Command is disabled.", target=_packet.user)
 
         if _packet.role < json["response"]["role"]:
+            # pylint: disable=C0201
             return MessagePacket(
                 "Role level '{role}' or higher required.".format(
-                    role=ROLES[max(k for k in ROLES.keys()
-                                   if k <= json["response"]["role"])]),
+                    role=ROLES[max(
+                        k for k in ROLES.keys()
+                        if k <= json["response"]["role"]
+                    )]
+                ),
                 target=_packet.user if _packet.target else None
             )
 

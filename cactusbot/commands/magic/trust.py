@@ -61,8 +61,7 @@ class Trust(Command):
 
         if response.status == 200:
             return MessagePacket("Removed trust for user ", ("tag", user), '.')
-        else:
-            return MessagePacket(("tag", user), " is not a trusted user.")
+        return MessagePacket(("tag", user), " is not a trusted user.")
 
     @Command.command("list")
     async def list_trusts(self):
