@@ -299,8 +299,15 @@ class Social(CactusAPIBucket):
 class Points(CactusAPIBucket):
     """Cactus API /points bucket"""
 
-    async def get(self):
-        pass
+    async def get(self, username):
+        """Get the number of points for a user"""
+        return await self.api.get("/user/{user}/points/{username}".format(
+            user=self.api.token, username=username
+        ))
+
+    async def transfer(self, username, amount):
+        return await self.api.patch("/user/{user}/points/{username}".format(
+            user=self.api.token, username=username), data={"count": amount})
 
 
 class Trust(CactusAPIBucket):

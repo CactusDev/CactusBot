@@ -10,12 +10,10 @@ class Points(Command):
     COMMAND = "points"
 
     @Command.command(hidden=True)
-    async def default(self):
+    async def default(self, *, username: "username"):
         """Get the current user's current # of points"""
-        # response = await self.api.points.get()
-        # data = (await response.json()["data"])
-        # if not data:
-        #     return MessagePacket("Splosions!")
-        # return MessagePacket(str(data))
-
-        return MessagePacket("lol!")
+        response = await self.api.points.get(username)
+        data = (await response.json()["data"])
+        if not data:
+            return MessagePacket("Splosions!")
+        return MessagePacket(str(data))
