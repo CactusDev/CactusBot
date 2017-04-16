@@ -12,13 +12,14 @@ class API(ClientSession):
 
     URL = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, url=URL, **kwargs):
         super().__init__(**kwargs)
 
+        self.url = url
         self.logger = logging.getLogger(__name__)
 
     def _build(self, endpoint):
-        return urljoin(self.URL, endpoint.lstrip('/'))
+        return urljoin(self.url, endpoint.lstrip('/'))
 
     async def request(self, method, endpoint, **kwargs):
         """Send HTTP request to an endpoint."""

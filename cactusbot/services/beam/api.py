@@ -16,7 +16,7 @@ class BeamAPI(API):
 
     def __init__(self, channel, token):
 
-        super().__init__()
+        super().__init__(url=self.URL)
 
         self.channel = channel
 
