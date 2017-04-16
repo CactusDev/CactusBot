@@ -305,9 +305,11 @@ class Points(CactusAPIBucket):
             user=self.api.token, username=username
         ))
 
-    async def transfer(self, username, amount):
+    async def transfer(self, username, sender, amount):
         return await self.api.patch("/user/{user}/points/{username}".format(
-            user=self.api.token, username=username), data={"count": amount})
+            user=self.api.token, username=username),
+            data=json.dumps({"count": "+{}".format(amount),
+                             "sender": sender}))
 
 
 class Trust(CactusAPIBucket):
