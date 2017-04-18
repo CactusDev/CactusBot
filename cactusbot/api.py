@@ -44,7 +44,7 @@ class CactusAPI(API):
     async def request(self, method, endpoint, **kwargs):
         """Send HTTP request to endpoint."""
 
-        is_json = kwargs.get("is_json", True)
+        is_json = kwargs.pop("is_json", True)
 
         headers = {
             "X-Auth-Token": self.token,
