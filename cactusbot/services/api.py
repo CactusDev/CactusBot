@@ -43,28 +43,28 @@ class API:
 
     async def get(self, endpoint, **kwargs):
         """HTTP GET request."""
-        return await self.session.request("GET", endpoint, **kwargs)
+        return await self.request("GET", endpoint, **kwargs)
 
     async def options(self, endpoint, **kwargs):
         """HTTP OPTIONS request."""
-        return await self.session.request("OPTIONS", endpoint, **kwargs)
+        return await self.request("OPTIONS", endpoint, **kwargs)
 
     async def head(self, endpoint, **kwargs):
         """HTTP HEAD request."""
-        return await self.session.request("HEAD", endpoint, **kwargs)
+        return await self.request("HEAD", endpoint, **kwargs)
 
     async def post(self, endpoint, **kwargs):
         """HTTP POST request."""
-        return await self.session.request("POST", endpoint, **kwargs)
+        return await self.request("POST", endpoint, **kwargs)
 
     async def put(self, endpoint, **kwargs):
         """HTTP PUT request."""
-        return await self.session.request("PUT", endpoint, **kwargs)
+        return await self.request("PUT", endpoint, **kwargs)
 
     async def patch(self, endpoint, **kwargs):
         """HTTP PATCH request."""
-        return await self.session.request("PATCH", endpoint, **kwargs)
+        return await self.request("PATCH", endpoint, **kwargs)
 
     async def delete(self, endpoint, **kwargs):
         """HTTP DELETE request."""
-        return await self.session.request("DELETE", endpoint, **kwargs)
+        return await self.request("DELETE", endpoint, **kwargs)
