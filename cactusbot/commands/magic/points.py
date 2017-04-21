@@ -38,11 +38,15 @@ class Points(Command):
         response = await self.api.points.transfer(user, sender, amount)
         data = await response.json()
         if response.status in (400, 404, 500):
-            print(data)
-            # if "errors" in data:
-            #     print(data["errors"])
-            return MessagePacket("An error occured! We're sorry about that :(",
-                                 target=sender)
+            errors = data.get("errors")
+            message = ""
+            if errors is not None and isinstance(errors, list):
+                for err in errors:
+                    for msg in err.values():
+                        message += ". ".join(msg)
+
+            return MessagePacket(message, target=sender)
+
         else:
             data = data["data"]
 
