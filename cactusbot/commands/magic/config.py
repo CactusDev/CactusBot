@@ -287,20 +287,29 @@ class Config(Command):
                     return "Max emojis updated to {}".format(value)
                 return "An error occurred."
 
-        @Command.command()
-        class Caps(Command):
+    @Command.command()
+    class Caps(Command):
+        """Caps subcommand."""
+
+        @Command.command(name="caps")
+        async def default(self, value=""):
             """Caps subcommand."""
 
-            @Command.command(name="caps")
-            async def default(self, value=""):
-                """Caps subcommand."""
+            if not value:
+                caps = await _get_spam_data(self.api, "maxCapsScore")
+                return "Max caps score is {}".format(caps)
 
-                if not value:
-                    caps = await _get_spam_data(self.api, "maxCapsScore")
-                    return "Max caps score is {}".format(caps)
+            response = await _update_config(
+                self.api, "spam", "maxCapsScore", value)
+            if response.status == 200:
+                return "Max caps score is now {}".format(value)
+            return "An error occurred."
 
-                response = await _update_config(
-                    self.api, "spam", "maxCapsScore", value)
-                if response.status == 200:
-                    return "Max caps score is now {}".format(value)
-                return "An error occurred."
+    @Command.command()
+    class Blacklist(Command):
+        """Blacklist command"""
+
+        @Command.command(name="blacklist")
+        async def default(self, value=""):
+            print(value)
+            return "SPLOSIONS!"
