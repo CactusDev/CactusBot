@@ -48,12 +48,13 @@ class Config(Command):
     """Config Command."""
 
     COMMAND = "config"
+    ROLE = "moderator"
 
-    @Command.command(role="moderator")
+    @Command.command()
     class Follow(Command):
         """Follow subcommand."""
 
-        @Command.command(role="moderator", name="follow")
+        @Command.command()
         async def default(self, value=""):
             """Get status, and message of the follow event, or toggle."""
 
@@ -75,7 +76,7 @@ class Config(Command):
 
             return "Invalid boolean value: `{}`!".format(value)
 
-        @Command.command(role="moderator")
+        @Command.command()
         async def message(self, *message: False):
             """Set the follow message."""
 
@@ -88,11 +89,11 @@ class Config(Command):
                 self.api, "announce", "follow", "message", ' '.join(message))
             return "Set new follow message response."
 
-    @Command.command(role="moderator")
+    @Command.command()
     class Subscribe(Command):
         """Subcommand subcommand."""
 
-        @Command.command(role="moderator", name="subscribe")
+        @Command.command()
         async def default(self, value=""):
             """Get status, and message of the subscribe event, or toggle."""
 
@@ -114,7 +115,7 @@ class Config(Command):
 
             return "Invalid boolean value: `{}`!".format(value)
 
-        @Command.command(role="moderator")
+        @Command.command()
         async def message(self, *message: False):
             """Set the subscribe message."""
 
@@ -127,11 +128,11 @@ class Config(Command):
                 self.api, "announce", "sub", "message", ' '.join(message))
             return "Set new subscribe message response."
 
-    @Command.command(role="moderator")
+    @Command.command()
     class Host(Command):
         """Host subcommand."""
 
-        @Command.command(role="moderator", name="host")
+        @Command.command()
         async def default(self, value=""):
             """Get status, and message of the host event, or toggle."""
 
@@ -153,7 +154,7 @@ class Config(Command):
 
             return "Invalid boolean value: `{}`!".format(value)
 
-        @Command.command(role="moderator")
+        @Command.command()
         async def message(self, *message: False):
             """Set the host message."""
 
@@ -166,11 +167,11 @@ class Config(Command):
                 self.api, "announce", "host", "message", ' '.join(message))
             return "Set new host message response."
 
-    @Command.command(role="moderator")
+    @Command.command()
     class Leave(Command):
         """Leave subcommand."""
 
-        @Command.command(role="moderator", name="leave")
+        @Command.command()
         async def default(self, value=""):
             """Get status, and message of the leave event, or toggle."""
 
@@ -192,7 +193,7 @@ class Config(Command):
 
             return "Invalid boolean value: `{}`!".format(value)
 
-        @Command.command(role="moderator")
+        @Command.command()
         async def message(self, *message: False):
             """Set the leave message."""
 
@@ -205,11 +206,11 @@ class Config(Command):
                 self.api, "announce", "leave", "message", ' '.join(message))
             return "Set new leave message response."
 
-    @Command.command(role="moderator")
+    @Command.command()
     class Join(Command):
         """Join subcommand."""
 
-        @Command.command(role="moderator", name="join")
+        @Command.command()
         async def default(self, value=""):
             """Get status, and message of the join event, or toggle."""
 
@@ -231,7 +232,7 @@ class Config(Command):
 
             return "Invalid boolean value: `{}`!".format(value)
 
-        @Command.command(role="moderator")
+        @Command.command()
         async def message(self, *message: False):
             """Set the join message."""
 
@@ -244,7 +245,7 @@ class Config(Command):
                 self.api, "announce", "join", "message", ' '.join(message))
             return "Set new join message response."
 
-    @Command.command(role="moderator")
+    @Command.command()
     class Spam(Command):
         """Spam subcommand."""
 
@@ -252,7 +253,7 @@ class Config(Command):
         class Urls(Command):
             """Urls subcommand."""
 
-            @Command.command(name="urls")
+            @Command.command()
             async def default(self, value=""):
                 """Urls subcommand."""
 
@@ -277,7 +278,7 @@ class Config(Command):
         class Emoji(Command):
             """Emoji subcommand."""
 
-            @Command.command(name="emoji")
+            @Command.command()
             async def default(self, value=""):
                 """Emoji subcommand."""
 
@@ -296,7 +297,7 @@ class Config(Command):
         class Caps(Command):
             """Caps subcommand."""
 
-            @Command.command(name="caps")
+            @Command.command()
             async def default(self, value=""):
                 """Caps subcommand."""
 

@@ -22,6 +22,7 @@ class Trust(Command):
     """Trust command."""
 
     COMMAND = "trust"
+    ROLE = "moderator"
 
     @Command.command(hidden=True)
     async def default(self, username: check_user):
@@ -63,7 +64,7 @@ class Trust(Command):
             return MessagePacket("Removed trust for user ", ("tag", user), '.')
         return MessagePacket(("tag", user), " is not a trusted user.")
 
-    @Command.command("list")
+    @Command.command(name="list")
     async def list_trusts(self):
         """Get the trused users in a channel."""
 
@@ -74,3 +75,16 @@ class Trust(Command):
 
         return "Trusted users: {}.".format(', '.join(
             user["attributes"]["userName"] for user in data["data"]))
+
+    @Command.command()
+    async def check(self, username: check_user):
+        """Check if a user is currently trusted in the channel."""
+
+        user, user_id = username
+
+        data = await (await self.api.trust.get(user_id)).json()
+        print(data)
+
+        trusted = " " if data["data"] else " not "
+        return MessagePacket(("tag", user), " is{status}trusted.".format(
+            status=trusted))

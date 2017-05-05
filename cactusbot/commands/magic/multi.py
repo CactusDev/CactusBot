@@ -11,6 +11,7 @@ class Multi(Command):
     """Generate a multistream link."""
 
     COMMAND = "multi"
+    ROLE = "moderator"
 
     @Command.command(hidden=True)
     async def default(self, *channels):

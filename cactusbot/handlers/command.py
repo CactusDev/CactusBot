@@ -27,8 +27,8 @@ class CommandHandler(Handler):
         super().__init__()
 
         self.channel = channel
-        self.api = api
 
+        self.api = api
         self.magics = {command.COMMAND: command(api) for command in COMMANDS}
 
     async def on_message(self, packet):

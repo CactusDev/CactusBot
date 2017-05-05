@@ -7,13 +7,14 @@ class Meta(Command):
     """Manage commands."""
 
     COMMAND = "command"
+    ROLE = "moderator"
 
     ROLES = {
         '+': 4,
         '$': 2
     }
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def add(self, command: r'!?([+$]?)([\w-]{1,32})', *response,
                   raw: "packet"):
         """Add a command."""
@@ -32,7 +33,7 @@ class Meta(Command):
             return "Added command !{}.".format(name)
         return "Updated command !{}.".format(name)
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def remove(self, name: "?command"):
         """Remove a command."""
         response = await self.api.command.remove(name)
@@ -40,7 +41,7 @@ class Meta(Command):
             return "Removed command !{}.".format(name)
         return "Command !{} does not exist!".format(name)
 
-    @Command.command("list", role="moderator")
+    @Command.command(name="list")
     async def list_commands(self):
         """List all custom commands."""
         response = await self.api.command.get()
@@ -55,7 +56,7 @@ class Meta(Command):
             )))
         return "No commands added!"
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def enable(self, command: "?command"):
         """Enable a command."""
 
@@ -63,7 +64,7 @@ class Meta(Command):
         if response.status == 200:
             return "Command !{} has been enabled.".format(command)
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def disable(self, command: "?command"):
         """Disable a command."""
 
@@ -71,7 +72,7 @@ class Meta(Command):
         if response.status == 200:
             return "Command !{} has been disabled.".format(command)
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def count(self, command: r'?command',
                     action: r"([=+-]?)(\d+)" = None):
         """Update the count of a command."""
