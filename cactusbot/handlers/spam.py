@@ -72,6 +72,7 @@ class SpamHandler(Handler):
             self.config["max_emoji"] = packet.kwargs["values"]["maxEmoji"]
             self.config["max_score"] = packet.kwargs["values"]["maxCapsScore"]
             self.config["allow_urls"] = packet.kwargs["values"]["allowUrls"]
+            self.config["blacklist"] = packet.kwargs["values"]["blacklist"]
 
     def check_caps(self, message):
         """Check for excessive capital characters in the message."""
