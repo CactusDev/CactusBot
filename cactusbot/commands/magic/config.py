@@ -1,6 +1,7 @@
 """Config command."""
 
 from .command import Command
+from ...packets import MessagePacket
 
 VALID_TOGGLE_ON_STATES = ("on", "allow", "enable", "true")
 VALID_TOGGLE_OFF_STATES = ("off", "disallow", "disable", "false")
@@ -309,7 +310,27 @@ class Config(Command):
     class Blacklist(Command):
         """Blacklist command"""
 
-        @Command.command(name="blacklist")
-        async def default(self, value=""):
-            print(value)
-            return "SPLOSIONS!"
+        @Command.command(name="blacklist", role="moderator")
+        async def default(self, value="", *, username: "username"):
+            """Blacklist subcommand"""
+            if not value:
+                data = (await (await self.api.config.get()).json())["data"]
+                blist = data["attributes"]["blacklist"]
+                return MessagePacket(
+                    "Blacklisted words: {}".format(", ".join(blist)),
+                    target=username)
+
+        @Command.command(name="add")
+        async def add(self, value, *, username: "username"):
+            """Add a word to the blacklist"""
+            response = await self.api.config.update({
+                "blacklist": [value]
+            })
+            data = (await response.json())["data"]
+            return MessagePacket(str(data["attributes"]), target=username)
+
+        @Command.command(name="remove")
+        async def remove(self, value, *, username: "username"):
+            """Remove a word from the blacklist"""
+            if not value:
+                pass
