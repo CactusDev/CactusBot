@@ -186,7 +186,7 @@ class CommandHandler(Handler):
 
         if re.search(self.ARGS_EXPR, _packet.text):
             _packet.sub(self.ARGS_EXPR, sub_args)
-            if _packet.text is "":
+            if _packet.text == "":
                 return MessagePacket("Not enough arguments!")
 
         username = ""
