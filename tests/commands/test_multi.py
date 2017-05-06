@@ -4,7 +4,6 @@ import pytest
 
 from cactusbot.api import CactusAPI
 from cactusbot.commands.magic import Multi
-from cactusbot.packets import MessagePacket
 
 multi = Multi(CactusAPI("test_token", "test_password"))
 
