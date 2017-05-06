@@ -7,8 +7,9 @@ class Repeat(Command):
     """Manage repeats."""
 
     COMMAND = "repeat"
+    ROLE = "moderator"
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def add(self, period: r"[1-9]\d*", command: "?command"):
         """Add a repeat."""
 
@@ -28,7 +29,7 @@ class Repeat(Command):
         else:
             return "An error occured."
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def remove(self, repeat: "?command"):
         """Remove a repeat"""
 
@@ -39,7 +40,7 @@ class Repeat(Command):
         elif response.status == 404:
             return "Repeat with ID {} doesn't exist.".format(repeat)
 
-    @Command.command("list", role="moderator")
+    @Command.command(name="list")
     async def list_repeats(self):
         """List all repeats."""
 

@@ -8,8 +8,9 @@ class Social(Command):
     """Get social data."""
 
     COMMAND = "social"
+    ROLE = "moderator"
 
-    @Command.command(hidden=True)
+    @Command.command(hidden=True, role="user")
     async def default(self, *services: False):
         """Get a social service if it's provived, or give it all."""
 
@@ -57,9 +58,7 @@ class Social(Command):
         elif response.status == 400:
             json = await response.json()
             if json["errors"].get("quote", {}).get("url", []):
-                # NOTE: Add detection/hard-coded errors if more errors are
-                #       added in the future
-                return json["errors"]["quote"]["url"][0]
+                return "An error has occurred."
 
     @Command.command()
     async def remove(self, service):
