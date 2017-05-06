@@ -10,8 +10,9 @@ class Quote(Command):
     """Manage quotes."""
 
     COMMAND = "quote"
+    ROLE = "moderator"
 
-    @Command.command(hidden=True)
+    @Command.command(hidden=True, role="user")
     async def default(self, quote: r'[1-9]\d*' = None):
         """Get a quote based on ID. If no ID is provided, pick a random one."""
 
@@ -27,7 +28,7 @@ class Quote(Command):
                 return "Quote {} does not exist!".format(quote)
             return (await response.json())["data"]["attributes"]["quote"]
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def add(self, *quote):
         """Add a quote."""
         response = await self.api.quote.add(' '.join(quote))
@@ -35,7 +36,7 @@ class Quote(Command):
         return "Added quote #{}.".format(
             data["data"]["attributes"]["quoteId"])
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def edit(self, quote_id: r'[1-9]\d*', *quote):
         """Edit a quote based on ID."""
         response = await self.api.edit_quote(quote_id, ' '.join(quote))
@@ -43,7 +44,7 @@ class Quote(Command):
             return "Added quote #{}.".format(quote_id)
         return "Edited quote #{}.".format(quote_id)
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def remove(self, quote_id: r'[1-9]\d*'):
         """Remove a quote."""
         response = await self.api.remove_quote(quote_id)
@@ -51,7 +52,7 @@ class Quote(Command):
             return "Quote {} does not exist!".format(quote_id)
         return "Removed quote #{}.".format(quote_id)
 
-    @Command.command(hidden=True, role="subscriber")
+    @Command.command(hidden=True)
     async def inspirational(self):
         """Retrieve an inspirational quote."""
         try:

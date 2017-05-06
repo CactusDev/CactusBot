@@ -113,6 +113,8 @@ class Command:
 
     api = None
 
+    ROLE = "user"
+
     def __init__(self, api=None):
 
         if api is not None:
@@ -120,7 +122,6 @@ class Command:
             Command.api = api
 
     async def __call__(self, *args, **meta):
-
         # pylint: disable=R0911
 
         commands = self.commands()
@@ -135,7 +136,6 @@ class Command:
                 to_run.append(commands[command].default)
 
             for index, running in enumerate(to_run):
-
                 try:
                     return await self._run_safe(running, *arguments, **meta)
 
@@ -278,11 +278,12 @@ class Command:
 
     async def _run_safe(self, function, *args, **meta):
 
-        role = function.COMMAND_META.get("role", 1)
+        role = function.COMMAND_META.get("role", self.ROLE)
 
         if isinstance(role, str):
             role = list(ROLES.keys())[list(map(
                 str.lower, ROLES.values())).index(role.lower())]
+
         if "packet" in meta and meta["packet"].role < role:
             # pylint: disable=C0201
             return "Role level '{r}' or higher required.".format(

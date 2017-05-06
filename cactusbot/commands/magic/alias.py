@@ -8,8 +8,9 @@ class Alias(Command):
     """Alias command."""
 
     COMMAND = "alias"
+    ROLE = "moderator"
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def add(self, alias: "?command", command: "?command", *_: False,
                   raw: "packet"):
         """Add a new command alias."""
@@ -35,7 +36,7 @@ class Alias(Command):
             if json.get("errors", []):
                 return json["errors"][0]
 
-    @Command.command(role="moderator")
+    @Command.command()
     async def remove(self, alias: "?command"):
         """Remove a command alias."""
 
@@ -45,7 +46,7 @@ class Alias(Command):
         elif response.status == 404:
             return "Alias !{} doesn't exist!".format(alias)
 
-    @Command.command("list", role="moderator")
+    @Command.command(name="list")
     async def list_aliases(self):
         """List all aliases."""
         response = await self.api.command.get()
