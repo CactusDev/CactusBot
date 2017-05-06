@@ -1,7 +1,6 @@
 """Handle commands."""
 
 import random
-import re
 
 from ..commands import COMMANDS
 from ..commands.command import ROLES

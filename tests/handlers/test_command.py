@@ -84,6 +84,18 @@ def test_inject_args():
         "give"
     )
 
+    verify(
+        "Here, have some %ARGS=taco salad%!",
+        "Here, have some taco salad!",
+        "give"
+    )
+
+    verify(
+        "Here, have some %ARGS=taco salad%!",
+        "Here, have some potato salad!",
+        "give", "potato", "salad"
+    )
+
 
 def test_inject_user():
 
