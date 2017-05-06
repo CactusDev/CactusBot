@@ -60,7 +60,7 @@ class Config(Command):
 
             if not value:
                 data = await _get_event_data(self.api, "follow")
-                return "{dis}abled, message: `{message}`".format(
+                return "{dis}abled, message: '{message}'".format(
                     dis='En' if data["announce"] else 'Dis',
                     message=data["message"])
 
@@ -74,7 +74,7 @@ class Config(Command):
                     self.api, "announce", "follow", "announce", False)
                 return "Follow announcements are now disabled."
 
-            return "Invalid boolean value: `{}`!".format(value)
+            return "Invalid boolean value: '{}'.".format(value)
 
         @Command.command()
         async def message(self, *message: False):
@@ -83,7 +83,7 @@ class Config(Command):
             if not message:
                 data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["follow"]["message"]
-                return "Current response: `{}`".format(message)
+                return "Current response: '{}'".format(message)
 
             await _update_deep_config(
                 self.api, "announce", "follow", "message", ' '.join(message))
@@ -99,7 +99,7 @@ class Config(Command):
 
             if not value:
                 data = await _get_event_data(self.api, "sub")
-                return "{dis}abled, message: `{message}`".format(
+                return "{dis}abled, message: '{message}'".format(
                     dis='En' if data["announce"] else 'Dis',
                     message=data["message"])
 
@@ -113,7 +113,7 @@ class Config(Command):
                     self.api, "announce", "sub", "announce", False)
                 return "Subscribe announcements are now disabled."
 
-            return "Invalid boolean value: `{}`!".format(value)
+            return "Invalid boolean value: '{}'.".format(value)
 
         @Command.command()
         async def message(self, *message: False):
@@ -122,7 +122,7 @@ class Config(Command):
             if not message:
                 data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["sub"]["message"]
-                return "Current response: `{}`".format(message)
+                return "Current response: '{}'".format(message)
 
             await _update_deep_config(
                 self.api, "announce", "sub", "message", ' '.join(message))
@@ -138,7 +138,7 @@ class Config(Command):
 
             if not value:
                 data = await _get_event_data(self.api, "host")
-                return "{dis}abled, message: `{message}`".format(
+                return "{dis}abled, message: '{message}'".format(
                     dis='En' if data["announce"] else 'Dis',
                     message=data["message"])
 
@@ -152,7 +152,7 @@ class Config(Command):
                     self.api, "announce", "host", "announce", False)
                 return "Host announcements are now disabled."
 
-            return "Invalid boolean value: `{}`!".format(value)
+            return "Invalid boolean value: '{}'.".format(value)
 
         @Command.command()
         async def message(self, *message: False):
@@ -161,7 +161,7 @@ class Config(Command):
             if not message:
                 data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["host"]["message"]
-                return "Current response: `{}`".format(message)
+                return "Current response: '{}'".format(message)
 
             await _update_deep_config(
                 self.api, "announce", "host", "message", ' '.join(message))
@@ -177,7 +177,7 @@ class Config(Command):
 
             if not value:
                 data = await _get_event_data(self.api, "leave")
-                return "{dis}abled, message: `{message}`".format(
+                return "{dis}abled, message: '{message}'".format(
                     dis='En' if data["announce"] else 'Dis',
                     message=data["message"])
 
@@ -191,7 +191,7 @@ class Config(Command):
                     self.api, "announce", "leave", "announce", False)
                 return "Leave announcements are now disabled."
 
-            return "Invalid boolean value: `{}`!".format(value)
+            return "Invalid boolean value: '{}'.".format(value)
 
         @Command.command()
         async def message(self, *message: False):
@@ -200,7 +200,7 @@ class Config(Command):
             if not message:
                 data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["leave"]["message"]
-                return "Current response: `{}`".format(message)
+                return "Current response: '{}'".format(message)
 
             await _update_deep_config(
                 self.api, "announce", "leave", "message", ' '.join(message))
@@ -216,7 +216,7 @@ class Config(Command):
 
             if not value:
                 data = await _get_event_data(self.api, "join")
-                return "{dis}abled, message: `{message}`".format(
+                return "{dis}abled, message: '{message}'".format(
                     dis='En' if data["announce"] else 'Dis',
                     message=data["message"])
 
@@ -230,7 +230,7 @@ class Config(Command):
                     self.api, "announce", "join", "announce", False)
                 return "Join announcements are now disabled."
 
-            return "Invalid boolean value: `{}`!".format(value)
+            return "Invalid boolean value: '{}'.".format(value)
 
         @Command.command()
         async def message(self, *message: False):
@@ -239,7 +239,7 @@ class Config(Command):
             if not message:
                 data = (await (await self.api.config.get()).json())["data"]
                 message = data["attributes"]["announce"]["join"]["message"]
-                return "Current response: `{}`".format(message)
+                return "Current response: '{}'".format(message)
 
             await _update_deep_config(
                 self.api, "announce", "join", "message", ' '.join(message))
@@ -272,7 +272,7 @@ class Config(Command):
                         self.api, "spam", "allowUrls", False)
                     return "URLs are now disallowed."
 
-                return "Invalid boolean value: '{value}'.".format(value=value)
+                return "Invalid boolean value: '{}'.".format(value)
 
         @Command.command()
         class Emoji(Command):
@@ -290,8 +290,8 @@ class Config(Command):
                 response = await _update_config(
                     self.api, "spam", "maxEmoji", value)
                 if response.status == 200:
-                    return "Max emoji updated to {}.".format(value)
-                return "An error occurred."
+                    return "Maximum amount of emoji updated to {}.".format(
+                        value)
 
         @Command.command()
         class Caps(Command):
@@ -303,10 +303,9 @@ class Config(Command):
 
                 if not value:
                     caps = await _get_spam_data(self.api, "maxCapsScore")
-                    return "Max caps score is {}.".format(caps)
+                    return "Maximum capitals score is {}.".format(caps)
 
                 response = await _update_config(
                     self.api, "spam", "maxCapsScore", value)
                 if response.status == 200:
-                    return "Max caps score is now {}.".format(value)
-                return "An error occurred."
+                    return "Maximum capitals score is now {}.".format(value)

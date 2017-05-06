@@ -1,5 +1,5 @@
-from cactusbot.api import (Alias, CactusAPI, CactusAPIBucket, Command, Repeat,
-                           Social)
+from cactusbot.api import (Alias, CactusAPI, CactusAPIBucket, Command, Config,
+                           Repeat, Social)
 
 
 class MockAPI(CactusAPI):
@@ -12,6 +12,7 @@ class MockAPI(CactusAPI):
         self.buckets = {
             "alias": MockAlias(self),
             "command": MockCommand(self),
+            "config": MockConfig(self),
             "repeat": MockRepeat(self),
             "social": MockSocial(self)
         }
@@ -181,6 +182,61 @@ class MockCommand(Command):
                 }
             ]
         })
+
+
+class MockConfig(Config):
+
+    async def get(self, *keys):
+
+        if keys:
+            raise NotImplementedError
+
+        return MockResponse({
+            'data': {
+                'attributes': {
+                    'announce': {
+                        'follow': {
+                            'announce': True,
+                            'message': 'Thanks for the follow, %USER%!'
+                        },
+                        'host': {
+                            'announce': True,
+                            'message': 'Thanks for the host, %USER%!'
+                        },
+                        'join': {
+                            'announce': False,
+                            'message': 'Welcome, %USER%!'
+                        },
+                        'leave': {
+                            'announce': False,
+                            'message': 'Thanks for watching, %USER%!'
+                        },
+                        'sub': {
+                            'announce': True,
+                            'message': 'Thanks for the subscription, %USER%!'
+                        }
+                    },
+                    'services': [{
+                        'isOAuth': False,
+                        'name': 'beam',
+                        'permissions': ['chat:connect', 'chat:chat'],
+                        'username': 'CactusBot'
+                    }],
+                    'spam': {
+                        'allowUrls': True,
+                        'maxCapsScore': 16,
+                        'maxEmoji': 6
+                    },
+                    'token': 'cactusdev',
+                    'whitelistedUrls': []
+                },
+                'id': '2d1976ca-d2fe-4b95-a9fa-e9bac4fe9cfa',
+                'type': 'config'
+            }
+        })
+
+    async def update(self, value):
+        return MockResponse(value)
 
 
 class MockRepeat(Repeat):
