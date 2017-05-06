@@ -19,15 +19,9 @@ class Repeat(Command):
             return "Repeat !{command} added on interval {period}.".format(
                 command=command, period=period)
         elif response.status == 200:
-            return "Repeat !{command} updated with interval {period}".format(
+            return "Repeat !{command} updated with interval {period}.".format(
                 command=command, period=period
             )
-        elif response.status == 400:
-            json = await response.json()
-            if json["errors"].get("period", []):
-                return json["errors"]["period"][0]
-        else:
-            return "An error occured."
 
     @Command.command()
     async def remove(self, repeat: "?command"):
@@ -36,9 +30,9 @@ class Repeat(Command):
         response = await self.api.repeat.remove(repeat)
 
         if response.status == 200:
-            return "Repeat removed."
+            return "Repeat for !{} removed.".format(repeat)
         elif response.status == 404:
-            return "Repeat with ID {} doesn't exist.".format(repeat)
+            return "Repeat for !{} doesn't exist.".format(repeat)
 
     @Command.command(name="list")
     async def list_repeats(self):

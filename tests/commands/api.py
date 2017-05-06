@@ -1,4 +1,4 @@
-from cactusbot.api import CactusAPI, CactusAPIBucket, Social
+from cactusbot.api import CactusAPI, CactusAPIBucket, Repeat, Social
 
 
 class MockAPI(CactusAPI):
@@ -9,6 +9,7 @@ class MockAPI(CactusAPI):
         self.password = password
 
         self.buckets = {
+            "repeat": MockRepeat(self),
             "social": MockSocial(self)
         }
 
@@ -22,6 +23,78 @@ class MockResponse:
 
     async def json(self):
         return self.response
+
+
+class MockRepeat(Repeat):
+
+    async def get(self):
+
+        return MockResponse({
+            "data": [
+                {
+                    "attributes": {
+                        "command": "67dd51ee-28e7-4622-9c6a-07ddb0dfc6d8",
+                        "commandName": "kittens",
+                        "createdAt": "Wed May  3 14:17:49 2017",
+                        "period": 600,
+                        "repeatName": "kittens",
+                        "token": "cactusdev"
+                    },
+                    "id": "30a57898-bef9-4d4e-a4fc-a276d2f6628c",
+                    "type": "repeat"
+                }
+            ]
+        })
+
+    async def add(self, command, period):
+
+        status = 201
+
+        if command == "existing":
+            status = 200
+
+        return MockResponse({
+            'data': {
+                'attributes': {
+                    'command': {
+                        'count': 6,
+                        'enabled': True,
+                        'id': '0d1fd105-9574-40fd-be24-2edefd080bf8',
+                        'name': command,
+                        'response': {
+                            'action': False,
+                            'message': [{
+                                'data': 'response',
+                                'text': 'response',
+                                'type': 'text'
+                            }],
+                            'role': 1,
+                            'target': None,
+                            'user': '2Cubed'
+                        },
+                        'token': '2cubed'
+                    },
+                    'commandName': command,
+                    'createdAt': 'Wed May  3 14:17:49 2017',
+                    'period': period,
+                    'repeatName': command,
+                    'token': 'cactusdev'
+                },
+                'id': 'f45ab1ff-2030-40e7-afda-64591769e74e',
+                'type': 'repeat'
+            }
+        }, status=status)
+
+    async def remove(self, repeat):
+
+        if repeat == "nonexistent":
+            return MockResponse(None, status=404)
+
+        return MockResponse({
+            'meta': {
+                'deleted': ['f45ab1ff-2030-40e7-afda-64591769e74e']
+            }
+        })
 
 
 class MockSocial(Social):
