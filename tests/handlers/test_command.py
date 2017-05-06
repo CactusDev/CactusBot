@@ -1,11 +1,11 @@
 import pytest
-from cactusbot.api import CactusAPI
+from api import MockAPI
 from cactusbot.commands.command import Command
 from cactusbot.handlers import CommandHandler
 from cactusbot.packets import MessagePacket
 
 command_handler = CommandHandler(
-    "TestChannel", CactusAPI("test_token", "test_password"))
+    "TestChannel", MockAPI("test_token", "test_password"))
 
 
 def verify(message, expected, *args, **kwargs):
@@ -251,7 +251,7 @@ class Potato(Command):
             """Taco salad."""
             return "TACO SALAD!?"
 
-potato = Potato(CactusAPI("test_token", "test_password"))
+potato = Potato(MockAPI("test_token", "test_password"))
 
 
 @pytest.mark.asyncio

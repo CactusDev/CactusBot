@@ -2,10 +2,10 @@
 
 import pytest
 
-from cactusbot.api import CactusAPI
+from api import MockAPI
 from cactusbot.commands.magic import Multi
 
-multi = Multi(CactusAPI("test_token", "test_password"))
+multi = Multi(MockAPI("test_token", "test_password"))
 
 
 @pytest.mark.asyncio

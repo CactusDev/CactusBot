@@ -1,10 +1,10 @@
 import pytest
 
-from cactusbot.api import CactusAPI
+from api import MockAPI
 from cactusbot.commands.magic import Cube, Temmie
 from cactusbot.packets import MessagePacket
 
-cube = Cube(CactusAPI("test_token", "test_password"))
+cube = Cube(MockAPI("test_token", "test_password"))
 
 async def verify_cube(packet, expected):
     _, *args = packet[1:].text.split()
@@ -50,7 +50,7 @@ async def test_cube():
         "lots³ · of³ · taco³ · salad³ · 😃³"
     )
 
-temmie = Temmie(CactusAPI("test_token", "test_password"))
+temmie = Temmie(MockAPI("test_token", "test_password"))
 
 
 @pytest.mark.asyncio
