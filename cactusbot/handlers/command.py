@@ -1,7 +1,6 @@
 """Handle commands."""
 
 import random
-import re
 
 from ..commands import COMMANDS
 from ..commands.command import ROLES
@@ -177,6 +176,8 @@ class CommandHandler(Handler):
             if not args[1:] and default is not None:
                 result = default
             else:
+                if not args[1:]:
+                    raise IndexError
                 result = ' '.join(args[1:])
 
             if modifiers is not None:
@@ -184,10 +185,10 @@ class CommandHandler(Handler):
 
             return result
 
-        if len(args) < 2 and re.search(self.ARGS_EXPR, _packet.text):
+        try:
+            _packet.sub(self.ARGS_EXPR, sub_args)
+        except IndexError:
             return MessagePacket("Not enough arguments!")
-
-        _packet.sub(self.ARGS_EXPR, sub_args)
 
         username = ""
 
