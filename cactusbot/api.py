@@ -158,10 +158,10 @@ class Command(CactusAPIBucket):
 class Alias(CactusAPIBucket):
     """CactusAPI /alias bucket."""
 
-    async def get(self, command):
+    async def get(self, alias):
         """Get a command alias."""
-        return await self.api.get("/user/{token}/alias/{command}".format(
-            token=self.api.token, command=command))
+        return await self.api.get("/user/{token}/alias/{alias}".format(
+            token=self.api.token, alias=alias))
 
     async def add(self, command, alias, args=None):
         """Create a command alias."""

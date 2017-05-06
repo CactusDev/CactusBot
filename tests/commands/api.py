@@ -1,4 +1,5 @@
-from cactusbot.api import CactusAPI, CactusAPIBucket, Repeat, Social
+from cactusbot.api import (Alias, CactusAPI, CactusAPIBucket, Command, Repeat,
+                           Social)
 
 
 class MockAPI(CactusAPI):
@@ -9,6 +10,8 @@ class MockAPI(CactusAPI):
         self.password = password
 
         self.buckets = {
+            "alias": MockAlias(self),
+            "command": MockCommand(self),
             "repeat": MockRepeat(self),
             "social": MockSocial(self)
         }
@@ -23,6 +26,161 @@ class MockResponse:
 
     async def json(self):
         return self.response
+
+
+class MockAlias(Alias):
+
+    async def get(self, alias):
+
+        return MockResponse({
+            "data": {
+                "attributes": {
+                    "command": {
+                        "count": 1,
+                        "enabled": True,
+                        "id": "d23779ce-4522-431d-9095-7bf34718c39d",
+                        "name": "command_name",
+                        "response": {
+                            "action": None,
+                            "message": [
+                                {
+                                    "data": "response",
+                                    "text": "response",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": 1,
+                            "target": None,
+                            "user": "Stanley"
+                        },
+                        "token": "cactusdev"
+                    },
+                    "commandName": "command_name",
+                    "name": alias,
+                    "token": "cactusdev"
+                },
+                "id": "312ab175-fb52-4a7b-865d-4202176f9234",
+                "type": "alias"
+            }
+        })
+
+    async def add(self, command, alias, args=None):
+
+        status = 201
+        if command == "nonexistent":
+            status = 404
+        elif alias == "existing":
+            status = 200
+
+        return MockResponse({
+            "data": {
+                "attributes": {
+                    "command": {
+                        "count": 1,
+                        "enabled": True,
+                        "id": "d23779ce-4522-431d-9095-7bf34718c39d",
+                        "name": command,
+                        "response": {
+                            "action": False,
+                            "message": [
+                                {
+                                    "data": "response",
+                                    "text": "response",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": 1,
+                            "target": None,
+                            "user": "Stanley"
+                        },
+                        "token": "cactusdev"
+                    },
+                    "commandName": command,
+                    "name": alias,
+                    "token": "cactusdev"
+                },
+                "id": "312ab175-fb52-4a7b-865d-4202176f9234",
+                "type": "alias"
+            },
+            "meta": {
+                "edited": True
+            }
+        }, status=status)
+
+    async def remove(self, alias):
+
+        status = 200
+        if alias == "nonexistent":
+            status = 404
+
+        return MockResponse({
+            "meta": {
+                "deleted": [
+                    "312ab175-fb52-4a7b-865d-4202176f9234"
+                ]
+            }
+        }, status=status)
+
+
+class MockCommand(Command):
+
+    async def get(self, name=None):
+
+        if name is not None:
+            raise NotImplementedError
+
+        return MockResponse({
+            "data": [
+                {
+                    "attributes": {
+                        "count": 2,
+                        "enabled": True,
+                        "name": "testing",
+                        "response": {
+                            "action": False,
+                            "message": [
+                                {
+                                    "data": "testing!",
+                                    "text": "testing!",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": 1,
+                            "target": None,
+                            "user": "Stanley"
+                        },
+                        "token": "cactusdev"
+                    },
+                    "id": "d23779ce-4522-431d-9095-7bf34718c39d",
+                    "type": "command"
+                },
+                {
+                    "attributes": {
+                        "commandName": "testing",
+                        "count": 2,
+                        "enabled": True,
+                        "id": "d23779ce-4522-431d-9095-7bf34718c39d",
+                        "name": "test",
+                        "response": {
+                            "action": False,
+                            "message": [
+                                {
+                                    "data": "testing!",
+                                    "text": "testing!",
+                                    "type": "text"
+                                }
+                            ],
+                            "role": 1,
+                            "target": None,
+                            "user": "Stanley"
+                        },
+                        "token": "cactusdev"
+                    },
+                    "id": "312ab175-fb52-4a7b-865d-4202176f9234",
+                    "type": "alias"
+                }
+            ]
+        })
 
 
 class MockRepeat(Repeat):
@@ -49,7 +207,6 @@ class MockRepeat(Repeat):
     async def add(self, command, period):
 
         status = 201
-
         if command == "existing":
             status = 200
 
@@ -72,7 +229,7 @@ class MockRepeat(Repeat):
                             'target': None,
                             'user': '2Cubed'
                         },
-                        'token': '2cubed'
+                        'token': 'cactusdev'
                     },
                     'commandName': command,
                     'createdAt': 'Wed May  3 14:17:49 2017',
@@ -142,7 +299,6 @@ class MockSocial(Social):
     async def add(self, service, url):
 
         status = 201
-
         if service == "existing":
             status = 200
 

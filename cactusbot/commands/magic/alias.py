@@ -28,13 +28,9 @@ class Alias(Command):
         if response.status == 201:
             return "Alias !{} for !{} created.".format(alias, command)
         elif response.status == 200:
-            return "Alias !{} for command !{} updated.".format(alias, command)
+            return "Alias !{} for !{} updated.".format(alias, command)
         elif response.status == 404:
             return "Command !{} does not exist.".format(command)
-        elif response.status == 400:
-            json = await response.json()
-            if json.get("errors", []):
-                return json["errors"][0]
 
     @Command.command()
     async def remove(self, alias: "?command"):
