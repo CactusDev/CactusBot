@@ -311,13 +311,12 @@ class Config(Command):
         """Blacklist command"""
 
         @Command.command(name="blacklist", role="moderator")
-        async def default(self, value="", *, username: "username"):
+        async def default(self, *, username: "username"):
             """Blacklist subcommand"""
-            if not value:
-                blist = await _get_spam_data(self.api, "blacklist")
-                return MessagePacket(
-                    "Blacklisted words: {}".format(", ".join(blist)),
-                    target=username)
+            blist = await _get_spam_data(self.api, "blacklist")
+            return MessagePacket(
+                "Blacklisted words: {}".format(", ".join(blist)),
+                target=username)
 
         @Command.command(name="add")
         async def add(self, value, *, username: "username"):
@@ -331,5 +330,8 @@ class Config(Command):
         @Command.command(name="remove")
         async def remove(self, value, *, username: "username"):
             """Remove a word from the blacklist"""
-            if not value:
-                pass
+            response = await _update_config(
+                self.api, "spam", "blacklist", [value]
+            )
+            data = (await response.json())["data"]["attributes"]
+            return MessagePacket(str(data["spam"]), target=username)
