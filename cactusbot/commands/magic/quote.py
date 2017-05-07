@@ -22,11 +22,11 @@ class Quote(Command):
             if not data:
                 return "No quotes have been added!"
             return data[0]["attributes"]["quote"]
-        else:
-            response = await self.api.quote.get(quote)
-            if response.status == 404:
-                return "Quote {} does not exist!".format(quote)
-            return (await response.json())["data"]["attributes"]["quote"]
+
+        response = await self.api.quote.get(quote)
+        if response.status == 404:
+            return "Quote {} does not exist!".format(quote)
+        return (await response.json())["data"]["attributes"]["quote"]
 
     @Command.command()
     async def add(self, *quote):
@@ -39,7 +39,7 @@ class Quote(Command):
     @Command.command()
     async def edit(self, quote_id: r'[1-9]\d*', *quote):
         """Edit a quote based on ID."""
-        response = await self.api.edit_quote(quote_id, ' '.join(quote))
+        response = await self.api.quote.edit(quote_id, ' '.join(quote))
         if response.status == 201:
             return "Added quote #{}.".format(quote_id)
         return "Edited quote #{}.".format(quote_id)
@@ -47,9 +47,9 @@ class Quote(Command):
     @Command.command()
     async def remove(self, quote_id: r'[1-9]\d*'):
         """Remove a quote."""
-        response = await self.api.remove_quote(quote_id)
+        response = await self.api.quote.remove(quote_id)
         if response.status == 404:
-            return "Quote {} does not exist!".format(quote_id)
+            return "Quote #{} does not exist!".format(quote_id)
         return "Removed quote #{}.".format(quote_id)
 
     @Command.command(hidden=True)

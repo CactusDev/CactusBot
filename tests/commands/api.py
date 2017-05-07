@@ -1,5 +1,5 @@
-from cactusbot.api import (Alias, CactusAPI, CactusAPIBucket, Command, Config,
-                           Repeat, Social)
+from cactusbot.api import (Alias, CactusAPI, Command, Config, Quote, Repeat,
+                           Social)
 
 
 class MockAPI(CactusAPI):
@@ -13,6 +13,7 @@ class MockAPI(CactusAPI):
             "alias": MockAlias(self),
             "command": MockCommand(self),
             "config": MockConfig(self),
+            "quote": MockQuote(self),
             "repeat": MockRepeat(self),
             "social": MockSocial(self)
         }
@@ -237,6 +238,77 @@ class MockConfig(Config):
 
     async def update(self, value):
         return MockResponse(value)
+
+
+class MockQuote(Quote):
+
+    async def get(self, quote_id=None):
+
+        if quote_id == "123":
+            return MockResponse({'data': {}}, status=404)
+
+        response = {
+            'data': {
+                'attributes': {
+                    'createdAt': 'Wed May  3 14:17:49 2017',
+                    'quote': '"Quote!" -Someone',
+                    'quoteId': quote_id if quote_id is not None else 8,
+                    'token': 'cactusdev'
+                },
+                'id': '9f8421c7-8e54-4ca7-9a68-b2cb6e8626e5',
+                'type': 'quote'
+            }
+        }
+
+        if quote_id is None:
+            response["data"] = [response["data"]]
+
+        return MockResponse(response)
+
+    async def add(self, quote):
+        return MockResponse({
+            'data': {
+                'attributes': {
+                    'createdAt': 'Wed May  3 14:17:49 2017',
+                    'quote': quote,
+                    'quoteId': 8,
+                    'token': 'cactusdev'
+                },
+                'id': '9f8421c7-8e54-4ca7-9a68-b2cb6e8626e5',
+                'type': 'quote'
+            }
+        })
+
+    async def edit(self, quote_id, quote):
+
+        status = 200
+        if quote_id == "8":
+            status = 201
+
+        return MockResponse({
+            'data': {
+                'attributes': {
+                    'createdAt': 'Wed May  3 14:17:49 2017',
+                    'quote': quote,
+                    'quoteId': quote_id,
+                    'token': 'cactusdev'
+                },
+                'id': '9f8421c7-8e54-4ca7-9a68-b2cb6e8626e5',
+                'type': 'quote'
+            }
+        }, status=status)
+
+    async def remove(self, quote_id):
+
+        status = 200
+        if quote_id == "8":
+            status = 404
+
+        return MockResponse({
+            'meta': {
+                'deleted': ['50983973-cd75-442e-ad71-1a9e194b51c4']
+            }
+        }, status=status)
 
 
 class MockRepeat(Repeat):
