@@ -5,24 +5,31 @@ from numpydoc.docscrape import NumpyDocString
 from . import Command, COMMANDS
 
 
-def get_summary(raw):
+def _get_summary(raw):
     """Get the summary from the doc string"""
     doc = raw["Summary"]
     return ' '.join(doc)
 
 
-def get_arguments(raw):
+def _get_arguments(raw):
     """Get the arguments from the doc string"""
     doc = raw["Parameters"]
     return ', '.join("{command}: {description}".format(
         command=param[0], description=' '.join(param[2])) for param in doc)
 
 
+def _get_example(raw):
+    """Get an example from the doc string"""
+    doc = raw["Examples"]
+    return "{command} gives the output of {response}".format(
+        command=doc[0], response=doc[1])
+
 # Mapping for segment arguments to the function
 _SEGMENT_MAPPINGS = {
-    "": get_summary,
-    "args": get_arguments,
-    "arguments": get_arguments
+    "": _get_summary,
+    "args": _get_arguments,
+    "arguments": _get_arguments,
+    "example": _get_example
 }
 
 
