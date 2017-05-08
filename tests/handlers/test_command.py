@@ -311,3 +311,13 @@ async def test_args():
     ) == "Making potato salad with carrots, peppers."
 
     assert await potato("salad", "taco") == "TACO SALAD!?"
+
+@pytest.mark.asyncio
+async def test_list():
+    command_list = potato.commands()
+
+    assert "check" in command_list
+    assert "add" in command_list
+    assert "eat" in command_list
+    assert "wizard" in command_list
+    assert "salad" in command_list
