@@ -172,7 +172,6 @@ class Command:
                 error = err
 
         if args:
-            print("stuff things")
             return "Invalid argument: '{0}'.".format(args[0])
 
         if self.default is not None:
@@ -200,7 +199,10 @@ class Command:
         else:
             syntax = "[{}]"
 
-        return syntax.format(arg.name)
+        argument_name = arg.name
+        if argument_name == "_":
+            argument_name = "arguments"
+        return syntax.format(argument_name)
 
     @classmethod
     def command(cls, name=None, **meta):
