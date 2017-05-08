@@ -261,7 +261,7 @@ async def test_default():
     assert await potato("count") == "You have 0 potatoes."
 
     assert await potato("battery") == "Potato power!"
-    assert await potato("battery", "high") == "Invalid strength: 'high'."
+    assert await potato("battery", "high") == "Invalid 'strength': 'high'."
     assert await potato("battery", "9001") == "Potato power x 9001!"
 
     assert await potato("salad") == "Not enough arguments. <make>"
