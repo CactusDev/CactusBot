@@ -172,6 +172,7 @@ class Command:
                 error = err
 
         if args:
+            print("stuff things")
             return "Invalid argument: '{0}'.".format(args[0])
 
         if self.default is not None:
@@ -334,8 +335,9 @@ class Command:
 
         for index, arg in enumerate(pos_args[:len(args)]):
             if arg.annotation is not arg.empty:
-                error_response = "Invalid {type}: '{value}'.".format(
-                    type=arg.name, value=args[index])
+                argument_name = arg.name.replace('_', ' ')
+                error_response = "Invalid '{type}': '{value}'.".format(
+                    type=argument_name, value=args[index])
                 if isinstance(arg.annotation, str):
                     annotation = arg.annotation
                     if annotation.startswith('?'):
