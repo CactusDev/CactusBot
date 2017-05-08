@@ -410,3 +410,7 @@ class Command:
             all(method.COMMAND_META.get(key, value) == value
                 for key, value in meta.items())
         }
+
+    def has_subcommand(self, command):
+        """Check if a super command has a subcommand."""
+        return self.commands()[command] if command in self.commands() else None
