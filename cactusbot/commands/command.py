@@ -199,7 +199,10 @@ class Command:
         else:
             syntax = "[{}]"
 
-        return syntax.format(arg.name)
+        argument_name = arg.name
+        if argument_name == "_":
+            argument_name = "arguments"
+        return syntax.format(argument_name)
 
     @classmethod
     def command(cls, name=None, **meta):
@@ -334,8 +337,9 @@ class Command:
 
         for index, arg in enumerate(pos_args[:len(args)]):
             if arg.annotation is not arg.empty:
-                error_response = "Invalid {type}: '{value}'.".format(
-                    type=arg.name, value=args[index])
+                argument_name = arg.name.replace('_', ' ')
+                error_response = "Invalid '{type}': '{value}'.".format(
+                    type=argument_name, value=args[index])
                 if isinstance(arg.annotation, str):
                     annotation = arg.annotation
                     if annotation.startswith('?'):
