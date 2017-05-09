@@ -130,7 +130,43 @@ class MockCommand(Command):
     async def get(self, name=None):
 
         if name is not None:
-            raise NotImplementedError
+
+            if name == "nonexistent":
+                return MockResponse({}, status=404)
+
+            return MockResponse({
+                "data": {
+                    "attributes": {
+                        "count": 12,
+                        "enabled": True,
+                        "name": name,
+                        "response": {
+                            "action": False,
+                            "message": [
+                                {
+                                    "data": "testing!",
+                                    "text": "testing!",
+                                    "type": "text"
+                                },
+                                {
+                                    "data": ":smile:",
+                                    "text": ":)",
+                                    "type": "emoji"
+                                }
+                            ],
+                            "target": None,
+                            "user": "Stanley"
+                        },
+                        "role": 0,
+                        "token": "cactusdev"
+                    },
+                    "id": "3f51fc4d-d012-41c0-b98e-ff6257394f75",
+                    "type": "command"
+                },
+                "meta": {
+                    "created": True
+                }
+            })
 
         return MockResponse({
             "data": [
@@ -184,6 +220,67 @@ class MockCommand(Command):
                 }
             ]
         })
+
+    async def add(self, name, response, *, user_level=1):
+
+        meta = {"created": True}
+        if name == "existing":
+            meta = {"edited": True}
+
+        return MockResponse({
+            "data": {
+                "attributes": {
+                    "count": 0,
+                    "enabled": True,
+                    "name": name,
+                    "response": {
+                        "action": False,
+                        "message": [
+                            {
+                                "data": "lol!",
+                                "text": "lol!",
+                                "type": "text"
+                            },
+                            {
+                                "data": ":smile:",
+                                "text": ":)",
+                                "type": "emoji"
+                            }
+                        ],
+                        "role": user_level,
+                        "target": None,
+                        "user": ""
+                    },
+                    "token": "cactusdev"
+                },
+                "id": "d23779ce-4522-431d-9095-7bf34718c39d",
+                "type": "command"
+            },
+            "meta": meta
+        })
+
+    async def remove(self, name):
+
+        if name == "nonexistent":
+            return MockResponse({}, status=404)
+
+        return MockResponse({
+            "meta": {
+                "deleted": {
+                    "aliases": None,
+                    "command": [
+                        "d23779ce-4522-431d-9095-7bf34718c39d"
+                    ],
+                    "repeats": None
+                }
+            }
+        })
+
+    async def toggle(self, command, state):
+        return MockResponse({})
+
+    async def update_count(self, command, action):
+        return MockResponse({})
 
 
 class MockConfig(Config):
