@@ -261,7 +261,7 @@ async def test_default():
     assert await potato("count") == "You have 0 potatoes."
 
     assert await potato("battery") == "Potato power!"
-    assert await potato("battery", "high") == "Invalid strength: 'high'."
+    assert await potato("battery", "high") == "Invalid 'strength': 'high'."
     assert await potato("battery", "9001") == "Potato power x 9001!"
 
     assert await potato("salad") == "Not enough arguments. <make>"
@@ -311,3 +311,13 @@ async def test_args():
     ) == "Making potato salad with carrots, peppers."
 
     assert await potato("salad", "taco") == "TACO SALAD!?"
+
+@pytest.mark.asyncio
+async def test_list():
+    command_list = potato.commands()
+
+    assert "check" in command_list
+    assert "add" in command_list
+    assert "eat" in command_list
+    assert "wizard" in command_list
+    assert "salad" in command_list
