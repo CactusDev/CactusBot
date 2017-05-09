@@ -1,5 +1,5 @@
 from cactusbot.api import (Alias, CactusAPI, Command, Config, Quote, Repeat,
-                           Social)
+                           Social, Trust)
 
 
 class MockAPI(CactusAPI):
@@ -15,7 +15,8 @@ class MockAPI(CactusAPI):
             "config": MockConfig(self),
             "quote": MockQuote(self),
             "repeat": MockRepeat(self),
-            "social": MockSocial(self)
+            "social": MockSocial(self),
+            "trust": MockTrust(self)
         }
 
 
@@ -456,3 +457,64 @@ class MockSocial(Social):
                 'deleted': ['e0522d88-62c7-4c5a-b726-899b2894aaec']
             }
         })
+
+
+class MockTrust(Trust):
+
+    async def get(self, user_id=None):
+
+        if user_id is not None:
+
+            if user_id == "untrusted":
+                return MockResponse({"data": {}}, status=404)
+
+            return MockResponse({
+                "data": {
+                    "attributes": {
+                        "token": "cactusdev",
+                        "userId": user_id,
+                        "userName": "Stanley"
+                    }
+                }
+            })
+
+        return MockResponse({
+            "data": [{
+                "attributes": {
+                    "token": "cactusdev",
+                    "userId": "95845",
+                    "userName": "Stanley"
+                }
+            }]
+        })
+
+    async def add(self, user_id, username):
+
+        return MockResponse({
+            "attributes": {
+                "attributes": {
+                    "token": "cactusdev",
+                    "userId": user_id,
+                    "userName": username
+                },
+                "id": "7875b898-fbb3-426f-aca3-7375d97326b0",
+                "type": "trust"
+            },
+            "meta": {
+                "created": True
+            }
+        })
+
+    async def remove(self, user_id):
+
+        status = 200
+        if user_id == "untrusted":
+            status = 404
+
+        return MockResponse({
+            "meta": {
+                "deleted": [
+                    "7875b898-fbb3-426f-aca3-7375d97326b0"
+                ]
+            }
+        }, status=status)

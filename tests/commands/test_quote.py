@@ -8,7 +8,7 @@ quote = Quote(MockAPI("test_token", "test_password"))
 
 @pytest.mark.asyncio
 async def test_get():
-    
+
     assert await quote() == '"Quote!" -Someone'
 
     assert await quote("8") == '"Quote!" -Someone'

@@ -8,7 +8,7 @@ from ..command import Command
 BASE_URL = "https://beam.pro/api/v1/channels/{username}"
 
 
-async def check_user(username):
+async def check_beam_user(username):
     """Check if a Beam username exists."""
     if username.startswith('@'):
         username = username[1:]
@@ -18,73 +18,80 @@ async def check_user(username):
         return (username, (await response.json())["id"])
 
 
-class Trust(Command):
-    """Trust command."""
+def _trust(check_user=check_beam_user):
 
-    COMMAND = "trust"
-    ROLE = "moderator"
+    class Trust(Command):  # pylint: disable=W0621
+        """Trust command."""
 
-    @Command.command(hidden=True)
-    async def default(self, username: check_user):
-        """Toggle a trust."""
+        COMMAND = "trust"
+        ROLE = "moderator"
 
-        user, user_id = username
+        @Command.command(hidden=True)
+        async def default(self, username: check_user):
+            """Toggle a trust."""
 
-        is_trusted = (await self.api.trust.get(user_id)).status == 200
+            user, user_id = username
 
-        if is_trusted:
-            await self.api.trust.remove(user_id)
-        else:
-            await self.api.trust.add(user_id, user)
+            is_trusted = (await self.api.trust.get(user_id)).status == 200
 
-        return MessagePacket(
-            ("tag", user), " is {modifier} trusted.".format(
-                modifier=("now", "no longer")[is_trusted]))
+            if is_trusted:
+                await self.api.trust.remove(user_id)
+            else:
+                await self.api.trust.add(user_id, user)
 
-    @Command.command()
-    async def add(self, username: check_user):
-        """Add a trusted user."""
+            return MessagePacket(
+                ("tag", user), " is {modifier} trusted.".format(
+                    modifier=("now", "no longer")[is_trusted]))
 
-        user, user_id = username
+        @Command.command()
+        async def add(self, username: check_user):
+            """Add a trusted user."""
 
-        response = await self.api.trust.add(user_id, user)
+            user, user_id = username
 
-        if response.status in (201, 200):
-            return MessagePacket("User ", ("tag", user), " has been trusted.")
+            response = await self.api.trust.add(user_id, user)
 
-    @Command.command()
-    async def remove(self, username: check_user):
-        """Remove a trusted user."""
+            if response.status in (201, 200):
+                return MessagePacket(
+                    "User ", ("tag", user), " has been trusted.")
 
-        user, user_id = username
+        @Command.command()
+        async def remove(self, username: check_user):
+            """Remove a trusted user."""
 
-        response = await self.api.trust.remove(user_id)
+            user, user_id = username
 
-        if response.status == 200:
-            return MessagePacket("Removed trust for user ", ("tag", user), '.')
-        return MessagePacket(("tag", user), " is not a trusted user.")
+            response = await self.api.trust.remove(user_id)
 
-    @Command.command(name="list")
-    async def list_trusts(self):
-        """Get the trused users in a channel."""
+            if response.status == 200:
+                return MessagePacket(
+                    "Removed trust for user ", ("tag", user), '.')
+            return MessagePacket(("tag", user), " is not a trusted user.")
 
-        data = await (await self.api.trust.get()).json()
+        @Command.command(name="list")
+        async def list_trusts(self):
+            """Get the trused users in a channel."""
 
-        if not data["data"]:
-            return "No trusted users."
+            data = await (await self.api.trust.get()).json()
 
-        return "Trusted users: {}.".format(', '.join(
-            user["attributes"]["userName"] for user in data["data"]))
+            if not data["data"]:
+                return "No trusted users."
 
-    @Command.command()
-    async def check(self, username: check_user):
-        """Check if a user is currently trusted in the channel."""
+            return "Trusted users: {}.".format(', '.join(
+                user["attributes"]["userName"] for user in data["data"]))
 
-        user, user_id = username
+        @Command.command()
+        async def check(self, username: check_user):
+            """Check if a user is currently trusted in the channel."""
 
-        data = await (await self.api.trust.get(user_id)).json()
-        print(data)
+            user, user_id = username
 
-        trusted = " " if data["data"] else " not "
-        return MessagePacket(("tag", user), " is{status}trusted.".format(
-            status=trusted))
+            data = await (await self.api.trust.get(user_id)).json()
+
+            return MessagePacket(("tag", user), " is {status}trusted.".format(
+                status="" if data["data"] else "not "))
+
+    return Trust
+
+
+Trust = _trust()
