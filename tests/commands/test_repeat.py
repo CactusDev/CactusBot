@@ -12,7 +12,7 @@ async def test_add():
     assert await repeat("add", "600", "kittens") == "Repeat !kittens added on interval 600."
     assert await repeat("add", "600", "existing") == "Repeat !existing updated with interval 600."
 
-    assert await repeat("add", "twelve", "kittens") == "Invalid period: 'twelve'."
+    assert await repeat("add", "twelve", "kittens") == "Invalid 'period': 'twelve'."
 
 
 @pytest.mark.asyncio
