@@ -1,5 +1,6 @@
 import pytest
-from api import MockAPI
+
+from tests.api import MockAPI
 from cactusbot.commands.command import Command
 from cactusbot.handlers import CommandHandler
 from cactusbot.packets import MessagePacket
@@ -251,6 +252,7 @@ class Potato(Command):
             """Taco salad."""
             return "TACO SALAD!?"
 
+
 potato = Potato(MockAPI("test_token", "test_password"))
 
 
@@ -311,6 +313,7 @@ async def test_args():
     ) == "Making potato salad with carrots, peppers."
 
     assert await potato("salad", "taco") == "TACO SALAD!?"
+
 
 @pytest.mark.asyncio
 async def test_list():

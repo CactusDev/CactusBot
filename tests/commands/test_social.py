@@ -1,6 +1,6 @@
 import pytest
 
-from api import MockAPI
+from tests.api import MockAPI
 from cactusbot.commands.magic import Social
 
 social = Social(MockAPI("test_token", "test_password"))

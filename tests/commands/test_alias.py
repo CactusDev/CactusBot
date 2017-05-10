@@ -1,6 +1,6 @@
 import pytest
 
-from api import MockAPI
+from tests.api import MockAPI
 from cactusbot.commands.magic import Alias
 from cactusbot.packets import MessagePacket
 

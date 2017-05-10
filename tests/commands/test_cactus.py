@@ -1,6 +1,6 @@
 import pytest
 
-from api import MockAPI
+from tests.api import MockAPI
 from cactusbot.commands.magic import Cactus
 
 from cactusbot.cactus import __version__

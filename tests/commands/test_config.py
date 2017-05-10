@@ -1,6 +1,6 @@
 import pytest
 
-from api import MockAPI
+from tests.api import MockAPI
 from cactusbot.commands.magic import Config
 
 config = Config(MockAPI("test_token", "test_password"))

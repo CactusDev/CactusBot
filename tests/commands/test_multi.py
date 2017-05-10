@@ -2,7 +2,7 @@
 
 import pytest
 
-from api import MockAPI
+from tests.api import MockAPI
 from cactusbot.commands.magic import Multi
 
 multi = Multi(MockAPI("test_token", "test_password"))
