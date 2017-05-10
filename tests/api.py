@@ -131,21 +131,58 @@ class MockCommand(Command):
 
         if name is not None:
 
-            if name == "nonexistent":
+            if "nonexistent" in name:
                 return MockResponse({}, status=404)
+
+            if name == "aliased":
+                return MockResponse({
+                    "data": {
+                        "attributes": {
+                            "arguments": [
+                                {
+                                    "data": "arg1",
+                                    "text": "arg1",
+                                    "type": "text"
+                                }
+                            ],
+                            "command": "67dd51ee-28e7-4622-9c6a-07ddb0dfc6d8",
+                            "commandName": "nonaliased",
+                            "createdAt": "Wed May  3 14:17:49 2017",
+                            "name": name,
+                            "token": "cactusdev"
+                        },
+                        "id": "afd63f19-dece-4c2c-98c5-23446e3a49e9",
+                        "type": "alias"
+                    }
+                })
+
+            if name == "fakealias":
+                return MockResponse({
+                    "data": {
+                        "attributes": {
+                            "command": "67dd51ee-28e7-4622-9c6a-07ddb0dfc6d8",
+                            "commandName": "nonexistent",
+                            "createdAt": "Wed May  3 14:17:49 2017",
+                            "name": name,
+                            "token": "cactusdev"
+                        },
+                        "id": "afd63f19-dece-4c2c-98c5-23446e3a49e9",
+                        "type": "alias"
+                    }
+                })
 
             return MockResponse({
                 "data": {
                     "attributes": {
                         "count": 12,
-                        "enabled": True,
+                        "enabled": name != "disabled",
                         "name": name,
                         "response": {
                             "action": False,
                             "message": [
                                 {
-                                    "data": "testing!",
-                                    "text": "testing!",
+                                    "data": "Testing {}! ".format(name),
+                                    "text": "Testing {}! ".format(name),
                                     "type": "text"
                                 },
                                 {
@@ -154,10 +191,10 @@ class MockCommand(Command):
                                     "type": "emoji"
                                 }
                             ],
+                            "role": 4 if name == "modonly" else 1,
                             "target": None,
                             "user": "Stanley"
                         },
-                        "role": 0,
                         "token": "cactusdev"
                     },
                     "id": "3f51fc4d-d012-41c0-b98e-ff6257394f75",
@@ -179,8 +216,8 @@ class MockCommand(Command):
                             "action": False,
                             "message": [
                                 {
-                                    "data": "testing!",
-                                    "text": "testing!",
+                                    "data": "Testing!",
+                                    "text": "Testing!",
                                     "type": "text"
                                 }
                             ],

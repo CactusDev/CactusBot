@@ -1,6 +1,6 @@
 import pytest
-
 from tests.api import MockAPI
+
 from cactusbot.commands.command import Command
 from cactusbot.handlers import CommandHandler
 from cactusbot.packets import MessagePacket
@@ -24,6 +24,40 @@ async def test_on_message():
     assert (await command_handler.on_message(
         MessagePacket("!cactus")
     )).text == "Ohai! I'm CactusBot! 🌵"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!test")
+    )).text == "Testing test! :)"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!a b nonexistent c")
+    )).text == "Testing a-b! :)"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!nonexistent")
+    )).text == "Command not found."
+
+    assert (await command_handler.on_message(
+        MessagePacket("!aliased")
+    )).text == "Testing nonaliased! :)"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!fakealias")
+    )).text == "Command does not exist for that alias."
+
+    assert (await command_handler.on_message(
+        MessagePacket("!disabled")
+    )).text == "Command is disabled."
+
+    targeted = await command_handler.on_message(
+        MessagePacket("!targeted", target="CactusBot", user="Stanley")
+    )
+    assert targeted.text == "Testing targeted! :)"
+    assert targeted.user == "Stanley"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!modonly", role=3)
+    )).text == "Role level 'Moderator' or higher required."
 
 
 def test_inject_argn():
@@ -70,6 +104,18 @@ def test_inject_argn():
         "raid", "@Streamer"
     )
 
+    verify(
+        "Would you like a %ARG1=potato%?",
+        "Would you like a potato?",
+        "offer"
+    )
+
+    verify(
+        "Would you like a %ARG1=potato%?",
+        "Would you like a carrot?",
+        "offer", "carrot"
+    )
+
 
 def test_inject_args():
 
@@ -83,6 +129,12 @@ def test_inject_args():
         "Have some %ARGS%.",
         "Not enough arguments!",
         "give"
+    )
+
+    verify(
+        "WAAA %ARGS|upper%!",
+        "WAAA STUFF AND THINGS!",
+        "waaa", *"stuff and things".split()
     )
 
     verify(
@@ -153,7 +205,12 @@ def test_modify():
     assert command_handler.modify("Jello", "reverse", "title") == "Ollej"
 
 
+@pytest.mark.asyncio
+async def test_repeat():
+    assert await command_handler.on_repeat("Hi!") == "Hi!"
+
 ###
+
 
 async def add_title(name):
     """Add 'Potato Master' title to a name."""
