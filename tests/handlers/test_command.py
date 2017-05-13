@@ -1,3 +1,5 @@
+import inspect
+
 import pytest
 from tests.api import MockAPI
 
@@ -284,8 +286,10 @@ class Potato(Command):
             return "Potato power x {}!".format(strength)
 
     @Command.command(hidden=True)
-    class Wizard(Command):
+    class Wizardry(Command):
         """Potato wizard."""
+
+        COMMAND = "wizard"
 
         @Command.command()
         async def default(self, *things):
@@ -310,7 +314,42 @@ class Potato(Command):
             return "TACO SALAD!?"
 
 
-potato = Potato(MockAPI("test_token", "test_password"))
+class Cat(Command):
+
+    @Command.command()
+    async def default(self, a, b):
+        return a + b
+
+
+class Echo(Command):
+
+    @Command.command()
+    async def f(self, value, _):
+        return value
+
+
+def fail(_):
+    raise Exception
+
+
+class Broken(Command):
+
+    @Command.command()
+    async def f(self, arg: 12):  # invalid annotation
+        return arg
+
+    @Command.command()
+    async def g(self, bad_arg: fail):
+        return bad_arg
+
+
+api = MockAPI("test_token", "test_password")
+
+potato = Potato(api)
+
+cat = Cat(api)
+echo = Echo(api)
+broken = Broken(api)
 
 
 @pytest.mark.asyncio
@@ -322,14 +361,19 @@ async def test_default():
     assert await potato("battery") == "Potato power!"
     assert await potato("battery", "high") == "Invalid 'strength': 'high'."
     assert await potato("battery", "9001") == "Potato power x 9001!"
+    assert await potato("battery", "1", "2") == "Invalid argument: '1'."
 
     assert await potato("salad") == "Not enough arguments. <make>"
+    assert await cat() == "Not enough arguments. <a> <b>"
+    assert await echo() == "Not enough arguments. <f>"
+    assert await echo("f") == "Not enough arguments. <value> <argument>"
 
 
 @pytest.mark.asyncio
 async def test_args():
 
     assert await potato("add", "100") == "Added 100 potatoes."
+    assert await potato("add", "1", "2") == "Too many arguments."
 
     assert await potato("eat") == "Not enough arguments. <number> [friend]"
     assert await potato("eat", "8", username="2Cubed") == "2Cubed ate 8 potatoes!"
@@ -371,13 +415,36 @@ async def test_args():
 
     assert await potato("salad", "taco") == "TACO SALAD!?"
 
+    with pytest.raises(TypeError):
+        await broken("f", "x")
+    assert await broken("g", "x") == "Invalid 'bad arg': 'x'."
+
+    with pytest.raises(NameError):
+
+        class Invalid(Command):
+
+            @Command.command(name="a")
+            class B(Command):
+
+                COMMAND = "b"
+
 
 @pytest.mark.asyncio
-async def test_list():
-    command_list = potato.commands()
+async def test_helpers():
 
+    command_list = potato.commands()
     assert "check" in command_list
     assert "add" in command_list
     assert "eat" in command_list
     assert "wizard" in command_list
     assert "salad" in command_list
+
+    def f(a, b=0, *c):
+        pass
+    params = inspect.signature(f).parameters.values()
+    assert list(map(potato._display, params)) == ["<a>", "[b]", "<c...>"]
+
+    def f(a, b=0, *c: False):
+        pass
+    params = inspect.signature(f).parameters.values()
+    assert list(map(potato._display, params)) == ["<a>", "[b]", "[c...]"]
