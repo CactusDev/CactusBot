@@ -2,7 +2,38 @@ import json
 
 import pytest
 
-from cactusbot.api import CactusAPI
+from cactusbot.api import API, CactusAPI
+
+
+class FakeResponse:
+
+    def __init__(self, method, endpoint, kwargs, status=200):
+
+        self.method = method
+        self.endpoint = endpoint
+        self.kwargs = kwargs
+
+        self.status = status
+        
+        if "data" in kwargs:
+            if kwargs["data"].get("password") == "fake":
+                self.status = 404
+
+    def __eq__(self, other):
+        return other == self.data
+
+    def __repr__(self):
+        return "<FakeResponse: {}>".format(repr(self.data))
+
+    @property
+    def data(self):
+        return self.method, self.endpoint, self.kwargs
+
+    async def json(self):
+        return {
+            "token": "authtoken",
+            "errors": ["Such error."]
+        }
 
 
 @pytest.fixture(autouse=True)
@@ -10,19 +41,66 @@ def fake_web_requests(monkeypatch):
 
     async def request(self, method, endpoint, **kwargs):
 
-        if "data" in kwargs:
-            kwargs["data"] = json.loads(kwargs["data"])
+        if kwargs.get("raw") is True:
+            kwargs.pop("raw")
 
-        if method.upper() == "GET" and kwargs.get("is_json") is False:
-            kwargs.pop("is_json")
-        elif kwargs.get("is_json") is True:
-            kwargs.pop("is_json")
+        else:
 
-        return method.upper(), endpoint, kwargs
-    monkeypatch.setattr(CactusAPI, "request", request)
+            if "data" in kwargs:
+                kwargs["data"] = json.loads(kwargs["data"])
+
+            if "headers" in kwargs:
+                for header in list(kwargs["headers"].keys()):
+                    if header in ["Content-Type", "X-Auth-Token", "X-Auth-Key"]:
+                        kwargs["headers"].pop(header)
+                if not kwargs["headers"]:
+                    kwargs.pop("headers")
+
+            if method.upper() == "GET" and kwargs.get("is_json") is False:
+                kwargs.pop("is_json")
+            elif kwargs.get("is_json") is True:
+                kwargs.pop("is_json")
+
+        return FakeResponse(
+            method.upper(), endpoint, kwargs, status=kwargs.get("status", 200)
+        )
+    monkeypatch.setattr(API, "request", request)
 
 
 api = CactusAPI("token", "password")
+
+
+@pytest.mark.asyncio
+async def test_request():
+    
+    assert (await api.request("GET", "/test", headers={"X-Key": "value"}, raw=True)).data == (
+        "GET",
+        "/test",
+        {
+            "headers": {
+                "Content-Type": "application/json",
+                "X-Auth-Token": api.token,
+                "X-Auth-Key": api.auth_token,
+                "X-Key": "value"
+            }
+        }
+    )
+    
+    api.auth_token = ""
+    await api.request("GET", "/test", status=401)
+    assert api.auth_token == "authtoken"
+
+@pytest.mark.asyncio
+async def test_login():
+    
+    api.auth_token = ""
+    await api.login()
+    assert api.auth_token == "authtoken"
+    
+    api.auth_token = ""
+    with pytest.raises(ValueError):
+        await api.login(password="fake")
+    
 
 
 class TestAlias:

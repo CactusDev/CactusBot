@@ -65,6 +65,8 @@ class CactusAPI(API):
             reauth = await self.login(self.password, *self.SCOPES)
             if reauth.status == 200:
                 self.auth_token = (await reauth.json()).get("token")
+                response = await super().request(method, endpoint, **kwargs)
+                
 
         return response
 
