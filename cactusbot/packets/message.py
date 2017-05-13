@@ -113,8 +113,9 @@ class MessagePacket(Packet):
                     else:
                         while count > 0:
                             new_text = component.text[1:]
-                            component = message[index - delta] = component._replace(
-                                text=new_text, data=new_text)
+                            component = message[index - delta] = \
+                                component._replace(
+                                    text=new_text, data=new_text)
                             count -= 1
                 else:
                     message.pop(0)
