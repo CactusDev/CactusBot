@@ -1,10 +1,11 @@
 import pytest
-from cactusbot.sepal import SepalParser
+
+from cactusbot.sepal import PARSERS
 
 REPEAT_PACKET = {
     "type": "event",
-    "event": "config",
-    "channel": "innectic2",
+    "event": "repeat",
+    "channel": "cactusdev",
     "data": {
         "message": [
             {
@@ -24,7 +25,7 @@ REPEAT_PACKET = {
 CONFIG_PACKET = {
     "type": "event",
     "event": "config",
-    "channel": "innectic2",
+    "channel": "cactusdev",
     "data": {
         "announce": {
             "follow": {
@@ -58,12 +59,10 @@ CONFIG_PACKET = {
     }
 }
 
-parser = SepalParser()
-
 
 @pytest.mark.asyncio
 async def test_parse_repeat():
-    packet = await parser.parse_repeat(REPEAT_PACKET)
+    packet = await PARSERS["repeat"](REPEAT_PACKET)
 
     assert packet.json["message"] == [
         {
@@ -88,7 +87,7 @@ async def test_parse_repeat():
 @pytest.mark.asyncio
 async def test_parse_config():
 
-    packets = await parser.parse_config(CONFIG_PACKET)
+    packets = await PARSERS["config"](CONFIG_PACKET)
 
     assert len(packets) == 3
     announce, spam, urls = packets

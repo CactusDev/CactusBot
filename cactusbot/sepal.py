@@ -19,7 +19,6 @@ class Sepal(WebSocket):
 
         self.channel = channel
         self.service = service
-        self.parser = SepalParser()
 
     async def send(self, packet_type, **kwargs):
         """Send a packet to Sepal."""
@@ -32,7 +31,7 @@ class Sepal(WebSocket):
         }
 
         packet.update(kwargs)
-        await super()._send(json.dumps(packet))
+        await self._send(json.dumps(packet))
 
     async def initialize(self, *_):
         """Send a subscribe packet."""
@@ -49,15 +48,12 @@ class Sepal(WebSocket):
 
         assert self.service is not None, "Must have a service to handle"
 
-        if "event" not in packet:
+        event = packet.get("event")
+
+        if event not in PARSERS:
             return
 
-        event = packet["event"]
-
-        if not hasattr(self.parser, "parse_" + event.lower()):
-            return
-
-        data = await getattr(self.parser, "parse_" + event)(packet)
+        data = await PARSERS[event](packet)
 
         if data is None:
             return
@@ -69,20 +65,23 @@ class Sepal(WebSocket):
             await self.service.handle(event, data)
 
 
-class SepalParser:
-    """Parse Sepal packets."""
+async def parse_repeat(packet):
+    """Parse the incoming repeat packets."""
 
-    async def parse_repeat(self, packet):
-        """Parse the incoming repeat packets."""
+    if "message" in packet["data"]:
+        return MessagePacket.from_json(packet["data"])
 
-        if "message" in packet["data"]:
-            return MessagePacket.from_json(packet["data"])
 
-    async def parse_config(self, packet):
-        """Parse the incoming config packets."""
+async def parse_config(packet):
+    """Parse the incoming config packets."""
 
-        return [
-            Packet("announce", **packet["data"]["announce"]),
-            Packet("spam", **packet["data"]["spam"]),
-            Packet("whitelistedUrls", urls=packet["data"]["whitelistedUrls"])
-        ]
+    return [
+        Packet("announce", **packet["data"]["announce"]),
+        Packet("spam", **packet["data"]["spam"]),
+        Packet("whitelistedUrls", urls=packet["data"]["whitelistedUrls"])
+    ]
+
+PARSERS = {
+    "repeat": parse_repeat,
+    "config": parse_config
+}
