@@ -14,6 +14,7 @@ class API:
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        assert self.URL is not None
 
         self.logger = logging.getLogger(__name__)
 

@@ -48,22 +48,22 @@ class SpamHandler(Handler):
         contains_urls = self.contains_urls(packet)
 
         if exceeds_caps:
-            return (MessagePacket("Please do not spam capital letters.",
+            return [MessagePacket("Please do not spam capital letters.",
                                   target=packet.user),
                     BanPacket(packet.user, 1),
-                    StopIteration)
+                    StopIteration]
 
         if exceeds_emoji:
-            return (MessagePacket("Please do not spam emoji.",
+            return [MessagePacket("Please do not spam emoji.",
                                   target=packet.user),
                     BanPacket(packet.user, 1),
-                    StopIteration)
+                    StopIteration]
 
         if contains_urls:
-            return (MessagePacket("Please do not post URLs.",
+            return [MessagePacket("Please do not post URLs.",
                                   target=packet.user),
                     BanPacket(packet.user, 5),
-                    StopIteration)
+                    StopIteration]
 
     async def on_config(self, packet):
         """Handle config update events."""

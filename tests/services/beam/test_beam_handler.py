@@ -30,7 +30,7 @@ class PingHandler(Handler):
 class SpamHandler(Handler):
     async def on_message(self, packet):
         if "spam" in packet.text:
-            return ("No spamming!", BanPacket(packet.user, duration=5))
+            return ["No spamming!", BanPacket(packet.user, duration=5)]
         if "SPAM" in packet.text:
             return BanPacket(packet.user)
 

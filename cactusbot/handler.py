@@ -132,12 +132,9 @@ topIteration`, or :obj:`None`
 
         if isinstance(packet, Packet):
             yield packet
-        elif isinstance(packet, (tuple, list)):
+        elif isinstance(packet, list):
             for component in packet:
-                for item in self.translate(component, handler):
-                    if item is StopIteration:
-                        return item
-                    yield item
+                yield from self.translate(component, handler)
         elif isinstance(packet, str):
             yield MessagePacket(packet)
         elif packet is StopIteration:
