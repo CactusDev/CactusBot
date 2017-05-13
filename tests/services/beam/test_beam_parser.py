@@ -43,7 +43,8 @@ def test_parse_message():
                  'source': 'builtin',
                  'text': ':D',
                  'type': 'emoticon'}],
-            'meta': {'me': True}},
+            'meta': {'me': True}
+        },
         'user_id': 95845,
         'user_name': 'Stanley',
         'user_roles': ['User']
@@ -63,6 +64,50 @@ def test_parse_message():
         "target": None
     }
 
+    assert BeamParser.parse_message({
+        'channel': 2151,
+        'id': '8ef6a160-a9c8-11e6-9c8f-6bd6b629c2eb',
+        'message': {
+            'message': [{
+                'userId': 95845,
+                'text': ':Stanleyinaspacesuit',
+                'username': 'Stanley',
+                'type': 'inaspacesuit'
+            }, {
+                'text': 'github.com/CactusDev',
+                'url': 'http://github.com/CactusDev',
+                'type': 'link'
+            }, {
+                'id': 95845,
+                'text': '@Stanley',
+                'username': 'Stanley',
+                'type': 'tag'
+            }],
+            'meta': {}
+        },
+        'user_id': 95845,
+        'user_name': 'Stanley',
+        'user_roles': ['User']
+    }).json == {
+        "message": [{
+            "type": "emoji",
+            "data": "👨‍🚀",
+            "text": ":Stanleyinaspacesuit"
+        }, {
+            "type": "url",
+            "data": "http://github.com/CactusDev",
+            "text": "github.com/CactusDev"
+        }, {
+            "type": "tag",
+            "data": "Stanley",
+            "text": "@Stanley"
+        }],
+        "user": "Stanley",
+        "role": 1,
+        "action": False,
+        "target": None
+    }
+
 
 def test_parse_follow():
 
@@ -71,35 +116,37 @@ def test_parse_follow():
         'user': {
             'avatarUrl': 'https://uploads.beam.pro/avatar/l0icubxz-95845.jpg',
             'bio': None,
-            'channel': {'audience': 'teen',
-                        'badgeId': None,
-                        'coverId': None,
-                        'createdAt': '2016-03-05T20:41:21.000Z',
-                        'deletedAt': None,
-                        'description': None,
-                        'featured': False,
-                        'ftl': 0,
-                        'hasTranscodes': True,
-                        'hasVod': False,
-                        'hosteeId': None,
-                        'id': 68762,
-                        'interactive': False,
-                        'interactiveGameId': None,
-                        'languageId': None,
-                        'name': "Stanley's Channel",
-                        'numFollowers': 0,
-                        'online': False,
-                        'partnered': False,
-                        'suspended': False,
-                        'thumbnailId': None,
-                        'token': 'Stanley',
-                        'transcodingProfileId': None,
-                        'typeId': None,
-                        'updatedAt': '2016-08-16T02:53:01.000Z',
-                        'userId': 95845,
-                        'viewersCurrent': 0,
-                        'viewersTotal': 0,
-                        'vodsEnabled': True},
+            'channel': {
+                'audience': 'teen',
+                'badgeId': None,
+                'coverId': None,
+                'createdAt': '2016-03-05T20:41:21.000Z',
+                'deletedAt': None,
+                'description': None,
+                'featured': False,
+                'ftl': 0,
+                'hasTranscodes': True,
+                'hasVod': False,
+                'hosteeId': None,
+                'id': 68762,
+                'interactive': False,
+                'interactiveGameId': None,
+                'languageId': None,
+                'name': "Stanley's Channel",
+                'numFollowers': 0,
+                'online': False,
+                'partnered': False,
+                'suspended': False,
+                'thumbnailId': None,
+                'token': 'Stanley',
+                'transcodingProfileId': None,
+                'typeId': None,
+                'updatedAt': '2016-08-16T02:53:01.000Z',
+                'userId': 95845,
+                'viewersCurrent': 0,
+                'viewersTotal': 0,
+                'vodsEnabled': True
+            },
             'createdAt': '2016-03-05T20:41:21.000Z',
             'deletedAt': None,
             'experience': 401,
@@ -205,6 +252,7 @@ def test_parse_subscribe():
         "streak": 1
     }
 
+
 def test_parse_resubscribe():
 
     assert BeamParser.parse_resubscribe({
@@ -280,6 +328,36 @@ def test_parse_host():
     }
 
 
+def test_parse_join():
+
+    assert BeamParser.parse_join({
+        'id': 95845,
+        'originatingChannel': 2151,
+        'username': 'Stanley',
+        'roles': ['Mod', 'User']
+    }).json == {
+        "event": "join",
+        "streak": 1,
+        "success": True,
+        "user": "Stanley"
+    }
+
+
+def test_parse_leave():
+
+    assert BeamParser.parse_leave({
+        'id': 95845,
+        'originatingChannel': 2151,
+        'username': 'Stanley',
+        'roles': ['Mod', 'User']
+    }).json == {
+        "event": "leave",
+        "streak": 1,
+        "success": True,
+        "user": "Stanley"
+    }
+
+
 def test_synthesize():
 
     assert BeamParser.synthesize(MessagePacket(
@@ -299,3 +377,7 @@ def test_synthesize():
     assert BeamParser.synthesize(MessagePacket(
         "Hello!", target="Stanley"
     )) == (("Stanley", "Hello!",), {"method": "whisper"})
+
+    assert BeamParser.synthesize(MessagePacket(
+        "Hello! ", ("emoji", "🌵"), "How are you?"
+    )) == (("Hello! :cactus How are you?",), {})

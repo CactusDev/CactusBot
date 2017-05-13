@@ -42,7 +42,7 @@ class BeamParser:
                 message.append(chunk)
             elif component["type"] == "inaspacesuit":
                 chunk["type"] = "emoji"
-                chunk["data"] = ""
+                chunk["data"] = "👨‍🚀"
                 message.append(chunk)
             elif component["type"] == "link":
                 chunk["type"] = "url"

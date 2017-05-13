@@ -1,47 +1,43 @@
 import pytest
+from tests.api import MockAPI
 
 from cactusbot.handlers import SpamHandler
 from cactusbot.packets import MessagePacket
 
-async def get_user_id(_):
-    return 0
+spam_handler = SpamHandler(MockAPI("test_token", "test_password"))
 
 
-class MockAPI:
-
-    class Trust:
-
-        async def get(self, _):
-
-            class Response:
-                status = 404
-
-            return Response()
-    trust = Trust()
-
-spam_handler = SpamHandler(MockAPI())
+async def get_user_id(username):
+    return username
+spam_handler.get_user_id = get_user_id
 
 
 @pytest.mark.asyncio
 async def test_on_message():
 
     assert (await spam_handler.on_message(
-        MessagePacket("THIS CONTAINS EXCESSIVE CAPITAL LETTERS.")
+        MessagePacket("THIS CONTAINS EXCESSIVE CAPITALS.", user="untrusted")
     ))[0].text == "Please do not spam capital letters."
 
     assert (await spam_handler.on_message(MessagePacket(
         "This is what one hundred emoji looks like!",
-        *(("emoji", "😮"),) * 100
+        *(("emoji", "😮"),) * 100,
+        user="untrusted"
     )))[0].text == "Please do not spam emoji."
 
     assert (await spam_handler.on_message(MessagePacket(
         "Check out my amazing Twitter!",
         ("url", "twitter.com/CactusDevTeam",
-         "https://twitter.com/CactusDevTeam")
+         "https://twitter.com/CactusDevTeam"),
+        user="untrusted"
     )))[0].text == "Please do not post URLs."
 
     assert await spam_handler.on_message(
-        MessagePacket("PLEASE STOP SPAMMING CAPITAL LETTERS.", role=50)
+        MessagePacket("PLEASE STOP SPAMMING CAPITAL LETTERS.", role=5)
+    ) is None
+
+    assert await spam_handler.on_message(
+        MessagePacket("THIS IS ALMOST LIKE SPAM!", user="trusted")
     ) is None
 
 

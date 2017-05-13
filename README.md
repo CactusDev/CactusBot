@@ -2,10 +2,9 @@
 
 [![Build Status](https://travis-ci.org/CactusDev/CactusBot.svg?branch=master)](https://travis-ci.org/CactusDev/CactusBot)
 
-[![Coverage Status](https://coveralls.io/repos/github/CactusBot/CactusBot/badge.svg?branch=master)](https://coveralls.io/github/CactusBot/CactusBot?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/CactusDev/CactusBot/badge.svg?branch=master)](https://coveralls.io/github/CactusDev/CactusBot?branch=master)
 
-CactusBot is a next-generation chat bot for live streams.
-Harnessing the power of open-source, and an extraordinary community to shape its path
+CactusBot is a next-generation chat bot for live streams. Harnessing the power of open-source, and an extraordinary community to shape its path
 
 ![screenshot of the bot running in a terminal](./assets/terminal.png)
 
@@ -15,7 +14,7 @@ Harnessing the power of open-source, and an extraordinary community to shape its
 
 # Installation
 
-*PYTHON 3.5 OR GREATER IS REQUIRED. ANY VERSION LOWER IS NOT SUPPORTED.*
+_PYTHON 3.5 OR GREATER IS REQUIRED. ANY VERSION LOWER IS NOT SUPPORTED._
 
 [Sepal Setup](https://github.com/CactusDev/Sepal)
 

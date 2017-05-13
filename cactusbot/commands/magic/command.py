@@ -23,8 +23,8 @@ class Meta(Command):
 
         user_level = self.ROLES.get(symbol, 1)
 
-        raw.role = user_level  # HACK
-        raw.target = None
+        raw = raw.copy(role=user_level, target=None)
+
         response = await self.api.command.add(
             name, raw.split(maximum=3)[-1].json, user_level=user_level)
         data = await response.json()

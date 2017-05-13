@@ -201,7 +201,7 @@ class Command:
 
         argument_name = arg.name
         if argument_name == "_":
-            argument_name = "arguments"
+            argument_name = "argument"
         return syntax.format(argument_name)
 
     @classmethod

@@ -14,8 +14,8 @@ class Social(Command):
     async def default(self, *services: False):
         """Get a social service if it's provived, or give it all."""
 
-        if len(services) >= 12:
-            return "Maximum number of requested services (12) exceeded."
+        if len(services) > 8:
+            return "Maximum number of requested services (8) exceeded."
 
         response = []
         if services:
@@ -44,7 +44,7 @@ class Social(Command):
                 response.append(("url", service["attributes"]["url"]))
                 response.append(', ')
             return MessagePacket(*response[:-1])
-        return "'{}' not found on the streamer's profile!".format(service)
+        return "No services found on the streamer's profile!"
 
     @Command.command()
     async def add(self, service, url):
@@ -52,13 +52,9 @@ class Social(Command):
 
         response = await self.api.social.add(service, url)
         if response.status == 201:
-            return "Added social service {}.".format(service)
+            return "Added social service '{}'.".format(service)
         elif response.status == 200:
-            return "Updated social service {}".format(service)
-        elif response.status == 400:
-            json = await response.json()
-            if json["errors"].get("quote", {}).get("url", []):
-                return "An error has occurred."
+            return "Updated social service '{}'.".format(service)
 
     @Command.command()
     async def remove(self, service):
@@ -66,6 +62,6 @@ class Social(Command):
 
         response = await self.api.social.remove(service)
         if response.status == 200:
-            return "Removed social service {}.".format(service)
+            return "Removed social service '{}'.".format(service)
         elif response.status == 404:
-            return "Social service {} doesn't exist!".format(service)
+            return "Social service '{}' doesn't exist!".format(service)

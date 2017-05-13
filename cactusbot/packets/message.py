@@ -102,20 +102,24 @@ class MessagePacket(Packet):
 
             count = key.start or 0
             message = self.message.copy()
+            delta = 0
 
             for index, component in enumerate(message.copy()):
                 if component.type == "text":
                     if len(component.text) <= count:
                         count -= len(component.text)
                         message.pop(0)
+                        delta += 1
                     else:
                         while count > 0:
                             new_text = component.text[1:]
-                            component = message[index] = component._replace(
-                                text=new_text, data=new_text)
+                            component = message[index - delta] = \
+                                component._replace(
+                                    text=new_text, data=new_text)
                             count -= 1
                 else:
                     message.pop(0)
+                    delta += 1
                 if count == 0:
                     return self.copy(*message)
             return self.copy(*message)

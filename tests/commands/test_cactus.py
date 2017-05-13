@@ -1,11 +1,11 @@
 import pytest
 
-from cactusbot.api import CactusAPI
+from tests.api import MockAPI
 from cactusbot.commands.magic import Cactus
 
 from cactusbot.cactus import __version__
 
-cactus = Cactus(CactusAPI("test_token", "test_password"))
+cactus = Cactus(MockAPI("test_token", "test_password"))
 
 
 @pytest.mark.asyncio

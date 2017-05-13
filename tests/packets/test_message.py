@@ -1,5 +1,10 @@
+import pytest
+
 from cactusbot.packets import MessagePacket
 
+
+def test_str():
+    assert str(MessagePacket("Hi!", user="Stanley")) == '<Message: Stanley - "Hi!">'
 
 def test_copy():
 
@@ -36,14 +41,12 @@ def test_sub():
 
 def _split(text, *args, **kwargs):
     return [
-        component.text
-        for component in
+        component.text for component in
         MessagePacket(text).split(*args, **kwargs)
     ]
 
 
 def test_split():
-    """Test splitting message packets."""
 
     assert _split("0 1 2 3") == ['0', '1', '2', '3']
     assert _split("0 1 2 3", "2") == ['0 1 ', ' 3']
@@ -53,8 +56,24 @@ def test_split():
     assert _split(" 0 1 2 3 ") == ['0', '1', '2', '3']
 
 
+def test_contains():
+
+    assert "Hello" in MessagePacket("Hello")
+    assert "Hello" in MessagePacket("Hello, world!")
+    assert "Hello" not in MessagePacket("Hi, world!")
+
+
+def test_getitem():
+
+    assert MessagePacket("Hello!")[4:].text == "o!"
+    assert MessagePacket()[:].text == ""
+    assert MessagePacket("Hello, ", ("emoji", "🌵"), "world!")[10:].text == "ld!"
+
+    with pytest.raises(TypeError):
+        MessagePacket("Hello!")["two"]
+
+
 def test_join():
-    """Test joining message packets."""
 
     assert MessagePacket.join(
         MessagePacket(("text", "I like "), ("emoji", "😃")),

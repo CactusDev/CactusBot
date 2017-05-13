@@ -1,11 +1,14 @@
+import inspect
+
 import pytest
-from cactusbot.api import CactusAPI
+from tests.api import MockAPI
+
 from cactusbot.commands.command import Command
 from cactusbot.handlers import CommandHandler
 from cactusbot.packets import MessagePacket
 
 command_handler = CommandHandler(
-    "TestChannel", CactusAPI("test_token", "test_password"))
+    "TestChannel", MockAPI("test_token", "test_password"))
 
 
 def verify(message, expected, *args, **kwargs):
@@ -23,6 +26,40 @@ async def test_on_message():
     assert (await command_handler.on_message(
         MessagePacket("!cactus")
     )).text == "Ohai! I'm CactusBot! 🌵"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!test")
+    )).text == "Testing test! :)"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!a b nonexistent c")
+    )).text == "Testing a-b! :)"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!nonexistent")
+    )).text == "Command not found."
+
+    assert (await command_handler.on_message(
+        MessagePacket("!aliased")
+    )).text == "Testing nonaliased! :)"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!fakealias")
+    )).text == "Command does not exist for that alias."
+
+    assert (await command_handler.on_message(
+        MessagePacket("!disabled")
+    )).text == "Command is disabled."
+
+    targeted = await command_handler.on_message(
+        MessagePacket("!targeted", target="CactusBot", user="Stanley")
+    )
+    assert targeted.text == "Testing targeted! :)"
+    assert targeted.user == "Stanley"
+
+    assert (await command_handler.on_message(
+        MessagePacket("!modonly", role=3)
+    )).text == "Role level 'Moderator' or higher required."
 
 
 def test_inject_argn():
@@ -69,6 +106,18 @@ def test_inject_argn():
         "raid", "@Streamer"
     )
 
+    verify(
+        "Would you like a %ARG1=potato%?",
+        "Would you like a potato?",
+        "offer"
+    )
+
+    verify(
+        "Would you like a %ARG1=potato%?",
+        "Would you like a carrot?",
+        "offer", "carrot"
+    )
+
 
 def test_inject_args():
 
@@ -82,6 +131,12 @@ def test_inject_args():
         "Have some %ARGS%.",
         "Not enough arguments!",
         "give"
+    )
+
+    verify(
+        "WAAA %ARGS|upper%!",
+        "WAAA STUFF AND THINGS!",
+        "waaa", *"stuff and things".split()
     )
 
     verify(
@@ -152,7 +207,12 @@ def test_modify():
     assert command_handler.modify("Jello", "reverse", "title") == "Ollej"
 
 
+@pytest.mark.asyncio
+async def test_repeat():
+    assert await command_handler.on_repeat("Hi!") == "Hi!"
+
 ###
+
 
 async def add_title(name):
     """Add 'Potato Master' title to a name."""
@@ -226,8 +286,10 @@ class Potato(Command):
             return "Potato power x {}!".format(strength)
 
     @Command.command(hidden=True)
-    class Wizard(Command):
+    class Wizardry(Command):
         """Potato wizard."""
+
+        COMMAND = "wizard"
 
         @Command.command()
         async def default(self, *things):
@@ -251,7 +313,43 @@ class Potato(Command):
             """Taco salad."""
             return "TACO SALAD!?"
 
-potato = Potato(CactusAPI("test_token", "test_password"))
+
+class Cat(Command):
+
+    @Command.command()
+    async def default(self, a, b):
+        return a + b
+
+
+class Echo(Command):
+
+    @Command.command()
+    async def f(self, value, _):
+        return value
+
+
+def fail(_):
+    raise Exception
+
+
+class Broken(Command):
+
+    @Command.command()
+    async def f(self, arg: 12):  # invalid annotation
+        return arg
+
+    @Command.command()
+    async def g(self, bad_arg: fail):
+        return bad_arg
+
+
+api = MockAPI("test_token", "test_password")
+
+potato = Potato(api)
+
+cat = Cat(api)
+echo = Echo(api)
+broken = Broken(api)
 
 
 @pytest.mark.asyncio
@@ -263,14 +361,19 @@ async def test_default():
     assert await potato("battery") == "Potato power!"
     assert await potato("battery", "high") == "Invalid 'strength': 'high'."
     assert await potato("battery", "9001") == "Potato power x 9001!"
+    assert await potato("battery", "1", "2") == "Invalid argument: '1'."
 
     assert await potato("salad") == "Not enough arguments. <make>"
+    assert await cat() == "Not enough arguments. <a> <b>"
+    assert await echo() == "Not enough arguments. <f>"
+    assert await echo("f") == "Not enough arguments. <value> <argument>"
 
 
 @pytest.mark.asyncio
 async def test_args():
 
     assert await potato("add", "100") == "Added 100 potatoes."
+    assert await potato("add", "1", "2") == "Too many arguments."
 
     assert await potato("eat") == "Not enough arguments. <number> [friend]"
     assert await potato("eat", "8", username="2Cubed") == "2Cubed ate 8 potatoes!"
@@ -312,12 +415,36 @@ async def test_args():
 
     assert await potato("salad", "taco") == "TACO SALAD!?"
 
-@pytest.mark.asyncio
-async def test_list():
-    command_list = potato.commands()
+    with pytest.raises(TypeError):
+        await broken("f", "x")
+    assert await broken("g", "x") == "Invalid 'bad arg': 'x'."
 
+    with pytest.raises(NameError):
+
+        class Invalid(Command):
+
+            @Command.command(name="a")
+            class B(Command):
+
+                COMMAND = "b"
+
+
+@pytest.mark.asyncio
+async def test_helpers():
+
+    command_list = potato.commands()
     assert "check" in command_list
     assert "add" in command_list
     assert "eat" in command_list
     assert "wizard" in command_list
     assert "salad" in command_list
+
+    def f(a, b=0, *c):
+        pass
+    params = inspect.signature(f).parameters.values()
+    assert list(map(potato._display, params)) == ["<a>", "[b]", "<c...>"]
+
+    def f(a, b=0, *c: False):
+        pass
+    params = inspect.signature(f).parameters.values()
+    assert list(map(potato._display, params)) == ["<a>", "[b]", "[c...]"]

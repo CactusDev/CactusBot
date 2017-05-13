@@ -104,7 +104,8 @@ topIteration`, or :obj:`None`
              - :obj:`tuple` or :obj:`list` is iterated over, passing each
                item through :meth:`translate` again.
              - :exc:`StopIteration` signifies that no future packets should be
-               yielded, stopping the chain.
+               yielded. Note that :exc:`StopIteration` will be yielded and
+               should be dealt with externally.
              - :obj:`None` is ignored, and is never yielded.
         handler : :obj:`Handler`
             The handler response to turn into a packet
@@ -113,31 +114,28 @@ topIteration`, or :obj:`None`
         --------
         >>> handlers = Handlers()
         >>> translated = handlers.translate("Hello!", Handler())
-        >>> [(item.__class__.__name__, item.text) for item in translated]
-        [('MessagePacket', 'Hello!')]
+        >>> [item.__class__.__name__ for item in translated]
+        ['MessagePacket']
 
         >>> handlers = Handlers()
         >>> translated = handlers.translate(["Potato?", "Potato!"], Handler())
-        >>> [(item.__class__.__name__, item.text) for item in translated]
-        [('MessagePacket', 'Potato?'), ('MessagePacket', 'Potato!')]
+        >>> [item.__class__.__name__ for item in translated]
+        ['MessagePacket', 'MessagePacket']
 
         >>> handlers = Handlers()
         >>> translated = handlers.translate(
         ...     ["Stop spamming.", StopIteration, "Nice message!"],
         ...     Handler()
         ... )
-        >>> [(item.__class__.__name__, item.text) for item in translated]
-        [('MessagePacket', 'Stop spamming.')]
+        >>> [item.__class__.__name__ for item in translated]
+        ['MessagePacket', 'type', 'MessagePacket']
         """
 
         if isinstance(packet, Packet):
             yield packet
-        elif isinstance(packet, (tuple, list)):
+        elif isinstance(packet, list):
             for component in packet:
-                for item in self.translate(component, handler):
-                    if item is StopIteration:
-                        return item
-                    yield item
+                yield from self.translate(component, handler)
         elif isinstance(packet, str):
             yield MessagePacket(packet)
         elif packet is StopIteration:

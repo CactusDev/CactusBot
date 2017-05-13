@@ -103,11 +103,11 @@ class CommandHandler(Handler):
                 ).text.split()), *args[1:])
         cmd = await self.api.command.get(name=command)
         if cmd.status != 200:
-            return MessagePacket("Command does not exist for that alias",
+            return MessagePacket("Command does not exist for that alias.",
                                  target=_packet.user)
         cmd_response = await cmd.json()
-        cmd_response = cmd_response["data"]["attributes"]["response"]
-        json["data"]["attributes"]["response"] = cmd_response
+        json["data"]["attributes"]["response"] = cmd_response[
+            "data"]["attributes"]["response"]
 
         json = json["data"]["attributes"]
 
@@ -133,13 +133,7 @@ class CommandHandler(Handler):
         if not is_alias and "count" not in data:
             data["count"] = str(json["count"] + 1)
         elif is_alias:
-            response = await self.api.command.get(
-                name=command)
-            if response.status == 200:
-                command_data = (await (response.json()))["data"]["attributes"]
-                data["count"] = str(command_data["count"])
-            else:
-                return MessagePacket("An error has occured.")
+            data["count"] = str(cmd_response["data"]["attributes"]["count"])
 
         return self._inject(MessagePacket.from_json(json["response"]),
                             *args, **data)

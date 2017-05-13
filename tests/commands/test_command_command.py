@@ -2,212 +2,51 @@
 
 import pytest
 
+from tests.api import MockAPI
 from cactusbot.commands.magic import Meta
 from cactusbot.packets import MessagePacket
 
-class MockAPI:
-    """Fake API."""
+command = Meta(MockAPI("test_token", "test_password"))
 
-    class Command:
-
-        async def get(self, command=None):
-            """Get commands."""
-
-            class Response:
-                """API response."""
-
-                @property
-                def status(self):
-                    """Status of the response."""
-                    return 200
-
-                async def json(self):
-                    """JSON response."""
-
-                    if command:
-                        return {
-                            "data": {
-                                "attributes": {
-                                    "count": 0,
-                                    "enabled": True,
-                                    "name": "testing",
-                                    "response": {
-                                        "action": False,
-                                        "message": [
-                                            {
-                                                "data": "testing!",
-                                                "text": "testing!",
-                                                "type": "text"
-                                            },
-                                            {
-                                                "data": ":smile:",
-                                                "text": ":)",
-                                                "type": "emoji"
-                                            }
-                                        ],
-                                        "target": None,
-                                        "user": "Stanley"
-                                    },
-                                    "role": 0,
-                                    "token": "Stanley"
-                                },
-                                "id": "3f51fc4d-d012-41c0-b98e-ff6257394f75",
-                                "type": "command"
-                            },
-                            "meta": {
-                                "created": True
-                            }
-                        }
-                    else:
-                        return {
-                            "data": [
-                                {
-                                    "attributes": {
-                                        "count": 2,
-                                        "enabled": True,
-                                        "name": "testing",
-                                        "response": {
-                                            "action": False,
-                                            "message": [
-                                                {
-                                                    "data": "testing!",
-                                                    "text": "testing!",
-                                                    "type": "text"
-                                                }
-                                            ],
-                                            "role": 1,
-                                            "target": None,
-                                            "user": "Stanley"
-                                        },
-                                        "token": "Stanley"
-                                    },
-                                    "id": "d23779ce-4522-431d-9095-7bf34718c39d",
-                                    "type": "command"
-                                },
-                                {
-                                    "attributes": {
-                                        "commandName": "testing",
-                                        "count": 2,
-                                        "enabled": True,
-                                        "id": "d23779ce-4522-431d-9095-7bf34718c39d",
-                                        "name": "test",
-                                        "response": {
-                                            "action": False,
-                                            "message": [
-                                                {
-                                                    "data": "testing!",
-                                                    "text": "testing!",
-                                                    "type": "text"
-                                                }
-                                            ],
-                                            "role": 1,
-                                            "target": None,
-                                            "user": "Stanley"
-                                        },
-                                        "token": "Stanley"
-                                    },
-                                    "id": "312ab175-fb52-4a7b-865d-4202176f9234",
-                                    "type": "aliases"
-                                }
-                            ]
-                        }
-            return Response()
-
-        async def add(self, name, response, *, user_level=1):
-            """Add a command."""
-
-            class Response:
-                """API response."""
-
-                @property
-                def status(self):
-                    """Status of the request."""
-                    return 200
-
-                async def json(self):
-                    """JSON response."""
-
-                    return {
-                        "data": {
-                            "attributes": {
-                                "count": 0,
-                                "enabled": True,
-                                "name": "testing",
-                                "response": {
-                                    "action": False,
-                                    "message": [
-                                        {
-                                            "data": "lol!",
-                                            "text": "lol!",
-                                            "type": "text"
-                                        },
-                                        {
-                                            "data": ":smile:",
-                                            "text": ":)",
-                                            "type": "emoji"
-                                        }
-                                    ],
-                                    "role": 0,
-                                    "target": None,
-                                    "user": ""
-                                },
-                                "token": "innectic2"
-                            },
-                            "id": "d23779ce-4522-431d-9095-7bf34718c39d",
-                            "type": "command"
-                        },
-                        "meta": {
-                            "edited": True
-                        }
-                    }
-            return Response()
-
-        async def remove(self, name):
-            """Remove a command."""
-
-            class Response:
-                """API response."""
-
-                @property
-                def status(self):
-                    """Status of the request."""
-                    return 200
-
-                async def json(self):
-                    """JSON response."""
-                    return {
-                        "meta": {
-                            "deleted": {
-                                "aliases": None,
-                                "command": [
-                                    "d23779ce-4522-431d-9095-7bf34718c39d"
-                                ],
-                                "repeats": None
-                            }
-                        }
-                    }
-            return Response()
-    command = Command()
-
-command = Meta(MockAPI())
 
 @pytest.mark.asyncio
-async def test_command_add():
-    """Add a command."""
+async def test_add():
+
     packet = MessagePacket(("text", "lol"), ("emoji", "😃"), role=5)
-    assert (await command("add", "testing", packet, packet=packet)) == "Updated command !testing."
+    assert await command("add", "testing", packet, packet=packet) == "Added command !testing."
+
+    packet = MessagePacket("Existing.", role=5)
+    assert await command("add", "existing", packet, packet=packet) == "Updated command !existing."
+
 
 @pytest.mark.asyncio
-async def test_command_remove():
-    """Remove a command."""
+async def test_remove():
 
-    packet = MessagePacket("!command remove testing", role=5)
-    assert (await command("remove", "testing", packet=packet)
-           ) == "Removed command !testing."
+    assert await command("remove", "testing") == "Removed command !testing."
+
+    assert await command("remove", "nonexistent") == "Command !nonexistent does not exist!"
+
 
 @pytest.mark.asyncio
-async def test_command_list():
-    """List commands."""
+async def test_list():
 
-    packet = MessagePacket("!command list", role=5)
-    assert (await command("list", packet=packet)) == "Commands: testing"
+    assert await command("list") == "Commands: test, testing"
+
+
+@pytest.mark.asyncio
+async def test_toggle():
+
+    assert await command("enable", "test") == "Command !test has been enabled."
+    assert await command("disable", "test") == "Command !test has been disabled."
+
+
+@pytest.mark.asyncio
+async def test_count():
+
+    assert await command("count", "test") == "!test's count is 12."
+    assert await command("count", "nonexistent") == "Command !nonexistent does not exist."
+
+    assert await command("count", "test", "50") == "Count updated."
+    assert await command("count", "test", "=50") == "Count updated."
+    assert await command("count", "test", "+3") == "Count updated."
+    assert await command("count", "test", "-1") == "Count updated."

@@ -8,14 +8,6 @@ from ..packets import BanPacket, MessagePacket
 BASE_URL = "https://beam.pro/api/v1/channels/{username}"
 
 
-async def get_user_id(username):
-    """Retrieve Beam user ID from username."""
-    async with aiohttp.get(BASE_URL.format(username=username)) as response:
-        if response.status == 404:
-            return 0
-        return (await response.json())["id"]
-
-
 class SpamHandler(Handler):
     """Spam handler."""
 
@@ -30,13 +22,21 @@ class SpamHandler(Handler):
             "allow_urls": False
         }
 
+    @staticmethod
+    async def get_user_id(username):
+        """Retrieve Beam user ID from username."""
+        async with aiohttp.get(BASE_URL.format(username=username)) as response:
+            if response.status == 404:
+                return 0
+            return (await response.json())["id"]
+
     async def on_message(self, packet):
         """Handle message events."""
 
         if packet.role >= 4:
             return
 
-        user_id = await get_user_id(packet.user)
+        user_id = await self.get_user_id(packet.user)
         if (await self.api.trust.get(user_id)).status == 200:
             return
 
@@ -48,24 +48,22 @@ class SpamHandler(Handler):
         contains_urls = self.contains_urls(packet)
 
         if exceeds_caps:
-            return (MessagePacket("Please do not spam capital letters.",
+            return [MessagePacket("Please do not spam capital letters.",
                                   target=packet.user),
                     BanPacket(packet.user, 1),
-                    StopIteration)
+                    StopIteration]
 
         if exceeds_emoji:
-            return (MessagePacket("Please do not spam emoji.",
+            return [MessagePacket("Please do not spam emoji.",
                                   target=packet.user),
                     BanPacket(packet.user, 1),
-                    StopIteration)
+                    StopIteration]
 
         if contains_urls:
-            return (MessagePacket("Please do not post URLs.",
+            return [MessagePacket("Please do not post URLs.",
                                   target=packet.user),
                     BanPacket(packet.user, 5),
-                    StopIteration)
-
-        return None
+                    StopIteration]
 
     async def on_config(self, packet):
         """Handle config update events."""
