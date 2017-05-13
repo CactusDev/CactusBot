@@ -39,10 +39,10 @@ class BeamConstellation(WebSocket):
                 "user:{user}:achievement"
             )
 
-            interfaces = [
-                interface.format(channel=self.channel, user=self.user)
-                for interface in interfaces
-            ]
+        interfaces = [
+            interface.format(channel=self.channel, user=self.user)
+            for interface in interfaces
+        ]
 
         packet = {
             "type": "method",
@@ -53,7 +53,7 @@ class BeamConstellation(WebSocket):
             "id": 1
         }
 
-        self.websocket.send_str(json.dumps(packet))
+        await self._send(json.dumps(packet))
         await self.receive()
 
         self.logger.info(
