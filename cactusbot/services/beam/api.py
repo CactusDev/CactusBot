@@ -36,20 +36,18 @@ class BeamAPI(API):
 
     async def get_bot_channel(self, **params):
         """Get the bot's user id."""
-        response = await self.get("/users/current", params=params,
-                                  headers=self.headers)
+        response = await self.get("/users/current", params=params)
         return await response.json()
 
     async def get_channel(self, channel, **params):
         """Get channel data by username or ID."""
         response = await self.get("/channels/{channel}".format(
-            channel=channel), params=params, headers=self.headers)
+            channel=channel), params=params)
         return await response.json()
 
     async def get_chat(self, chat):
         """Get required data for connecting to a chat server by channel ID."""
-        response = await self.get("/chats/{chat}".format(chat=chat),
-                                  headers=self.headers)
+        response = await self.get("/chats/{chat}".format(chat=chat))
         return await response.json()
 
     async def update_roles(self, user, add, remove):
