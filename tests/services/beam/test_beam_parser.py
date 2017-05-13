@@ -1,5 +1,5 @@
-from cactusbot.services.beam.parser import BeamParser
 from cactusbot.packets import MessagePacket
+from cactusbot.services.beam.parser import BeamParser
 
 
 def test_parse_message():
@@ -43,7 +43,8 @@ def test_parse_message():
                  'source': 'builtin',
                  'text': ':D',
                  'type': 'emoticon'}],
-            'meta': {'me': True}},
+            'meta': {'me': True}
+        },
         'user_id': 95845,
         'user_name': 'Stanley',
         'user_roles': ['User']
@@ -60,6 +61,50 @@ def test_parse_message():
         "user": "Stanley",
         "role": 1,
         "action": True,
+        "target": None
+    }
+
+    assert BeamParser.parse_message({
+        'channel': 2151,
+        'id': '8ef6a160-a9c8-11e6-9c8f-6bd6b629c2eb',
+        'message': {
+            'message': [{
+                'userId': 95845,
+                'text': ':Stanleyinaspacesuit',
+                'username': 'Stanley',
+                'type': 'inaspacesuit'
+            }, {
+                'text': 'github.com/CactusDev',
+                'url': 'http://github.com/CactusDev',
+                'type': 'link'
+            }, {
+                'id': 95845,
+                'text': '@Stanley',
+                'username': 'Stanley',
+                'type': 'tag'
+            }],
+            'meta': {}
+        },
+        'user_id': 95845,
+        'user_name': 'Stanley',
+        'user_roles': ['User']
+    }).json == {
+        "message": [{
+            "type": "emoji",
+            "data": "👨‍🚀",
+            "text": ":Stanleyinaspacesuit"
+        }, {
+            "type": "url",
+            "data": "http://github.com/CactusDev",
+            "text": "github.com/CactusDev"
+        }, {
+            "type": "tag",
+            "data": "Stanley",
+            "text": "@Stanley"
+        }],
+        "user": "Stanley",
+        "role": 1,
+        "action": False,
         "target": None
     }
 
@@ -283,6 +328,36 @@ def test_parse_host():
     }
 
 
+def test_parse_join():
+
+    assert BeamParser.parse_join({
+        'id': 95845,
+        'originatingChannel': 2151,
+        'username': 'Stanley',
+        'roles': ['Mod', 'User']
+    }).json == {
+        "event": "join",
+        "streak": 1,
+        "success": True,
+        "user": "Stanley"
+    }
+
+
+def test_parse_leave():
+
+    assert BeamParser.parse_leave({
+        'id': 95845,
+        'originatingChannel': 2151,
+        'username': 'Stanley',
+        'roles': ['Mod', 'User']
+    }).json == {
+        "event": "leave",
+        "streak": 1,
+        "success": True,
+        "user": "Stanley"
+    }
+
+
 def test_synthesize():
 
     assert BeamParser.synthesize(MessagePacket(
@@ -302,3 +377,7 @@ def test_synthesize():
     assert BeamParser.synthesize(MessagePacket(
         "Hello!", target="Stanley"
     )) == (("Stanley", "Hello!",), {"method": "whisper"})
+
+    assert BeamParser.synthesize(MessagePacket(
+        "Hello! ", ("emoji", "🌵"), "How are you?"
+    )) == (("Hello! :cactus How are you?",), {})
