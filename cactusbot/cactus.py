@@ -43,6 +43,7 @@ class CactusBot:
     async def __aenter__(self):
         await self.api.__aenter__()
         await self.sepal.__aenter__()
+        await self.service.__aenter__()
         return self
 
     async def __aexit__(self, *args, **kwargs):
@@ -59,4 +60,5 @@ class CactusBot:
 
         await self.sepal.connect()
         asyncio.ensure_future(self.sepal.read(self.sepal.handle))
+
         await self.service.run(*auth)

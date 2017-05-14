@@ -1,22 +1,18 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3
 
 """Run CactusBot."""
 
+import asyncio
 import logging
 from argparse import ArgumentParser
-from asyncio import get_event_loop
 
 from cactusbot.cactus import CactusBot
-from config import SERVICE, SEPAL_URL, api
-
+from config import SEPAL_URL, SERVICE, api
 
 async def run():
     """Run bot instance."""
     async with CactusBot(api, SERVICE, SEPAL_URL) as bot:
-        try:
-            await bot.run()
-        except KeyboardInterrupt:
-            print("Removing spines.")
+        await bot.run()
 
 if __name__ == "__main__":
 
@@ -40,10 +36,22 @@ if __name__ == "__main__":
         style='{'
     )
 
-    loop = get_event_loop()
+    loop = asyncio.get_event_loop()
+
+    tasks = asyncio.gather(
+        asyncio.ensure_future(run())
+    )
 
     try:
-        loop.run_until_complete(run())
+        loop.run_until_complete(tasks)
+
+    except KeyboardInterrupt:
+        asyncio.gather(*asyncio.Task.all_tasks()).cancel()
         loop.run_forever()
+        tasks.exception()
+
+        print("Removing spines...")
+
     finally:
+        loop.stop()
         loop.close()

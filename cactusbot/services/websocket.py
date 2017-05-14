@@ -28,6 +28,10 @@ class WebSocket(aiohttp.ClientSession):
 
         self._endpoint_cycle = itertools.cycle(endpoints)
 
+    async def __aexit__(self, *args):
+        await self.websocket.close()
+        await super().__aexit__(*args)
+
     async def connect(self, *args, base=2, maximum=60, **kwargs):
         """Connect to a WebSocket."""
 
@@ -65,10 +69,9 @@ class WebSocket(aiohttp.ClientSession):
         assert self.websocket is not None, "Must connect to read."
         assert callable(handle), "Handler must be callable."
 
-        while True:
-            packet = await self.receive()
-            if isinstance(packet, str):
-                packet = await self.parse(packet)
+        async for packet in self.websocket:
+            if isinstance(packet.data, str):
+                packet = await self.parse(packet.data)
                 if packet is not None:
                     asyncio.ensure_future(handle(packet))
             else:
