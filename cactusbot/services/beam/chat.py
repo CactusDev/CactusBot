@@ -1,6 +1,5 @@
 """Interact with Beam chat."""
 
-
 import itertools
 import json
 import logging
@@ -33,11 +32,17 @@ class BeamChat(WebSocket):
 
         packet.update(kwargs)
 
-        if packet["method"] == "msg":
-            for message in packet.copy()["arguments"]:
-                for index in range(0, len(message), max_length):
-                    packet["arguments"] = (message[index:index + max_length],)
-                    await self._send(json.dumps(packet))
+        if packet["method"] in ("msg", "whisper"):
+
+            message = packet.copy()["arguments"][-1]
+
+            for index in range(0, len(message), max_length):
+
+                chunk = message[index:index + max_length]
+                packet["arguments"] = (*packet["arguments"][:-1], chunk)
+
+                await self._send(json.dumps(packet))
+
         else:
             await self._send(json.dumps(packet))
 
