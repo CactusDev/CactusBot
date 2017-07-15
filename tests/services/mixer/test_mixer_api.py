@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from cactusbot.services.mixer.api import API, MixerAPi
+from cactusbot.services.mixer.api import API, MixerAPI
 
 
 class FakeResponse:
