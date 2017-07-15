@@ -5,11 +5,11 @@ import aiohttp
 from ...packets import MessagePacket
 from ..command import Command
 
-BASE_URL = "https://beam.pro/api/v1/channels/{username}"
+BASE_URL = "https://mixer.com/api/v1/channels/{username}"
 
 
-async def check_beam_user(username):
-    """Check if a Beam username exists."""
+async def check_mixer_user(username):
+    """Check if a Mixer username exists."""
     if username.startswith('@'):
         username = username[1:]
     async with aiohttp.get(BASE_URL.format(username=username)) as response:
@@ -18,7 +18,7 @@ async def check_beam_user(username):
         return (username, (await response.json())["id"])
 
 
-def _trust(check_user=check_beam_user):
+def _trust(check_user=check_mixer_user):
 
     class Trust(Command):  # pylint: disable=W0621
         """Trust command."""

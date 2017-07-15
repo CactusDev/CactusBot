@@ -5,7 +5,7 @@ Generate a multistream link.
 ## `!multi [service]:[channel]`
 
 `service` can be one of the following:
- - `b` (Beam)
+ - `m` (Mixer)
  - `t` (Twitch)
  - `h` (Hitbox)
  - `y` (Youtube)

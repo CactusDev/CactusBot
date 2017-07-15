@@ -1,4 +1,4 @@
-"""Interact with Beam Constellation."""
+"""Interact with Mixer Constellation."""
 
 import re
 import json
@@ -6,10 +6,10 @@ import json
 from .. import WebSocket
 
 
-class BeamConstellation(WebSocket):
-    """Interact with Beam Constellation."""
+class MixerConstellation(WebSocket):
+    """Interact with Mixer Constellation."""
 
-    URL = "wss://constellation.beam.pro"
+    URL = "wss://constellation.mixer.com"
 
     RESPONSE_EXPR = re.compile(r'^(\d+)(.+)?$')
     INTERFACE_EXPR = re.compile(r'^([a-z]+):\d+:([a-z]+)')

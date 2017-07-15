@@ -131,14 +131,14 @@ Remove the initial `@`, if it exists.
 ```
 
 ```
-[artdude543] !command add +raid Let's go raid @%ARG1|tag%! beam.pro/%ARG1|tag%
+[artdude543] !command add +raid Let's go raid @%ARG1|tag%! mixer.com/%ARG1|tag%
 [CactusBot] Added command !raid.
 
 [Chikachi] !raid @Innectic
-[CactusBot] Let's go raid @Innectic! beam.pro/Innectic
+[CactusBot] Let's go raid @Innectic! mixer.com/Innectic
 
 [alfw] !raid TransportLayer
-[CactusBot] Let's go raid @TransportLayer! beam.pro/TransportLayer
+[CactusBot] Let's go raid @TransportLayer! mixer.com/TransportLayer
 ```
 
 ## `shuffle`

@@ -1,4 +1,4 @@
-"""Parse Beam packets."""
+"""Parse Mixer packets."""
 
 import json
 from os import path
@@ -6,8 +6,8 @@ from os import path
 from ...packets import EventPacket, MessagePacket
 
 
-class BeamParser:
-    """Parse Beam packets."""
+class MixerParser:
+    """Parse Mixer packets."""
 
     ROLES = {
         "Owner": 5,
@@ -27,7 +27,7 @@ class BeamParser:
 
     @classmethod
     def parse_message(cls, packet):
-        """Parse a Beam message packet."""
+        """Parse a Mixer message packet."""
 
         message = []
         for component in packet["message"]["message"]:
@@ -107,7 +107,7 @@ class BeamParser:
 
     @classmethod
     def synthesize(cls, packet):
-        """Create a Beam packet from a :obj:`MessagePacket`."""
+        """Create a Mixer packet from a :obj:`MessagePacket`."""
 
         message = ""
         emoji = dict(zip(cls.EMOJI.values(), cls.EMOJI.keys()))

@@ -1,4 +1,4 @@
-"""Interact with Beam chat."""
+"""Interact with Mixer chat."""
 
 import itertools
 import json
@@ -7,8 +7,8 @@ import logging
 from .. import WebSocket
 
 
-class BeamChat(WebSocket):
-    """Interact with Beam chat."""
+class MixerChat(WebSocket):
+    """Interact with Mixer chat."""
 
     def __init__(self, channel, *endpoints):
         super().__init__(*endpoints)

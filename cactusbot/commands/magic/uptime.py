@@ -12,20 +12,20 @@ class Uptime(Command):
 
     COMMAND = "uptime"
 
-    BEAM_MANIFEST_URL = ("https://beam.pro/api/v1/channels/{channel}"
-                         "/manifest.light2")
+    MIXER_MANIFEST_URL = ("https://mixer.com/api/v1/channels/{channel}"
+                          "/manifest.light2")
 
     @Command.command(hidden=True)
     async def default(self, *, channel: "channel"):
         """Default response."""
 
         response = await (await aiohttp.get(
-            "https://beam.pro/api/v1/channels/{}".format(channel)
+            "https://mixer.com/api/v1/channels/{}".format(channel)
         )).json()
 
         if "id" in response:
             data = await (await aiohttp.get(
-                self.BEAM_MANIFEST_URL.format(channel=response["id"])
+                self.MIXER_MANIFEST_URL.format(channel=response["id"])
             )).json()
 
             if "startedAt" in data:

@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from cactusbot.services.beam import BeamConstellation
+from cactusbot.services.mixer import MixerConstellation
 
 
-class ConstellationWrapper(BeamConstellation):
+class ConstellationWrapper(MixerConstellation):
 
     def __init__(self, channel, user):
         super().__init__(channel, user)

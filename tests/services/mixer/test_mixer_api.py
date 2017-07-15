@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from cactusbot.services.beam.api import API, BeamAPI
+from cactusbot.services.mixer.api import API, MixerAPi
 
 
 class FakeResponse:
@@ -42,7 +42,7 @@ def fake_web_requests(monkeypatch):
     monkeypatch.setattr(API, "request", request)
 
 
-api = BeamAPI("channel", "token")
+api = MixerAPI("channel", "token")
 
 
 @pytest.mark.asyncio

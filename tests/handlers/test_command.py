@@ -101,8 +101,8 @@ def test_inject_argn():
     )
 
     verify(
-        ["Let's raid %ARG1%! ", ("url", "beam.pro/%ARG1|tag%")],
-        "Let's raid @Streamer! beam.pro/Streamer",
+        ["Let's raid %ARG1%! ", ("url", "mixer.pro/%ARG1|tag%")],
+        "Let's raid @Streamer! mixer.pro/Streamer",
         "raid", "@Streamer"
     )
 

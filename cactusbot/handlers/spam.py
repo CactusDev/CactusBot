@@ -5,7 +5,7 @@ import aiohttp
 from ..handler import Handler
 from ..packets import BanPacket, MessagePacket
 
-BASE_URL = "https://beam.pro/api/v1/channels/{username}"
+BASE_URL = "https://mixer.com/api/v1/channels/{username}"
 
 
 class SpamHandler(Handler):
@@ -24,7 +24,7 @@ class SpamHandler(Handler):
 
     @staticmethod
     async def get_user_id(username):
-        """Retrieve Beam user ID from username."""
+        """Retrieve Mixer user ID from username."""
         async with aiohttp.get(BASE_URL.format(username=username)) as response:
             if response.status == 404:
                 return 0
