@@ -53,7 +53,7 @@
 #### Released: July 31st, 2016 
 
 ### Fixed
- - Beam (now Mixer) CSRF token usage.
+ - Beam CSRF token usage.
  - Message removal
  - `!repeat` command
 
