@@ -4,7 +4,7 @@ from cactusbot.api import CactusAPI
 from cactusbot.handler import Handlers
 from cactusbot.handlers import (CommandHandler, EventHandler, LoggingHandler,
                                 ResponseHandler, SpamHandler)
-from cactusbot.services.beam.handler import BeamHandler
+from cactusbot.services.mixer.handler import MixerHandler
 
 TOKEN = "OAuth_Token"
 CHANNEL = "ChannelName"
@@ -36,4 +36,4 @@ handlers = Handlers(
     CommandHandler(CHANNEL, api)
 )
 
-SERVICE = BeamHandler(CHANNEL, TOKEN, handlers)
+SERVICE = MixerHandler(CHANNEL, TOKEN, handlers)

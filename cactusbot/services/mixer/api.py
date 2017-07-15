@@ -1,14 +1,14 @@
-"""Interact with the Beam API."""
+"""Interact with the Mixer API."""
 
 import json
 
 from ..api import API
 
 
-class BeamAPI(API):
-    """Interact with the Beam API."""
+class MixerAPI(API):
+    """Interact with the Mixer API."""
 
-    URL = "https://beam.pro/api/v1/"
+    URL = "https://mixer.com/api/v1/"
 
     headers = {
         "Content-Type": "application/json"

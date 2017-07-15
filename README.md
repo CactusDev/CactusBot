@@ -10,7 +10,7 @@ CactusBot is a next-generation chat bot for live streams. Harnessing the power o
 
 ## CactusBot in action
 
-![gif of CactusBot running in Beam chat](./assets/action.gif)
+![gif of CactusBot running in Mixer chat](./assets/action.gif)
 
 # Installation
 

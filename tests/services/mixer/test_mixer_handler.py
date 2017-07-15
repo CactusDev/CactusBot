@@ -2,10 +2,10 @@ import pytest
 
 from cactusbot.handler import Handler, Handlers
 from cactusbot.packets import BanPacket, MessagePacket
-from cactusbot.services.beam import BeamHandler
+from cactusbot.services.mixer import MixerHandler
 
 
-class BeamHandlerWrapper(BeamHandler):
+class MixerHandlerWrapper(MixerHandler):
 
     def __init__(self, handlers):
         self._queue = []
@@ -41,22 +41,22 @@ class FollowHandler(Handler):
 
 
 handlers = Handlers(PingHandler(), SpamHandler(), FollowHandler())
-beam_handler = BeamHandlerWrapper(handlers)
+mixer_handler = MixerHandlerWrapper(handlers)
 
 
 @pytest.mark.asyncio
 async def test_handle():
 
-    await beam_handler.handle("message", "Hello!")
-    assert not beam_handler.queue
+    await mixer_handler.handle("message", "Hello!")
+    assert not mixer_handler.queue
 
-    await beam_handler.handle("message", MessagePacket("Ping!"))
-    assert beam_handler.queue == [(("Pong!",), {})]
+    await mixer_handler.handle("message", MessagePacket("Ping!"))
+    assert mixer_handler.queue == [(("Pong!",), {})]
 
-    await beam_handler.handle(
+    await mixer_handler.handle(
         "message", MessagePacket("spam eggs foo bar", user="Stanley")
     )
-    assert beam_handler.queue == [
+    assert mixer_handler.queue == [
         (("No spamming!",), {}),
         (("Stanley", 5), {"method": "timeout"})
     ]
@@ -65,7 +65,7 @@ async def test_handle():
 @pytest.mark.asyncio
 async def test_handle_chat():
 
-    await beam_handler.handle_chat({
+    await mixer_handler.handle_chat({
         'event': 'ChatMessage',
         'data': {
             'id': '688d66e0-352c-11e7-bd11-993537334664',
@@ -83,9 +83,9 @@ async def test_handle_chat():
         },
         'type': 'event'
     })
-    assert beam_handler.queue == [(("Pong!",), {})]
+    assert mixer_handler.queue == [(("Pong!",), {})]
 
-    await beam_handler.handle_chat({
+    await mixer_handler.handle_chat({
         'event': 'ChatMessage',
         'data': {
             'id': '688d66e0-352c-11e7-bd11-993537334664',
@@ -103,7 +103,7 @@ async def test_handle_chat():
         },
         'type': 'event'
     })
-    assert beam_handler.queue == [
+    assert mixer_handler.queue == [
         (("No spamming!",), {}),
         (("Stanley", 5), {"method": "timeout"})
     ]
@@ -112,7 +112,7 @@ async def test_handle_chat():
 @pytest.mark.asyncio
 async def test_handle_constellation():
 
-    await beam_handler.handle_constellation({
+    await mixer_handler.handle_constellation({
         'event': 'live',
         'data': {
             'payload': {
@@ -169,6 +169,6 @@ async def test_handle_constellation():
             },
             'channel': 'channel:3016:followed'
         }, 'type': 'event'})
-    assert beam_handler.queue == [
+    assert mixer_handler.queue == [
         (("Thanks for the follow, Stanley!",), {})
     ]

@@ -3,10 +3,10 @@ import json
 import pytest
 
 from cactusbot.packets import BanPacket, MessagePacket
-from cactusbot.services.beam import BeamChat
+from cactusbot.services.mixer import MixerChat
 
 
-class BeamChatWrapper(BeamChat):
+class MixerChatWrapper(MixerChat):
 
     def __init__(self, channel):
         super().__init__(channel, "endpoint")
@@ -24,7 +24,7 @@ class BeamChatWrapper(BeamChat):
         return queue
 
 
-chat = BeamChatWrapper(238)
+chat = MixerChatWrapper(238)
 
 
 async def test_send():

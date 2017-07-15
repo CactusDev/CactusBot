@@ -1,10 +1,10 @@
 from cactusbot.packets import MessagePacket
-from cactusbot.services.beam.parser import BeamParser
+from cactusbot.services.mixer.parser import MixerParser
 
 
 def test_parse_message():
 
-    assert BeamParser.parse_message({
+    assert MixerParser.parse_message({
         'channel': 2151,
         'id': '7f43cca0-a9c5-11e6-9c8f-6bd6b629c2eb',
         'message': {
@@ -30,7 +30,7 @@ def test_parse_message():
         "target": None
     }
 
-    assert BeamParser.parse_message({
+    assert MixerParser.parse_message({
         'channel': 2151,
         'id': '8ef6a160-a9c8-11e6-9c8f-6bd6b629c2eb',
         'message': {
@@ -64,7 +64,7 @@ def test_parse_message():
         "target": None
     }
 
-    assert BeamParser.parse_message({
+    assert MixerParser.parse_message({
         'channel': 2151,
         'id': '8ef6a160-a9c8-11e6-9c8f-6bd6b629c2eb',
         'message': {
@@ -111,7 +111,7 @@ def test_parse_message():
 
 def test_parse_follow():
 
-    assert BeamParser.parse_follow({
+    assert MixerParser.parse_follow({
         'following': True,
         'user': {
             'avatarUrl': 'https://uploads.beam.pro/avatar/l0icubxz-95845.jpg',
@@ -167,7 +167,7 @@ def test_parse_follow():
         "streak": 1
     }
 
-    assert BeamParser.parse_follow({
+    assert MixerParser.parse_follow({
         'following': False,
         'user': {
             'avatarUrl': 'https://uploads.beam.pro/avatar/l0icubxz-95845.jpg',
@@ -224,7 +224,7 @@ def test_parse_follow():
 
 def test_parse_subscribe():
 
-    assert BeamParser.parse_subscribe({
+    assert MixerParser.parse_subscribe({
         'user': {
             'avatarUrl': 'https://uploads.beam.pro/avatar/20621.jpg',
             'bio': 'Broadcasting Daily at 10 AM PST. Join in on fun with mostly Minecraft.',
@@ -255,7 +255,7 @@ def test_parse_subscribe():
 
 def test_parse_resubscribe():
 
-    assert BeamParser.parse_resubscribe({
+    assert MixerParser.parse_resubscribe({
         "totalMonths": 3,
         "user": {
             "level": 88,
@@ -288,7 +288,7 @@ def test_parse_resubscribe():
 
 def test_parse_host():
 
-    assert BeamParser.parse_host({
+    assert MixerParser.parse_host({
         'hoster': {
             'audience': 'teen',
             'badgeId': None,
@@ -330,7 +330,7 @@ def test_parse_host():
 
 def test_parse_join():
 
-    assert BeamParser.parse_join({
+    assert MixerParser.parse_join({
         'id': 95845,
         'originatingChannel': 2151,
         'username': 'Stanley',
@@ -345,7 +345,7 @@ def test_parse_join():
 
 def test_parse_leave():
 
-    assert BeamParser.parse_leave({
+    assert MixerParser.parse_leave({
         'id': 95845,
         'originatingChannel': 2151,
         'username': 'Stanley',
@@ -360,7 +360,7 @@ def test_parse_leave():
 
 def test_synthesize():
 
-    assert BeamParser.synthesize(MessagePacket(
+    assert MixerParser.synthesize(MessagePacket(
         "Hey, ",
         ("tag", "Stanley"),
         "! ",
@@ -370,14 +370,14 @@ def test_synthesize():
         "!"
     )) == (("Hey, @Stanley! :cactus Check out cactusbot.rtfd.org!",), {})
 
-    assert BeamParser.synthesize(MessagePacket(
+    assert MixerParser.synthesize(MessagePacket(
         "waves", action=True
     )) == (("/me waves",), {})
 
-    assert BeamParser.synthesize(MessagePacket(
+    assert MixerParser.synthesize(MessagePacket(
         "Hello!", target="Stanley"
     )) == (("Stanley", "Hello!",), {"method": "whisper"})
 
-    assert BeamParser.synthesize(MessagePacket(
+    assert MixerParser.synthesize(MessagePacket(
         "Hello! ", ("emoji", "🌵"), "How are you?"
     )) == (("Hello! :cactus How are you?",), {})

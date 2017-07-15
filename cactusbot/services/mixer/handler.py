@@ -1,14 +1,14 @@
-"""Handle data from Beam."""
+"""Handle data from Mixer."""
 
 import asyncio
 import logging
 from functools import partial
 
 from ...packets import BanPacket, MessagePacket, Packet
-from .api import BeamAPI
-from .chat import BeamChat
-from .constellation import BeamConstellation
-from .parser import BeamParser
+from .api import MixerAPI
+from .chat import MixerChat
+from .constellation import MixerConstellation
+from .parser import MixerParser
 
 CHAT_EVENTS = {
     "ChatMessage": "message",
@@ -24,16 +24,16 @@ CONSTELLATION_EVENTS = {
 }
 
 
-class BeamHandler:
-    """Handle data from Beam services."""
+class MixerHandler:
+    """Handle data from Mixer services."""
 
     def __init__(self, channel, token, handlers):
 
         self.logger = logging.getLogger(__name__)
 
-        self.api = BeamAPI(channel, token)
+        self.api = MixerAPI(channel, token)
 
-        self.parser = BeamParser()
+        self.parser = MixerParser()
         self.handlers = handlers  # HACK, potentially
 
         self.channel = channel
@@ -42,7 +42,7 @@ class BeamHandler:
         self.constellation = None
 
     async def run(self):
-        """Connect to Beam chat and handle incoming packets."""
+        """Connect to Mixer chat and handle incoming packets."""
 
         channel = await self.api.get_channel(self.channel)
         self.api.channel = str(channel["id"])
@@ -57,14 +57,14 @@ class BeamHandler:
                           Packet(username=bot_channel["channel"]["token"]))
 
         if "authkey" not in chat:
-            self.logger.error("Failed to authenticate with Beam!")
+            self.logger.error("Failed to authenticate with Mixer!")
 
-        self.chat = BeamChat(channel["id"], *chat["endpoints"])
+        self.chat = MixerChat(channel["id"], *chat["endpoints"])
         await self.chat.connect(
             bot_id, partial(self.api.get_chat, channel["id"]))
         asyncio.ensure_future(self.chat.read(self.handle_chat))
 
-        self.constellation = BeamConstellation(channel["id"], user_id)
+        self.constellation = MixerConstellation(channel["id"], user_id)
         await self.constellation.connect()
         asyncio.ensure_future(
             self.constellation.read(self.handle_constellation))
@@ -130,7 +130,7 @@ class BeamHandler:
                     await self.api.update_roles(user_id, ["Banned"], [])
 
     async def send(self, *args, **kwargs):
-        """Send a packet to Beam."""
+        """Send a packet to Mixer."""
 
         if self.chat is None:
             raise ConnectionError("Chat not initialized.")
