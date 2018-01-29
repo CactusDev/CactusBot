@@ -4,8 +4,8 @@ import inspect
 import re
 
 ROLES = {
-    5: "Owner",
-    4: "ChannelEditor",
+    6: "Owner",
+    5: "ChannelEditor",
     4: "Moderator",
     2: "Subscriber",
     1: "User",
