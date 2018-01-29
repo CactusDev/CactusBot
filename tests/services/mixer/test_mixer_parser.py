@@ -108,6 +108,40 @@ def test_parse_message():
         "target": None
     }
 
+    assert MixerParser.parse_message({
+        'channel': 2151,
+        'id': '8ef6a160-a9c8-11e6-9c8f-6bd6b629c2eb',
+        'message': {
+            'message': [
+                {'data': 'waves ',
+                 'text': 'waves ',
+                 'type': 'text'},
+                {'coords': {'height': 24, 'width': 24, 'x': 72, 'y': 0},
+                 'pack': 'default',
+                 'source': 'builtin',
+                 'text': ':D',
+                 'type': 'emoticon'}],
+            'meta': {'me': True}
+        },
+        'user_id': 95845,
+        'user_name': 'Stanley',
+        'user_roles': ['ChannelEditor']
+    }).json == {
+        "message": [{
+            "type": "text",
+            "data": "waves ",
+            "text": "waves "
+        }, {
+            "type": "emoji",
+            "data": "😃",
+            "text": ":D"
+        }],
+        "user": "Stanley",
+        "role": 4,
+        "action": True,
+        "target": None
+    }
+
 
 def test_parse_follow():
 
