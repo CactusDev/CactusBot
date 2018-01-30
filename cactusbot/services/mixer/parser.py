@@ -13,8 +13,8 @@ class MixerParser:
         "Owner": 5,
         "Staff": 4,  # Not necessarily bot staff.
         "Global Mod": 4,
-        "Mod": 4,
         "ChannelEditor": 4,
+        "Mod": 4,
         "Subscriber": 2,
         "Pro": 1,
         "User": 1,
