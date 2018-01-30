@@ -148,9 +148,9 @@ class Command:
                     if error.direction:
                         return "Too many arguments."
 
-                    has_default = hasattr(running, "default")
-                    has_commands = hasattr(running, "commands")
-                    if not (has_default or has_commands):
+                    enough_args = (hasattr(running, "default") or
+                                   hasattr(running, "commands"))
+                    if not enough_args:
                         return "Not enough arguments. {0}".format(
                             ' '.join(map(self._display, error.args)))
 
